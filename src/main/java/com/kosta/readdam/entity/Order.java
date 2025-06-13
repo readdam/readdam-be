@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.kosta.readdam.dto.OrderDto;
 import com.kosta.readdam.entity.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
@@ -58,4 +59,17 @@ public class Order {
 
     @Column(name = "price", nullable = false)
     private int price;
+    
+    public OrderDto toDto() {
+        return OrderDto.builder()
+            .orderId(orderId)
+            .username(user.getUsername())
+            .paymentStatus(paymentStatus)
+            .paymentKey(paymentKey)
+            .approvedAt(approvedAt)
+            .paymentMethod(paymentMethod)
+            .price(price)
+            .build();
+    }
+
 }
