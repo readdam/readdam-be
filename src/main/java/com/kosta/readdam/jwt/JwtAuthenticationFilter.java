@@ -29,33 +29,35 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	//attemptAuthentication 메소드가 리턴해준 Authentication을 파라미터로 받아옴
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-			Authentication authResult) throws IOException, ServletException {
-		PrincipalDetails principalDetails = (PrincipalDetails)authResult.getPrincipal();
-		String username = principalDetails.getUsername();		
-		
-		User user = principalDetails.getUser();
-		String nickname = user.getNickname();
-		Boolean isAdmin = user.getIsAdmin();
-		Double lat = user.getLat();
-		Double lng = user.getLng();
+	        Authentication authResult) throws IOException, ServletException {
 
-		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
-		String refreshToken = jwtToken.makeRefreshToken(username);
-		
-		Map<String,String> map = new HashMap<>();
-		map.put("access_token", JwtProperties.TOKEN_PREFIX+accessToken);
-		map.put("refresh_token", JwtProperties.TOKEN_PREFIX+refreshToken);
-		
-		ObjectMapper objectMapper = new ObjectMapper();
-		String token = objectMapper.writeValueAsString(map);
-		System.out.println(token);
-		
-		response.addHeader(JwtProperties.HEADER_STRING, token);
-		response.setContentType("application/json; charset=utf-8");
-		
-		Map<String, Object> userInfo = new HashMap<>();
-		userInfo.put("username", user.getUsername());
-		userInfo.put("email", user.getEmail());
-		response.getWriter().write(objectMapper.writeValueAsString(userInfo));
+	    PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+	    User user = principalDetails.getUser();
+
+	    String username = user.getUsername();
+	    String nickname = user.getNickname();
+	    Boolean isAdmin = user.getIsAdmin();
+	    Double lat = user.getLat();
+	    Double lng = user.getLng();
+
+	    String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
+	    String refreshToken = jwtToken.makeRefreshToken(username);
+
+	    // 헤더에는 access token만 포함
+	    response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
+
+	    // 응답 바디에 accessToken 내용에 해당하는 정보 포함
+	    Map<String, Object> responseBody = new HashMap<>();
+	    responseBody.put("username", username);
+	    responseBody.put("nickname", nickname);
+	    responseBody.put("isAdmin", isAdmin);
+	    responseBody.put("lat", lat);
+	    responseBody.put("lng", lng);
+	    responseBody.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
+
+	    response.setContentType("application/json; charset=utf-8");
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    response.getWriter().write(objectMapper.writeValueAsString(responseBody));
 	}
+
 }

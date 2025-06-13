@@ -36,7 +36,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	    Double lat = principalDetails.getUser().getLat();
 	    Double lng = principalDetails.getUser().getLng();
 
-	    // ✅ 잘못된 accessToken → nickname 으로 수정
 	    String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
 	    String refreshToken = jwtToken.makeRefreshToken(username);
 

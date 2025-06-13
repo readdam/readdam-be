@@ -47,29 +47,31 @@ public class SecurityConfig {
 	//Authorization : 인가, 유저의 권한
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception{
-		http.addFilter(corsFilter) //다른 도메인 접근 허용
-			.csrf().disable() //csrf 공격 비활성화
-			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //session비활성화
-		
-		http.formLogin().disable()  //로그인 폼 비활성화
-			.httpBasic().disable() //httpBasic은 header에 username,password를 암호화하지 않은 상태로 주고받는다. 이를 사용하지 않겠다는 것.
-			.addFilterAt(new JwtAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
-		
-			
-		http.oauth2Login()
-			.authorizationEndpoint().baseUri("/oauth2/authorization") //front 로그인 uri
+		http
+		.addFilter(corsFilter)
+		.csrf().disable()
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+		.and()
+		.formLogin().disable()
+		.httpBasic().disable()
+		.addFilterAt(new JwtAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+		.addFilterBefore(
+			new JwtAuthorizationFilter(authenticationManager, userRepository),
+			UsernamePasswordAuthenticationFilter.class
+		)
+		.oauth2Login()
+			.authorizationEndpoint().baseUri("/oauth2/authorization")
 			.and()
 			.redirectionEndpoint().baseUri("/callback/*")
 			.and().userInfoEndpoint().userService(principalOAuth2UserService)
-			.and()
-			.successHandler(oAuth2SuccessHandler);
-			
-		http.addFilter(new JwtAuthorizationFilter(authenticationManager, userRepository))
-			.authorizeRequests()
-			.antMatchers("/user/**").authenticated() //로그인 필수
-			.antMatchers("/admin/**").access("hasRole('ROLE_ADMIN') or hasRole('ROLE_MANAGER')")//로그인 필수 && 권한이 ADMIN이거나 MANAGER 만 허용 
-			.antMatchers("/manager/**").access("hasRole('ROLE_MANAGER')")//로그인 필수 && 권한이 MANAGER 만 허용
+			.and().successHandler(oAuth2SuccessHandler)
+		.and()
+		.authorizeRequests()
+			.antMatchers("/user/**").authenticated()
+			.antMatchers("/admin/**").access("hasRole('ROLE_ADMIN') or hasRole('ROLE_MANAGER')")
+			.antMatchers("/manager/**").access("hasRole('ROLE_MANAGER')")
 			.anyRequest().permitAll();
+
 		return http.build();
 	}
 	
