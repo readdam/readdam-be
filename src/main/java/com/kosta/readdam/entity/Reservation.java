@@ -1,5 +1,74 @@
 package com.kosta.readdam.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import com.kosta.readdam.dto.ReservationDto;
+import com.kosta.readdam.entity.enums.ReservationStatus;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "reservation")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Reservation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "reservation_id", nullable = false, updatable = false)
+    private Integer reservationId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_room_id", nullable = false)
+    private PlaceRoom placeRoom;
+
+    @Column(name = "participant_count", nullable = false)
+    private Integer participantCount;
+
+    @Column(name = "reserver_name", nullable = false)
+    private String reserverName;
+
+    @Column(name = "reserver_phone", nullable = false)
+    private String reserverPhone;
+
+    @Column(name = "request_message", columnDefinition = "TEXT")
+    private String requestMessage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReservationStatus status;
+
+    public ReservationDto toDto() {
+        return ReservationDto.builder()
+                .reservationId(reservationId)
+                .username(user.getUsername())
+                .placeRoomId(placeRoom.getPlaceRoomId())
+                .participantCount(participantCount)
+                .reserverName(reserverName)
+                .reserverPhone(reserverPhone)
+                .requestMessage(requestMessage)
+                .status(status)
+                .build();
+    }
 }
