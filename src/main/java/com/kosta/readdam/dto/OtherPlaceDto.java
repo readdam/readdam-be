@@ -1,59 +1,35 @@
-package com.kosta.readdam.entity;
+package com.kosta.readdam.dto;
 
-import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.entity.OtherPlace;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalTime;
 
-@Entity
-@Table(name = "other_place")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OtherPlace {
+public class OtherPlaceDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "other_place_id", nullable = false, updatable = false)
     private Integer otherPlaceId;
-
     private String name;
     private String location;
     private Double lat;
-
-    @Column(name = "log") // DB에선 log지만 실무에선 lng로 생각됨
     private Double lng;
-
     private String phone;
     private String domain;
-
-    @Column(name = "weekday_stime")
     private LocalTime weekdayStime;
-
-    @Column(name = "weekday_etime")
     private LocalTime weekdayEtime;
-
-    @Column(name = "weekend_stime")
     private LocalTime weekendStime;
-
-    @Column(name = "weekend_etime")
     private LocalTime weekendEtime;
-
-    @Column(columnDefinition = "TEXT")
     private String introduce;
-
     private String img;
-
     private Integer fee;
-
-    @Column(columnDefinition = "TEXT")
     private String facilities;
 
-    public OtherPlaceDto toDto() {
-        return OtherPlaceDto.builder()
+    public OtherPlace toEntity() {
+        return OtherPlace.builder()
                 .otherPlaceId(otherPlaceId)
                 .name(name)
                 .location(location)

@@ -1,71 +1,39 @@
-package com.kosta.readdam.entity;
+package com.kosta.readdam.dto;
 
-import com.kosta.readdam.dto.BannerDto;
+import com.kosta.readdam.entity.Banner;
 import lombok.*;
 
-import javax.persistence.*;
-
-@Entity
-@Table(name = "banner")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Banner {
+public class BannerDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "banner_id", nullable = false, updatable = false)
     private Integer bannerId;
-
     private String title;
     private String style;
     private String img;
-
-    @Column(name = "is_show")
     private Boolean isShow;
-
     private Integer seq;
-
-    @Column(name = "title_text")
     private String titleText;
-
-    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "btn1_name")
     private String btn1Name;
-
-    @Column(name = "btn1_link")
     private String btn1Link;
-
-    @Column(name = "btn1_color")
     private String btn1Color;
-
-    @Column(name = "btn1_is_show")
     private Boolean btn1IsShow;
 
-    @Column(name = "btn2_name")
     private String btn2Name;
-
-    @Column(name = "btn2_link")
     private String btn2Link;
-
-    @Column(name = "btn2_color")
     private String btn2Color;
-
-    @Column(name = "btn2_is_show")
     private Boolean btn2IsShow;
 
-    @Column(name = "back_color")
     private String backColor;
-
-    @Column(name = "text_color")
     private String textColor;
 
-    public BannerDto toDto() {
-        return BannerDto.builder()
+    public Banner toEntity() {
+        return Banner.builder()
                 .bannerId(bannerId)
                 .title(title)
                 .style(style)
