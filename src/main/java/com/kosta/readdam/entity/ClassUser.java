@@ -19,27 +19,31 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "class_like")
+@Table(name = "class_user")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClassLike {
+public class ClassUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "like_id", nullable = false, updatable = false)
-    private Integer likeId;
+    private Long id; // 단일 PK 필요
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id", nullable = false)
+    private ClassEntity classEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", nullable = false)
     private User user;
 
-    @Column(name = "date", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime date;
+    @Column(name = "join_date", nullable = false)
+    private LocalDateTime joinDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id", nullable = false)
-    private ClassEntity classId;
+    @Column(name = "left_date")
+    private LocalDateTime leftDate;
+
+  
 }

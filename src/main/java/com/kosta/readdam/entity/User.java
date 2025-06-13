@@ -100,7 +100,7 @@ public class User {
 				.isAdmin(isAdmin)
 				.lat(lat)
 				.lng(lng)
-				.totalPoint(totalPoint)
+				.totalPoint(totalPoint != null ? totalPoint : 0)
 				.introduce(introduce)
 				.build();
 	}
