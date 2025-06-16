@@ -8,5 +8,7 @@ public interface MyPointService {
 	
 	List<PointDto> getMyPointList(String username) throws Exception;
 
-	void confirmAndChargePoint(String paymentKey, String orderId, int amount, String username);
+	void confirmAndChargePoint(String paymentKey, String orderId, int amount, String username) throws Exception ;
+
+	int getMyTotalPoint(String username) throws Exception;
 }
