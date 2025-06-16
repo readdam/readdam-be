@@ -68,8 +68,7 @@ public class SecurityConfig {
 		.and()
 		.authorizeRequests()
 			.antMatchers("/user/**").authenticated()
-			.antMatchers("/admin/**").access("hasRole('ROLE_ADMIN') or hasRole('ROLE_MANAGER')")
-			.antMatchers("/manager/**").access("hasRole('ROLE_MANAGER')")
+			.antMatchers("/admin/**").access("ADMIN")
 			.anyRequest().permitAll();
 
 		return http.build();

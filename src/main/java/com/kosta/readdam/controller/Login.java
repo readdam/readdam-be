@@ -25,18 +25,6 @@ public class Login {
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
-	@PostMapping("/login")
-	public ResponseEntity<UserDto> login(@RequestBody Map<String,String> param) {
-		try {
-			UserDto userDto = userService.login(param.get("username"), param.get("password"));
-			userDto.setPassword(null);
-			return new ResponseEntity<>(userDto, HttpStatus.OK);
-		} catch(Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-	}
-	
 	@PostMapping("/user")
 	public ResponseEntity<UserDto> user(@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		try {

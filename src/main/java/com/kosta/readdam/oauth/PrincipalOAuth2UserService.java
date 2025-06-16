@@ -34,7 +34,7 @@ public class PrincipalOAuth2UserService extends DefaultOAuth2UserService {
 		} else if(registrationId.equals("kakao")) {
 			oAuth2UserInfo =  new KaKaoUserInfo(oAuth2User.getAttributes());
 		} else {
-			System.out.println("카카오와 네이버만 지원");
+			throw new OAuth2AuthenticationException("Only Kakao and Naver are supported");
 		}
 		
 		//1. DB 에서 조회
@@ -47,6 +47,7 @@ public class PrincipalOAuth2UserService extends DefaultOAuth2UserService {
 							.email(oAuth2UserInfo.getEmail())
 							.provider(oAuth2UserInfo.getProvider())
 							.providerId(oAuth2UserInfo.getProviderId())
+							.isAdmin(false)
 							.build();
 			userRepository.save(user);
 		} else { //1-2. 가입되어 있으면 수정
