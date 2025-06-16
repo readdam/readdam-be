@@ -24,51 +24,53 @@ import com.kosta.readdam.repository.UserRepository;
 
 //인가 : 로그인 처리가 되어야만 하는 처리가 들어왔을때 실행
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
-	
+
 	private UserRepository userRepository;
-	
+
 	private JwtToken jwtToken = new JwtToken();
-	
-	public JwtAuthorizationFilter(AuthenticationManager authenticationManager,UserRepository userRepository) {
+
+	public JwtAuthorizationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
 		super(authenticationManager);
 		this.userRepository = userRepository;
 	}
-	
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-	        throws IOException, ServletException {
+			throws IOException, ServletException {
 
-	    String header = request.getHeader(JwtProperties.HEADER_STRING);
-	    if (header == null || !header.startsWith(JwtProperties.TOKEN_PREFIX)) {
-	        chain.doFilter(request, response); // 토큰 없으면 그냥 넘어가도록
-	        return;
-	    }
+		String header = request.getHeader(JwtProperties.HEADER_STRING);
+		if (header == null || !header.startsWith(JwtProperties.TOKEN_PREFIX)) {
+			chain.doFilter(request, response); // 토큰 없으면 그냥 넘어가도록
+			return;
+		}
 
-	    String token = header.replace(JwtProperties.TOKEN_PREFIX, "");
-	    try {
-	        String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET))
-	                .build()
-	                .verify(token)
-	                .getClaim("sub")
-	                .asString();
+		String token = header.replace(JwtProperties.TOKEN_PREFIX, "");
+		try {
+			String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(token).getClaim("sub")
+					.asString();
 
-	        if (username != null) {
-	            Optional<User> ouser = userRepository.findById(username);
-	            if (ouser.isPresent()) {
-	                PrincipalDetails principalDetails = new PrincipalDetails(ouser.get());
-	                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-	                        principalDetails, null, principalDetails.getAuthorities());
-	                SecurityContextHolder.getContext().setAuthentication(auth);
-	            }
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
+			if (username != null) {
+				Optional<User> ouser = userRepository.findById(username);
+				if (ouser.isPresent()) {
+					PrincipalDetails principalDetails = new PrincipalDetails(ouser.get());
+					UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principalDetails,
+							null, principalDetails.getAuthorities());
+					SecurityContextHolder.getContext().setAuthentication(auth);
+				}
+			}
+		} catch (Exception e) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json; charset=utf-8");
 
-	    chain.doFilter(request, response);
+			Map<String, Object> responseBody = new HashMap<>();
+			responseBody.put("error", "Invalid or expired token");
+
+			ObjectMapper objectMapper = new ObjectMapper();
+			response.getWriter().write(objectMapper.writeValueAsString(responseBody));
+			return;
+		}
+
+		chain.doFilter(request, response);
 	}
 
-
-
-	
 }
