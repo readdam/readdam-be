@@ -52,7 +52,7 @@ public class MyPointServiceImpl implements MyPointService {
 
     @Transactional
     @Override
-    public void confirmAndChargePoint(String paymentKey, String orderId, int amount, String username) {
+    public void confirmAndChargePoint(String paymentKey, String orderId, int amount, String username) throws Exception {
         // 1. Toss 결제 검증
         Map<String, Object> res = tossApiClient.verify(paymentKey, orderId, amount);
 
@@ -103,4 +103,12 @@ public class MyPointServiceImpl implements MyPointService {
                 throw new IllegalArgumentException("지원하지 않는 충전 금액입니다: " + amount);
         }
     }
+    
+    @Override
+    public int getMyTotalPoint(String username) throws Exception{
+        User user = userRepository.findById(username)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다: " + username));
+        return user.getTotalPoint() != null ? user.getTotalPoint() : 0;
+    }
+
 }

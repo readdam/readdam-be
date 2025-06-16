@@ -1,6 +1,7 @@
 package com.kosta.readdam.controller.my;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public class MyPointController {
 	private MyPointService myPointService;
 
 	// 나의 포인트 내역 조회
-	
+
 	@PostMapping("/myPointList")
 	public ResponseEntity<?> getMyPointList(@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		if (principalDetails == null) {
@@ -30,35 +31,35 @@ public class MyPointController {
 		try {
 			String username = principalDetails.getUsername();
 			List<PointDto> pointList = myPointService.getMyPointList(username);
-			return new ResponseEntity<>(pointList, HttpStatus.OK);
+			int totalPoint = myPointService.getMyTotalPoint(username);
+
+			Map<String, Object> result = Map.of("pointList", pointList, "totalPoint", totalPoint);
+
+			return new ResponseEntity<>(result, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
 		}
 	}
-	
-	   @PostMapping("/myPointCharge")
-	    public ResponseEntity<?> confirmChargePoint(
-	            @RequestParam String paymentKey,
-	            @RequestParam String orderId,
-	            @RequestParam int amount,
-	            @AuthenticationPrincipal PrincipalDetails principalDetails) {
 
-	        if (principalDetails == null) {
-	            return new ResponseEntity<>("인증 정보 없음", HttpStatus.UNAUTHORIZED);
-	        }
+	@PostMapping("/myPointCharge")
+	public ResponseEntity<?> confirmChargePoint(@RequestParam String paymentKey, @RequestParam String orderId,
+			@RequestParam int amount, @AuthenticationPrincipal PrincipalDetails principalDetails) {
 
-	        try {
-	            String username = principalDetails.getUsername();
-	            myPointService.confirmAndChargePoint(paymentKey, orderId, amount, username);
-	            return new ResponseEntity<>("충전 성공", HttpStatus.OK);
-	        } catch (IllegalArgumentException e) {
-	            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            return new ResponseEntity<>("충전 처리 실패", HttpStatus.INTERNAL_SERVER_ERROR);
-	        }
-	    }
+		if (principalDetails == null) {
+			return new ResponseEntity<>("인증 정보 없음", HttpStatus.UNAUTHORIZED);
+		}
+
+		try {
+			String username = principalDetails.getUsername();
+			myPointService.confirmAndChargePoint(paymentKey, orderId, amount, username);
+			return new ResponseEntity<>("충전 성공", HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>("충전 처리 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }
