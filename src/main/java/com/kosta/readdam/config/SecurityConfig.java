@@ -67,7 +67,6 @@ public class SecurityConfig {
 			.and().successHandler(oAuth2SuccessHandler)
 		.and()
 		.authorizeRequests()
-			.antMatchers("/userInfo").permitAll()
 			.antMatchers("/my/**").authenticated()
 			.antMatchers("/admin/**").access("ADMIN")
 			.anyRequest().permitAll();

@@ -1,9 +1,11 @@
 package com.kosta.readdam.controller;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,13 @@ public class CommonController {
 	@Value("${iupload.path}")
 	private String iuploadPath;
 	
+
+	@PostConstruct
+	public void initDirectories() {
+		 new File(iuploadPath).mkdirs();  // 폴더 없으면 자동 생성
+	}
+	
+
 
 @RequestMapping("/image")
 public void imageView(@RequestParam("filename") String filename, HttpServletResponse response) {
@@ -40,5 +49,6 @@ public void imageView(@RequestParam("filename") String filename, HttpServletResp
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 }
+
 
 }
