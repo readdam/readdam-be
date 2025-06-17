@@ -1,6 +1,7 @@
 package com.kosta.readdam.entity;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,7 +26,7 @@ import lombok.Setter;
 public class Book {
 
     @Id
-    @Column(name = "book_isbn", length = 20, nullable = false)
+    @Column(name = "book_isbn", length = 40, nullable = false)
     private String bookIsbn;
 
     @Column(nullable = false)
@@ -38,7 +39,7 @@ public class Book {
     private String publisher;
 
     @Column(name = "pub_date", nullable = false)
-    private String pubDate;
+    private OffsetDateTime pubDate;
 
     @Column(nullable = false)
     private String writer;
@@ -73,4 +74,5 @@ public class Book {
                 .bookIntro(bookIntro)
                 .build();
     }
+    
 }

@@ -1,5 +1,6 @@
 package com.kosta.readdam.dto.kakao;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import lombok.Data;
@@ -17,7 +18,7 @@ public class KakaoBookResponse {
         private String thumbnail;
         private String contents;
         private String isbn;
-        private String datetime;
+        private OffsetDateTime datetime;
     }
 
     @Data

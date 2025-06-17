@@ -1,9 +1,15 @@
 package com.kosta.readdam.dto;
 
-import com.kosta.readdam.entity.Book;
-import lombok.*;
-
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+import com.kosta.readdam.entity.Book;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -16,7 +22,7 @@ public class BookDto {
     private Integer ranking;
     private String title;
     private String publisher;
-    private String pubDate;
+    private OffsetDateTime pubDate;
     private String writer;
     private Integer reviewCnt;
     private Integer viewCnt;
