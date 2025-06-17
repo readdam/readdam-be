@@ -53,4 +53,23 @@ public class WriteDto {
                 .isHide("private".equals(this.visibility))
                 .build();
     }
+    
+    public static WriteDto from(Write write) {
+        return WriteDto.builder()
+            .writeId(write.getWriteId())
+            .title(write.getTitle())
+            .type(write.getType())
+            .tag1(write.getTag1())
+            .tag2(write.getTag2())
+            .tag3(write.getTag3())
+            .tag4(write.getTag4())
+            .tag5(write.getTag5())
+            .regDate(write.getRegDate())
+            .endDate(write.getEndDate())
+            .content(write.getContent())
+            .img(write.getImg())
+            .viewCnt(write.getViewCnt())
+            .visibility(write.isHide() ? "private" : "public")
+            .build();
+    }
 }
