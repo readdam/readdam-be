@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
+import com.kosta.readdam.dto.WriteDto;
+
 import lombok.*;
 
 @Entity
@@ -22,6 +24,9 @@ public class Write {
 
     @Column(nullable = false, length = 255)
     private String title;
+    
+    @Column(nullable = false, length = 50)
+    private String type;
 
     @Column(length = 50)
     private String tag1;
@@ -58,4 +63,26 @@ public class Write {
 
     @Column(name = "is_hide", nullable = false)
     private boolean isHide;
+    
+    
+    public WriteDto toDto() {
+        return WriteDto.builder()
+                .writeId(writeId)
+                .title(title)
+                .type(type)
+                .tag1(tag1)
+                .tag2(tag2)
+                .tag3(tag3)
+                .tag4(tag4)
+                .tag5(tag5)
+                .regDate(regDate)
+                .endDate(endDate)
+                .content(content)
+                .img(img)
+                .username(user != null ? user.getUsername() : null)
+                .viewCnt(viewCnt)
+                .isHide(isHide)
+                .build();
+    }
+    
 }

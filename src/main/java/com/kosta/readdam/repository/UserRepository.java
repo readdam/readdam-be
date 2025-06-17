@@ -9,5 +9,5 @@ import com.kosta.readdam.entity.User;
 public interface UserRepository extends JpaRepository<User, String>{
 
 	Optional<User> findByProviderAndProviderId(String provider, String providerId);
-
+	Optional<User> findByUsername(String username);
 }

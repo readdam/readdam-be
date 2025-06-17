@@ -93,6 +93,7 @@ public class User {
 		return UserDto.builder()
 				.username(username)
 				.password(null)
+				.name(name)
 				.nickname(nickname).phone(phone).email(email)
 				.birth(birth).joinDate(joinDate).profileImg(profileImg).fcmToken(fcmToken).deleted(deleted)
 				.withdrawalReason(withdrawalReason)

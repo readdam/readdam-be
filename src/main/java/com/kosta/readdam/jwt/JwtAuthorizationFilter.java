@@ -38,7 +38,11 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 
+		System.out.println("[JwtAuthorizationFilter] 🔍 진입");
+		
 		String header = request.getHeader(JwtProperties.HEADER_STRING);
+		
+		System.out.println("[JwtAuthorizationFilter] 🔐 Authorization 헤더: " + header);
 		if (header == null || !header.startsWith(JwtProperties.TOKEN_PREFIX)) {
 			chain.doFilter(request, response); // 토큰 없으면 그냥 넘어가도록
 			return;
@@ -48,14 +52,18 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 		try {
 			String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET)).build().verify(token).getClaim("sub")
 					.asString();
-
+			System.out.println("[JwtAuthorizationFilter] ✅ 토큰에서 추출한 username: " + username);
 			if (username != null) {
 				Optional<User> ouser = userRepository.findById(username);
 				if (ouser.isPresent()) {
+					System.out.println("[JwtAuthorizationFilter] ✅ 사용자 정보 조회 성공: " + ouser.get().getUsername());
+
 					PrincipalDetails principalDetails = new PrincipalDetails(ouser.get());
 					UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principalDetails,
 							null, principalDetails.getAuthorities());
 					SecurityContextHolder.getContext().setAuthentication(auth);
+					System.out.println("[JwtAuthorizationFilter] 🔐 인증 객체 SecurityContext에 등록 완료");
+					
 				}
 			}
 		} catch (Exception e) {
