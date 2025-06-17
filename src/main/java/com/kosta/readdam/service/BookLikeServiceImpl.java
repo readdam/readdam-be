@@ -15,7 +15,7 @@ import com.kosta.readdam.repository.BookRepository;
 import com.kosta.readdam.repository.UserRepository;
 
 @Service
-public class BookLikeserviceImpl implements BookLikeService {
+public class BookLikeServiceImpl implements BookLikeService {
 	
 	@Autowired
     private UserRepository userRepository;
