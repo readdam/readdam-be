@@ -18,6 +18,8 @@ public class BookReviewDto {
     private Integer bookReviewId;
     private String bookIsbn;
     private String username;
+    private String nickname;
+    private String profileImg;
     private BigDecimal rating;
     private String comment;
     private LocalDateTime regTime;
@@ -34,4 +36,19 @@ public class BookReviewDto {
                 .isHide(isHide != null ? isHide : false)
                 .build();
     }
+    
+    public static BookReviewDto fromEntity(BookReview r) {
+        return BookReviewDto.builder()
+                .bookReviewId(r.getBookReviewId())
+                .bookIsbn(r.getBook().getBookIsbn())
+                .username(r.getUser().getUsername())
+                .nickname(r.getUser().getNickname())
+                .profileImg(r.getUser().getProfileImg())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .regTime(r.getRegTime())
+                .isHide(r.getIsHide())
+                .build();
+    }
+
 }
