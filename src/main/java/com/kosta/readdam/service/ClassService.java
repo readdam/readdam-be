@@ -3,16 +3,15 @@
  */
 package com.kosta.readdam.service;
 
+import java.util.Map;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.ClassDto;
+import com.kosta.readdam.entity.User;
 
-/**
- * @author KOSTA
- *
- */
 
 public interface ClassService {
-	Integer createClass(ClassDto classDto, MultipartFile ifile, MultipartFile dfile) throws Exception;
+	Integer createClass(ClassDto classDto, Map<String, MultipartFile> imageMap, User leader) throws Exception;
 	ClassDto detailClass(Integer classId) throws Exception;
 }
