@@ -7,25 +7,30 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LibraryBookDto {
-    private Integer librarybookId;
-    private String bookName;
-    private String bookWriter;
-    private String bookImg;
-    private Integer libraryId;
-    
+    private String isbn;
+    private String title;
+    private String thumbnail;
+    private String publisher;
+    private String datetime;
+    private String[] authors;
+
     public LibraryBook toEntity(Library library) {
         return LibraryBook.builder()
-                .librarybookId(this.librarybookId)
-                .bookName(this.bookName)
-                .bookWriter(this.bookWriter)
-                .bookImg(this.bookImg)
                 .library(library)
+                .isbn(this.isbn)
+                .title(this.title)
+                .thumbnail(this.thumbnail)
+                .publisher(this.publisher)
+                .datetime(this.datetime)
+                .authors(this.authors != null ? String.join(", ", this.authors) : null)
                 .build();
     }
 }

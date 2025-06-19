@@ -13,6 +13,7 @@ import com.kosta.readdam.dto.AlertDto;
 import com.kosta.readdam.service.my.MyAlertService;
 
 @RestController
+@RequestMapping("/my")
 public class MyAlertController {
 
     @Autowired
