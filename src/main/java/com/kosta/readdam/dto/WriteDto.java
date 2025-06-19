@@ -33,6 +33,9 @@ public class WriteDto {
     private int viewCnt;
     private boolean isHide;
     private String visibility; // "public" 또는 "private"
+    private String nickname; //상세페이지용 추가
+    private String profileImg; //상세페이지용 추가
+    private String introduce; //상세페이지용 추가
 
     public Write toEntity(User user) {
         return Write.builder()
@@ -52,5 +55,33 @@ public class WriteDto {
                 .viewCnt(viewCnt)
                 .isHide("private".equals(this.visibility))
                 .build();
+    }
+    
+    public static WriteDto from(Write write) {
+        User user = write.getUser(); // 글상세 작성자 정보
+    	
+        return WriteDto.builder()
+            .writeId(write.getWriteId())
+            .title(write.getTitle())
+            .type(write.getType())
+            .tag1(write.getTag1())
+            .tag2(write.getTag2())
+            .tag3(write.getTag3())
+            .tag4(write.getTag4())
+            .tag5(write.getTag5())
+            .regDate(write.getRegDate())
+            .endDate(write.getEndDate())
+            .content(write.getContent())
+            .img(write.getImg())
+            .viewCnt(write.getViewCnt())
+            .visibility(write.isHide() ? "private" : "public")
+            
+            // 작성자 정보 추가 
+            .username(user != null ? user.getUsername() : null)
+            .nickname(user != null ? user.getNickname() : null)
+            .profileImg(user != null ? user.getProfileImg() : null)
+            .introduce(user != null ? user.getIntroduce() : null)
+            
+            .build();
     }
 }

@@ -53,8 +53,8 @@ public class Point {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
-    
-    
+  
+
     public PointDto toDto() {
         return PointDto.builder()
             .pointId(pointId)

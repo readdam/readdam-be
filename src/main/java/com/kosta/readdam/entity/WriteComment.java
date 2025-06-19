@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
+import com.kosta.readdam.dto.WriteCommentDto;
+
 import lombok.*;
 
 @Entity
@@ -42,4 +44,16 @@ public class WriteComment {
 
     @Column(name = "is_hide", nullable = false)
     private Boolean isHide;
+    
+    public WriteCommentDto toDto() {
+    	return WriteCommentDto.builder()
+    		        .writeCommentId(writeCommentId)
+    		        .content(content)
+    		        .isSecret(isSecret)
+    		        .adopted(adopted)
+                    .regDate(regDate)
+    		        .username(user != null ? user.getUsername() : null)
+    		        .nickname(user != null ? user.getNickname() : null)
+    		        .build();
+    		}
 }

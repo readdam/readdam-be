@@ -18,24 +18,30 @@ import lombok.NoArgsConstructor;
 public class OrderDto {
 
     private Long orderId;
+    private String orderUuid;       // Toss 요청용 UUID
+    private String orderName;       // 상품 이름 (ex. 500P 충전)
     private String username;
     private PaymentStatus paymentStatus;
     private String paymentKey;
-    private LocalDateTime approvedAt;
     private String paymentMethod;
     private int price;
-    
+    private LocalDateTime requestedAt;
+    private LocalDateTime approvedAt;
+    private String failReason;
+
     public Order toEntity(User user) {
         return Order.builder()
             .orderId(orderId) 
+            .orderUuid(orderUuid)
+            .orderName(orderName)
             .user(user)
             .paymentStatus(paymentStatus)
             .paymentKey(paymentKey)
-            .approvedAt(approvedAt)
             .paymentMethod(paymentMethod)
             .price(price)
+            .requestedAt(requestedAt)
+            .approvedAt(approvedAt)
+            .failReason(failReason)
             .build();
     }
-
-
 }
