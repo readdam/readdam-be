@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.BookReviewDto;
 import com.kosta.readdam.dto.book.BookReviewRequestDto;
+import com.kosta.readdam.dto.book.BookReviewStatsDto;
 import com.kosta.readdam.service.BookReviewService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,4 +41,10 @@ public class BookReviewController {
 		bookReviewService.writeReview(dto, username);
 		return ResponseEntity.ok().body("리뷰가 등록되었습니다.");
 	}
+	
+	@GetMapping("/stats")
+    public ResponseEntity<BookReviewStatsDto> getReviewStats(@RequestParam String bookIsbn) {
+        BookReviewStatsDto stats = bookReviewService.getReviewStats(bookIsbn);
+        return ResponseEntity.ok(stats);
+    }
 }
