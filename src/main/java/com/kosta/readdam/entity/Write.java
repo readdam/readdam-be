@@ -80,6 +80,9 @@ public class Write {
                 .content(content)
                 .img(img)
                 .username(user != null ? user.getUsername() : null)
+                .nickname(user != null ? user.getNickname() : null)          
+                .profileImg(user != null ? user.getProfileImg() : null)      
+                .introduce(user != null ? user.getIntroduce() : null)       
                 .viewCnt(viewCnt)
                 .isHide(isHide)
                 .build();
