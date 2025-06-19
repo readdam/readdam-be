@@ -22,6 +22,7 @@ public class WriteCommentDto {
     private Boolean adopted;
     private Boolean isSecret;
     private Boolean isHide;
+    private String nickname;
 
     public WriteComment toEntity(Write write, User user) {
         return WriteComment.builder()
@@ -34,5 +35,19 @@ public class WriteCommentDto {
                 .isSecret(isSecret != null ? isSecret : false)
                 .isHide(isHide != null ? isHide : false)
                 .build();
+    }
+    
+    public static WriteCommentDto from(WriteComment comment) {
+        return WriteCommentDto.builder()
+            .writeCommentId(comment.getWriteCommentId())
+            .content(comment.getContent())
+            .writeId(comment.getWrite().getWriteId())
+            .username(comment.getUser().getUsername())
+            .nickname(comment.getUser().getNickname())
+            .regDate(comment.getRegDate())
+            .adopted(comment.getAdopted())
+            .isSecret(comment.getIsSecret())
+            .isHide(comment.getIsHide())
+            .build();
     }
 }

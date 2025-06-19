@@ -33,6 +33,9 @@ public class WriteDto {
     private int viewCnt;
     private boolean isHide;
     private String visibility; // "public" 또는 "private"
+    private String nickname; //상세페이지용 추가
+    private String profileImg; //상세페이지용 추가
+    private String introduce; //상세페이지용 추가
 
     public Write toEntity(User user) {
         return Write.builder()
@@ -55,6 +58,8 @@ public class WriteDto {
     }
     
     public static WriteDto from(Write write) {
+        User user = write.getUser(); // 글상세 작성자 정보
+    	
         return WriteDto.builder()
             .writeId(write.getWriteId())
             .title(write.getTitle())
@@ -70,6 +75,13 @@ public class WriteDto {
             .img(write.getImg())
             .viewCnt(write.getViewCnt())
             .visibility(write.isHide() ? "private" : "public")
+            
+            // 작성자 정보 추가 
+            .username(user != null ? user.getUsername() : null)
+            .nickname(user != null ? user.getNickname() : null)
+            .profileImg(user != null ? user.getProfileImg() : null)
+            .introduce(user != null ? user.getIntroduce() : null)
+            
             .build();
     }
 }
