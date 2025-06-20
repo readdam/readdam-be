@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.WriteDto;
+import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.repository.WriteRepository;
@@ -64,6 +66,11 @@ public class WriteServiceImpl implements WriteService {
 	    return writes.stream()
 	                 .map(WriteDto::from) // 각 Write → WriteDto 변환
 	                 .collect(Collectors.toList()); // 변환 결과 리스트로 수집
+	}
+
+	@Override
+	public Page<Write> searchWrites(WriteSearchRequestDto requestDto, Pageable pageable) {
+		return writeRepository.searchWrites(requestDto, pageable);
 	}
 
 
