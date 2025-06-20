@@ -3,8 +3,12 @@ package com.kosta.readdam.controller.write;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,10 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.WriteCommentDto;
 import com.kosta.readdam.dto.WriteDto;
+import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.service.WriteCommentService;
 import com.kosta.readdam.service.WriteService;
+import com.kosta.readdam.util.PageInfo2;
 @RestController
+
 public class WriteController {
 	@Autowired
 	private WriteService writeService;
@@ -46,7 +54,7 @@ public class WriteController {
 		}
 	}
 	
-	@GetMapping("/writedetail/{id}")
+	@GetMapping("/writeDetail/{id}")
 	public ResponseEntity<Map<String,Object>> detail(
 	        @PathVariable("id") Integer writeId, 
 	        @AuthenticationPrincipal PrincipalDetails principalDetails) {
@@ -83,4 +91,23 @@ public class WriteController {
 	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	    }
 	}
+	
+	@PostMapping("/writeList")
+    public ResponseEntity<Map<String, Object>> getWriteList(@RequestBody WriteSearchRequestDto requestDto) {
+        int size = 10;
+        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, size);
+
+        Page<Write> pageResult = writeService.searchWrites(requestDto, pageable);
+
+        List<WriteDto> writeList = pageResult.getContent().stream()
+        	    .map(WriteDto::from)
+        	    .collect(Collectors.toList());
+
+        PageInfo2 pageInfo = PageInfo2.from(pageResult);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("writeList", writeList);
+        res.put("pageInfo", pageInfo);
+        return ResponseEntity.ok(res);
+    }
 }

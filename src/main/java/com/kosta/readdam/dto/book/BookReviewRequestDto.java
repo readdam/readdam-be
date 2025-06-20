@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class BookReviewRequestDto {
     private String comment;
-    private boolean isHide;
+    private Boolean isHide;
     private BigDecimal rating;
     private String bookIsbn;
     private String username;

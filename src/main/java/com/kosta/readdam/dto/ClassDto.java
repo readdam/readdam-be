@@ -1,10 +1,17 @@
 package com.kosta.readdam.dto;
 
+import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.User;
-import lombok.*;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -32,6 +39,7 @@ public class ClassDto {
     private String leaderImg;
     private String leaderIntro;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime round1Date;
     private String round1PlaceName;
     private String round1PlaceLoc;
@@ -43,6 +51,7 @@ public class ClassDto {
     private Double round1Lat;
     private Double round1Log;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime round2Date;
     private String round2PlaceName;
     private String round2PlaceLoc;
@@ -54,6 +63,7 @@ public class ClassDto {
     private Double round2Lat;
     private Double round2Log;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime round3Date;
     private String round3PlaceName;
     private String round3PlaceLoc;
@@ -65,6 +75,7 @@ public class ClassDto {
     private Double round3Lat;
     private Double round3Log;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime round4Date;
     private String round4PlaceName;
     private String round4PlaceLoc;
