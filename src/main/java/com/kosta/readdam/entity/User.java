@@ -2,14 +2,12 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.ColumnDefault;
 
 import com.kosta.readdam.dto.UserDto;
 
@@ -67,6 +65,7 @@ public class User {
 	private LocalDateTime withdrawalDate;
 
 	@Column(name = "is_admin")
+	@ColumnDefault("0") // 기본값설정 추가
 	private Boolean isAdmin;
 
 	@Column(name = "lat")
