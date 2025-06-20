@@ -2,7 +2,6 @@ package com.kosta.readdam.service;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.kosta.readdam.dto.BookReviewDto;
 import com.kosta.readdam.dto.book.BookReviewRequestDto;
+import com.kosta.readdam.dto.book.BookReviewStatsDto;
 import com.kosta.readdam.entity.Book;
 import com.kosta.readdam.entity.BookReview;
 import com.kosta.readdam.entity.User;
@@ -52,10 +52,15 @@ public class BookReviewServiceImpl implements BookReviewService {
 	        review.setBook(book);
 	        review.setUser(user);
 	        review.setComment(dto.getComment());
-	        review.setIsHide(dto.isHide());
+	        review.setIsHide(dto.getIsHide());
 	        review.setRating(dto.getRating());
 	        review.setRegTime(LocalDateTime.now());
 
 	        bookReviewRepository.save(review);
 	    }
+	 
+	 @Override
+	 public BookReviewStatsDto getReviewStats(String bookIsbn) {
+	        return bookReviewRepository.findStatsByBookIsbn(bookIsbn);
+	 }
 }
