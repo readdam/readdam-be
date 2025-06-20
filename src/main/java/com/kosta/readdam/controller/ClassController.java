@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,18 +25,19 @@ public class ClassController {
 	@Autowired
 	private ClassService classService;
 	
+	@CrossOrigin(origins = "http://localhost:5173") 
 	@PostMapping("/my/createClass")
 	public ResponseEntity<ClassDto> createClass(@ModelAttribute ClassDto classDto, 
-			@RequestParam("mainImg") MultipartFile mainImg,
-			@RequestParam("leaderImg") MultipartFile leaderImg,
-			@RequestParam("round1Img") MultipartFile round1Img,
-			@RequestParam("round1Bookimg") MultipartFile round1Bookimg,
-			@RequestParam("round2Img") MultipartFile round2Img,
-			@RequestParam("round2Bookimg") MultipartFile round2Bookimg,
-			@RequestParam("round3Img") MultipartFile round3Img,
-			@RequestParam("round3Bookimg") MultipartFile round3Bookimg,
-			@RequestParam("round4Img") MultipartFile round4Img,
-			@RequestParam("round4Bookimg") MultipartFile round4Bookimg,
+			@RequestParam(value = "mainImg", required = false) MultipartFile mainImg,
+			@RequestParam(value = "leaderImg", required = false) MultipartFile leaderImg,
+			@RequestParam(value = "round1Img", required = false) MultipartFile round1Img,
+			@RequestParam(value = "round1Bookimg", required = false) MultipartFile round1Bookimg,
+			@RequestParam(value = "round2Img", required = false) MultipartFile round2Img,
+			@RequestParam(value = "round2Bookimg", required = false) MultipartFile round2Bookimg,
+			@RequestParam(value = "round3Img", required = false) MultipartFile round3Img,
+			@RequestParam(value = "round3Bookimg", required = false) MultipartFile round3Bookimg,
+			@RequestParam(value = "round4Img", required = false) MultipartFile round4Img,
+			@RequestParam(value = "round4Bookimg", required = false) MultipartFile round4Bookimg,
 			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		
 		Map<String, MultipartFile> imageMap = new HashMap<>();
