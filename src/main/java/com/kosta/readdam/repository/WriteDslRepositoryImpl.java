@@ -16,8 +16,6 @@ import com.kosta.readdam.entity.Write;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.core.types.dsl.NumberPath;
-import com.querydsl.core.types.OrderSpecifier;
 
 @Repository
 public class WriteDslRepositoryImpl implements WriteDslRepository {

@@ -28,29 +28,29 @@ public class ClassController {
 	@CrossOrigin(origins = "http://localhost:5173") 
 	@PostMapping("/my/createClass")
 	public ResponseEntity<ClassDto> createClass(@ModelAttribute ClassDto classDto, 
-			@RequestParam(value = "mainImg", required = false) MultipartFile mainImg,
-			@RequestParam(value = "leaderImg", required = false) MultipartFile leaderImg,
-			@RequestParam(value = "round1Img", required = false) MultipartFile round1Img,
-			@RequestParam(value = "round1Bookimg", required = false) MultipartFile round1Bookimg,
-			@RequestParam(value = "round2Img", required = false) MultipartFile round2Img,
-			@RequestParam(value = "round2Bookimg", required = false) MultipartFile round2Bookimg,
-			@RequestParam(value = "round3Img", required = false) MultipartFile round3Img,
-			@RequestParam(value = "round3Bookimg", required = false) MultipartFile round3Bookimg,
-			@RequestParam(value = "round4Img", required = false) MultipartFile round4Img,
-			@RequestParam(value = "round4Bookimg", required = false) MultipartFile round4Bookimg,
+			@RequestParam(name = "mainImgF", required = false) MultipartFile mainImgF,
+			@RequestParam(name = "leaderImgF", required = false) MultipartFile leaderImgF,
+			@RequestParam(name = "round1ImgF", required = false) MultipartFile round1ImgF,
+			@RequestParam(name = "round1BookimgF", required = false) MultipartFile round1BookimgF,
+			@RequestParam(name = "round2ImgF", required = false) MultipartFile round2ImgF,
+			@RequestParam(name = "round2BookimgF", required = false) MultipartFile round2BookimgF,
+			@RequestParam(name = "round3ImgF", required = false) MultipartFile round3ImgF,
+			@RequestParam(name = "round3BookimgF", required = false) MultipartFile round3BookimgF,
+			@RequestParam(name = "round4ImgF", required = false) MultipartFile round4ImgF,
+			@RequestParam(name = "round4BookimgF", required = false) MultipartFile round4BookimgF,
 			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		
 		Map<String, MultipartFile> imageMap = new HashMap<>();
-		imageMap.put("mainImg", mainImg);
-		imageMap.put("leaderImg", leaderImg);
-		imageMap.put("round1Img", round1Img);
-		imageMap.put("round1Bookimg", round1Bookimg);
-		imageMap.put("round2Img", round2Img);
-		imageMap.put("round2Bookimg", round2Bookimg);
-		imageMap.put("round3Img", round3Img);
-		imageMap.put("round3Bookimg", round3Bookimg);
-		imageMap.put("round4Img", round4Img);
-		imageMap.put("round4Bookimg", round4Bookimg);
+		imageMap.put("mainImgF", mainImgF);
+		imageMap.put("leaderImgF", leaderImgF);
+		imageMap.put("round1ImgF", round1ImgF);
+		imageMap.put("round1BookimgF", round1BookimgF);
+		imageMap.put("round2ImgF", round2ImgF);
+		imageMap.put("round2BookimgF", round2BookimgF);
+		imageMap.put("round3ImgF", round3ImgF);
+		imageMap.put("round3BookimgF", round3BookimgF);
+		imageMap.put("round4ImgF", round4ImgF);
+		imageMap.put("round4BookimgF", round4BookimgF);
 		
 		try {
 			User leader = principalDetails.getUser(); //jwt 인증 사용자
