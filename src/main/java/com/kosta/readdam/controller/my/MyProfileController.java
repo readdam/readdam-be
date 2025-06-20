@@ -5,11 +5,13 @@ import java.io.FileOutputStream;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,10 +23,11 @@ import com.kosta.readdam.service.my.MyProfileService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
+@RequestMapping("/my")
 public class MyProfileController {
 
-    private final MyProfileService myProfileService;
+	@Autowired
+    private MyProfileService myProfileService;
 
     @Value("${iupload.path}")
     private String iuploadPath;
