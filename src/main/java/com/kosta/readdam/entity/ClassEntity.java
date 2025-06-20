@@ -3,6 +3,9 @@ package com.kosta.readdam.entity;
 import lombok.*;
 
 import javax.persistence.*;
+
+import com.kosta.readdam.dto.ClassDto;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -88,4 +91,62 @@ public class ClassEntity {
     private String round4Bookwriter;
     private Double round4Lat;
     private Double round4Log;
+    
+	public ClassDto toDto() {
+		return ClassDto.builder()
+				.classId(classId)
+                .leaderUsername(leader.getUsername())
+                .title(title)
+                .shortIntro(shortIntro)
+                .tag1(tag1)
+                .tag2(tag2)
+                .tag3(tag3)
+                .minPerson(minPerson)
+                .maxPerson(maxPerson)
+                .mainImg(mainImg)
+                .classIntro(classIntro)
+                .leaderImg(leaderImg)
+                .leaderIntro(leaderIntro)
+                .round1Date(round1Date)
+                .round1PlaceName(round1PlaceName)
+                .round1PlaceLoc(round1PlaceLoc)
+                .round1Img(round1Img)
+                .round1Content(round1Content)
+                .round1Bookname(round1Bookname)
+                .round1Bookimg(round1Bookimg)
+                .round1Bookwriter(round1Bookwriter)
+                .round1Lat(round1Lat)
+                .round1Log(round1Log)
+                .round2Date(round2Date)
+                .round2PlaceName(round2PlaceName)
+                .round2PlaceLoc(round2PlaceLoc)
+                .round2Img(round2Img)
+                .round2Content(round2Content)
+                .round2Bookname(round2Bookname)
+                .round2Bookimg(round2Bookimg)
+                .round2Bookwriter(round2Bookwriter)
+                .round2Lat(round2Lat)
+                .round2Log(round2Log)
+                .round3Date(round3Date)
+                .round3PlaceName(round3PlaceName)
+                .round3PlaceLoc(round3PlaceLoc)
+                .round3Img(round3Img)
+                .round3Content(round3Content)
+                .round3Bookname(round3Bookname)
+                .round3Bookimg(round3Bookimg)
+                .round3Bookwriter(round3Bookwriter)
+                .round3Lat(round3Lat)
+                .round3Log(round3Log)
+                .round4Date(round4Date)
+                .round4PlaceName(round4PlaceName)
+                .round4PlaceLoc(round4PlaceLoc)
+                .round4Img(round4Img)
+                .round4Content(round4Content)
+                .round4Bookname(round4Bookname)
+                .round4Bookimg(round4Bookimg)
+                .round4Bookwriter(round4Bookwriter)
+                .round4Lat(round4Lat)
+                .round4Log(round4Log)
+                .build();
+	}
 }
