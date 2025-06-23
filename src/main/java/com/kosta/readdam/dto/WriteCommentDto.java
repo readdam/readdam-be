@@ -23,6 +23,10 @@ public class WriteCommentDto {
     private Boolean isSecret;
     private Boolean isHide;
     private String nickname;
+    
+    private String title;          
+    private String type;           
+    private String postNickname;
 
     public WriteComment toEntity(Write write, User user) {
         return WriteComment.builder()
@@ -38,6 +42,10 @@ public class WriteCommentDto {
     }
     
     public static WriteCommentDto from(WriteComment comment) {
+    	
+    	Write write = comment.getWrite();
+        User postAuthor = write.getUser();
+        
         return WriteCommentDto.builder()
             .writeCommentId(comment.getWriteCommentId())
             .content(comment.getContent())
@@ -48,6 +56,10 @@ public class WriteCommentDto {
             .adopted(comment.getAdopted())
             .isSecret(comment.getIsSecret())
             .isHide(comment.getIsHide())
+            
+            .title(write.getTitle())
+            .type(write.getType())
+            .postNickname(postAuthor != null ? postAuthor.getNickname() : null)
             .build();
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
+import com.kosta.readdam.dto.WriteCommentDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.service.my.MyWriteService;
 
@@ -27,5 +28,14 @@ public class MyWriteController {
 		String username = principalDetails.getUsername();
 		return ResponseEntity.ok(myWriteService.getMyWrites(username));
 	}
+	
+	 @GetMapping("/myWriteComment")
+	    public ResponseEntity<List<WriteCommentDto>> getMyWriteComments(
+	            @AuthenticationPrincipal PrincipalDetails principalDetails) throws Exception {
+
+	        String username = principalDetails.getUsername();
+	        List<WriteCommentDto> comments = myWriteService.getMyWriteComments(username);
+	        return ResponseEntity.ok(comments);
+	    }
 
 }
