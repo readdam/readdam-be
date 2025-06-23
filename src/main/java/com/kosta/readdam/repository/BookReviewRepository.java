@@ -1,5 +1,7 @@
 package com.kosta.readdam.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,4 +23,6 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Integer>
 		       "FROM BookReview r " +
 		       "WHERE r.book.bookIsbn = :bookIsbn AND r.isHide = false")
 		BookReviewStatsDto findStatsByBookIsbn(@Param("bookIsbn") String bookIsbn);
+	
+	List<BookReview> findByUserUsernameOrderByRegTimeDesc(String username);
 }

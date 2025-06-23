@@ -66,8 +66,11 @@ public class Order {
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
 
-    @Column(name = "fail_reason", length = 255)
-    private String failReason;
+    @Column(name = "cancel_reason", length = 255)
+    private String cancelReason;
+    
+    @Column(name = "cancel_at")
+    private LocalDateTime cancelAt;
 
     public OrderDto toDto() {
         return OrderDto.builder()
@@ -81,7 +84,8 @@ public class Order {
             .price(price)
             .requestedAt(requestedAt)
             .approvedAt(approvedAt)
-            .failReason(failReason)
+            .cancelReason(cancelReason)
+            .cancelAt(cancelAt)
             .build();
     }
 }

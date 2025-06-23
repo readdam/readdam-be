@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 public class OrderDto {
 
     private Long orderId;
-    private String orderUuid;       // Toss 요청용 UUID
-    private String orderName;       // 상품 이름 (ex. 500P 충전)
+    private String orderUuid;       
+    private String orderName;      
     private String username;
     private PaymentStatus paymentStatus;
     private String paymentKey;
@@ -27,7 +27,8 @@ public class OrderDto {
     private int price;
     private LocalDateTime requestedAt;
     private LocalDateTime approvedAt;
-    private String failReason;
+    private String cancelReason;
+    private LocalDateTime cancelAt;
 
     public Order toEntity(User user) {
         return Order.builder()
@@ -41,7 +42,8 @@ public class OrderDto {
             .price(price)
             .requestedAt(requestedAt)
             .approvedAt(approvedAt)
-            .failReason(failReason)
+            .cancelReason(cancelReason)
+            .cancelAt(cancelAt)
             .build();
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class WriteDto {
 
     private Integer writeId;
@@ -36,6 +36,9 @@ public class WriteDto {
     private String nickname; //상세페이지용 추가
     private String profileImg; //상세페이지용 추가
     private String introduce; //상세페이지용 추가
+    private Integer likeCnt;
+    private Integer commentCnt;
+
 
     public Write toEntity(User user) {
         return Write.builder()

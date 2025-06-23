@@ -3,6 +3,7 @@ package com.kosta.readdam.service.my;
 import java.util.List;
 
 import com.kosta.readdam.dto.PointDto;
+import com.kosta.readdam.dto.RefundRequest;
 import com.kosta.readdam.entity.User;
 
 public interface MyPointService {
@@ -13,5 +14,7 @@ public interface MyPointService {
 
 	String createOrder(User user, int point, int price) throws Exception;
 
-	void verifyAndSave(String paymentKey, String orderUuid, int point, User user);
+	void verifyAndSave(String paymentKey, String orderUuid, int point, User user) throws Exception;
+
+	void refund(RefundRequest req) throws Exception;
 }

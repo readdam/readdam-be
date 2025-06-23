@@ -24,6 +24,7 @@ public class BookReviewDto {
     private String comment;
     private LocalDateTime regTime;
     private Boolean isHide;
+    private BookDto book;
 
     public BookReview toEntity(User user, Book book) {
         return BookReview.builder()

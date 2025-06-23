@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kosta.readdam.dto.PointDto;
+import com.kosta.readdam.dto.RefundRequest;
 import com.kosta.readdam.entity.Order;
 import com.kosta.readdam.entity.Point;
 import com.kosta.readdam.entity.User;
@@ -72,7 +73,7 @@ public class MyPointServiceImpl implements MyPointService {
      */
     @Transactional
     @Override
-    public void verifyAndSave(String paymentKey, String orderUuid, int point, User user) {
+    public void verifyAndSave(String paymentKey, String orderUuid, int point, User user) throws Exception {
         // 주문 조회
         Order order = orderRepository.findByOrderUuid(orderUuid)
             .orElseThrow(() -> {
@@ -101,6 +102,39 @@ public class MyPointServiceImpl implements MyPointService {
             .reason(point + "P 충전")
             .build();
         pointRepository.save(p);
+    }
+    
+    @Override
+    @Transactional
+    public void refund(RefundRequest req) {
+        Order order = orderRepository.findById(req.getOrderId())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        if (order.getPaymentStatus() != PaymentStatus.APPROVED) {
+            throw new IllegalStateException("환불 처리 가능 상태가 아닙니다.");
+        }
+
+        // ① 충전 레코드 조회
+        Point chargeRecord = pointRepository
+            .findTopByOrderAndPointGreaterThanOrderByDateDesc(order, 0)
+            .orElseThrow(() -> new IllegalStateException("충전 내역을 찾을 수 없습니다."));
+
+        int chargedPoints = chargeRecord.getPoint();
+
+        // ② 주문 상태 업데이트
+        order.setPaymentStatus(PaymentStatus.CANCELLED);
+        order.setCancelReason(req.getReason());
+        order.setCancelAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        // ③ 포인트 환불 레코드 생성 (충전된 포인트 양만큼 마이너스)
+        Point refundPoint = Point.builder()
+            .user(order.getUser())
+            .point(-chargedPoints)        // ← price가 아니라 chargedPoints 사용
+            .reason("환불")
+            .order(order)
+            .build();
+        pointRepository.save(refundPoint);
     }
 
 }
