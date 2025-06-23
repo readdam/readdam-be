@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
+import com.kosta.readdam.dto.WriteShortDto;
+
 import lombok.*;
 
 @Entity
@@ -39,4 +41,15 @@ public class WriteShort {
 
     @Column(name = "is_hide", nullable = false)
     private Boolean isHide;
+    
+    public static WriteShortDto from(WriteShort entity) {
+        return WriteShortDto.builder()
+            .writeshortId(entity.getWriteshortId())
+            .content(entity.getContent())
+            .color(entity.getColor())
+            .regDate(entity.getRegDate())
+            .username(entity.getUser().getUsername()) 
+            .nickname(entity.getUser().getNickname()) 
+            .build();
+    }
 }

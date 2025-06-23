@@ -18,6 +18,7 @@ public class WriteShortDto {
     private String content;
     private String color;
     private String username;
+    private String nickname;
     private Integer eventId;
     private LocalDateTime regDate;
     private Boolean isHide;
@@ -31,6 +32,19 @@ public class WriteShortDto {
                 .event(event)
                 .regDate(regDate != null ? regDate : LocalDateTime.now())
                 .isHide(isHide != null ? isHide : false)
+                .build();
+    }
+    
+    public static WriteShortDto from(WriteShort entity) {
+        return WriteShortDto.builder()
+                .writeshortId(entity.getWriteshortId())
+                .content(entity.getContent())
+                .color(entity.getColor())
+                .username(entity.getUser().getUsername())  // User 엔터티에서 이름 추출
+                .nickname(entity.getUser().getNickname()) 
+                .eventId(entity.getEvent().getEventId())  // Event 엔터티에서 ID 추출
+                .regDate(entity.getRegDate())
+                .isHide(entity.getIsHide())
                 .build();
     }
 }
