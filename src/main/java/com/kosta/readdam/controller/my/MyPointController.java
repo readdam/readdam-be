@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ChargeRequest;
 import com.kosta.readdam.dto.PointDto;
+import com.kosta.readdam.dto.RefundRequest;
 import com.kosta.readdam.dto.UserDto;
 import com.kosta.readdam.service.my.MyPointService;
 import com.kosta.readdam.util.TossService;
@@ -107,4 +108,14 @@ public class MyPointController {
 		UserDto dto = principal.getUser().toDto();
 		return ResponseEntity.ok(dto);
 	}
+	
+	@PostMapping("/refund")
+    public ResponseEntity<?> refundPoint(@RequestBody RefundRequest req) {
+        try {
+        	myPointService.refund(req);
+            return ResponseEntity.ok("환불 완료");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("환불 실패: " + e.getMessage());
+        }
+    }
 }
