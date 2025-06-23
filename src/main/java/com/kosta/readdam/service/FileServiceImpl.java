@@ -36,7 +36,7 @@ public class FileServiceImpl implements FileService {
                 try {
                     Files.createDirectories(path.getParent());
                     file.transferTo(path);
-                    paths.add("/upload/" + fileName); // 웹 경로 (프론트에서 접근 가능하도록 설정 필요)
+                    paths.add(fileName); // 웹 경로 (프론트에서 접근 가능하도록 설정 필요)
                 } catch (IOException e) {
                     throw new RuntimeException("파일 저장 실패: " + fileName, e);
                 }

@@ -2,14 +2,18 @@ package com.kosta.readdam.service.place;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.PlaceRoomDto;
 import com.kosta.readdam.dto.PlaceTimeDto;
+import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.entity.Place;
 import com.kosta.readdam.entity.PlaceRoom;
+import com.kosta.readdam.repository.place.PlaceDslRepository;
 import com.kosta.readdam.repository.place.PlaceRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeRepository;
@@ -23,6 +27,8 @@ public class PlaceServiceImpl implements PlaceService {
     private final PlaceRepository placeRepository;
     private final PlaceRoomRepository placeRoomRepository;
     private final PlaceTimeRepository placeTimeRepository;
+    private final PlaceDslRepository placeDslRepository;
+
     
 	@Override
 	@Transactional
@@ -43,5 +49,10 @@ public class PlaceServiceImpl implements PlaceService {
 	    }
 
 	}
+	
+	@Override
+    public Page<PlaceSummaryDto> getPlaceList(Pageable pageable, String keyword, String filterBy) {
+        return placeDslRepository.findPlaceList(pageable, keyword, filterBy);
+    }
 
 }
