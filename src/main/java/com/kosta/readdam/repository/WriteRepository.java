@@ -13,4 +13,5 @@ public interface WriteRepository extends JpaRepository<Write, Integer>, WriteDsl
 	@Query("SELECT w FROM Write w WHERE w.isHide = false ORDER BY w.regDate DESC")
 	List<Write> findLatest(Pageable pageable);
 
+	List<Write> findByUserUsernameOrderByRegDateDesc(String username);
 }
