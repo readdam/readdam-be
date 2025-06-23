@@ -110,9 +110,9 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 				 .collect(Collectors.toList());
 			
 			String thumbnail = images.isEmpty() ? null : images.get(0);
-			int likeCount = likeMap.getOrDefault(id, 0);
+			Integer likeCount = likeMap.getOrDefault(id, 0);
 
-			return new PlaceSummaryDto(id, name, location, introduce, phone, roomCount, tags, thumbnail,
+			return new PlaceSummaryDto(id, name, location, introduce, phone, roomCount, tags, thumbnail, images,
 					weekdayMap.getOrDefault(id, List.of()), weekendMap.getOrDefault(id, List.of()), likeCount);
 		}).collect(Collectors.toList());
 
