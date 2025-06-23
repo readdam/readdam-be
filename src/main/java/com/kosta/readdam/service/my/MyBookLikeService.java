@@ -2,10 +2,10 @@ package com.kosta.readdam.service.my;
 
 import java.util.List;
 
-import com.kosta.readdam.dto.BookLikeDto;
+import com.kosta.readdam.dto.BookDto;
 
 public interface MyBookLikeService {
 
-	List<BookLikeDto> getLikedBooksByUsername(String username) throws Exception;
-
+	List<BookDto> getLikedBooksByUsername(String username) throws Exception;
+	
 }
