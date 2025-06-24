@@ -17,10 +17,10 @@ import lombok.Data;
 public class RoomDto {
 	private Integer roomId;
     private String name;
-    private String description;
+    private String introduce;
     private String size;
-    private int minCapacity;
-    private int maxCapacity;
+    private Integer minPerson;
+    private Integer maxPerson;
     private List<String> images;
     private Map<String, Boolean> facilities;
     
