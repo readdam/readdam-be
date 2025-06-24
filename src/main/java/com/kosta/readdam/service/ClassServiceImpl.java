@@ -2,6 +2,7 @@ package com.kosta.readdam.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,16 +32,25 @@ public class ClassServiceImpl implements ClassService {
 	private String iuploadPath;
 	
 	
-	private String saveImage(MultipartFile ifile) throws IOException {
-	    if (ifile != null && !ifile.isEmpty()) {
-	        String filename = UUID.randomUUID() + "_" + ifile.getOriginalFilename();
-	        File dest = new File(iuploadPath, filename);
-	        ifile.transferTo(dest);
-	        return filename;
-	    }
-	    return null;
-	}
+//	private String saveImage(MultipartFile ifile) throws IOException {
+//	    if (ifile != null && !ifile.isEmpty()) {
+//	        String filename = UUID.randomUUID() + "_" + ifile.getOriginalFilename();
+//	        File dest = new File(iuploadPath, filename);
+//	        ifile.transferTo(dest);
+//	        return filename;
+//	    }
+//	    return null;
+//	}
 
+	private void mapImageToDto(ClassDto dto, String fieldName, String savedFilename) {
+		try {
+			String setterName = "set" + Character.toUpperCase(fieldName.charAt(0))+fieldName.substring(1);
+			Method setter = ClassDto.class.getMethod(setterName, String.class);
+			setter.invoke(dto, savedFilename);
+		}catch (Exception e) {
+			System.err.println("이미지매핑 실패: "+ fieldName);
+		}
+	}
 	
 	@Override
 	@Transactional
@@ -48,23 +58,25 @@ public class ClassServiceImpl implements ClassService {
 		
 		for(Map.Entry<String, MultipartFile> entry : imageMap.entrySet()) {
 			String field = entry.getKey();	//"이미지이름"
-			String savedFilename = saveImage(entry.getValue());
+			MultipartFile file = entry.getValue();
 			
-			if(savedFilename != null) {
-				// 각 이미지 타입에 따라 DTO에 매핑
-				switch(field) {
-					case "mainImg" : classDto.setMainImg(savedFilename); break;
-					case "leaderImg": classDto.setLeaderImg(savedFilename); break;
-					case "round1Img": classDto.setRound1Img(savedFilename); break;
-					case "round1Bookimg" : classDto.setRound1Bookimg(savedFilename); break;
-					case "round2Img" : classDto.setRound2Img(savedFilename); break;
-					case "round2Bookimg" : classDto.setRound2Bookimg(savedFilename); break;
-					case "round3Img" : classDto.setRound3Img(savedFilename); break;
-					case "round3Bookimg" : classDto.setRound3Bookimg(savedFilename); break;
-					case "round4Img" : classDto.setRound4Img(savedFilename); break;
-					case "round4Bookimg" : classDto.setRound4Bookimg(savedFilename); break;
-				}
-			}
+			if (file != null && !file.isEmpty()) {
+	            // 업로드할 파일명 생성
+	            String savedFilename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+	            // 저장 경로 확보 및 생성
+	            File uploadDir = new File(iuploadPath);
+	            if (!uploadDir.exists()) {
+	                uploadDir.mkdirs();
+	            }
+
+	            // 파일 실제 저장
+	            File dest = new File(uploadDir, savedFilename);
+	            file.transferTo(dest);
+
+	            // DTO에 저장된 파일명 매핑
+	            mapImageToDto(classDto, field, savedFilename);
+	        }
 		}
 		
 		ClassEntity cEntity = classDto.toEntity(leader);
@@ -76,7 +88,7 @@ public class ClassServiceImpl implements ClassService {
 
 	@Override
 	public ClassDto detailClass(Integer classId) throws Exception {
-		ClassEntity cEntity = classRepository.findById(classId).orElseThrow(()->new Exception("글번호 오류"));
+		ClassEntity cEntity = classRepository.findById(classId).orElseThrow(()->new Exception("모임글번호 오류"));
 		System.out.println(cEntity.getClassIntro());
 		return cEntity.toDto();
 	}

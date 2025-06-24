@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 import com.kosta.readdam.dto.ClassDto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "`class`")
@@ -44,7 +44,7 @@ public class ClassEntity {
     @Column(columnDefinition = "TEXT")
     private String leaderIntro;
 
-    private LocalDateTime round1Date;
+    private LocalDate round1Date;
     private String round1PlaceName;
     private String round1PlaceLoc;
     private String round1Img;
@@ -56,7 +56,7 @@ public class ClassEntity {
     private Double round1Lat;
     private Double round1Log;
 
-    private LocalDateTime round2Date;
+    private LocalDate round2Date;
     private String round2PlaceName;
     private String round2PlaceLoc;
     private String round2Img;
@@ -68,7 +68,7 @@ public class ClassEntity {
     private Double round2Lat;
     private Double round2Log;
 
-    private LocalDateTime round3Date;
+    private LocalDate round3Date;
     private String round3PlaceName;
     private String round3PlaceLoc;
     private String round3Img;
@@ -80,7 +80,7 @@ public class ClassEntity {
     private Double round3Lat;
     private Double round3Log;
 
-    private LocalDateTime round4Date;
+    private LocalDate round4Date;
     private String round4PlaceName;
     private String round4PlaceLoc;
     private String round4Img;

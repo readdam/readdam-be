@@ -1,6 +1,6 @@
 package com.kosta.readdam.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -39,8 +39,8 @@ public class ClassDto {
     private String leaderImg;
     private String leaderIntro;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime round1Date;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate round1Date;
     private String round1PlaceName;
     private String round1PlaceLoc;
     private String round1Img;
@@ -51,8 +51,8 @@ public class ClassDto {
     private Double round1Lat;
     private Double round1Log;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime round2Date;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate round2Date;
     private String round2PlaceName;
     private String round2PlaceLoc;
     private String round2Img;
@@ -63,8 +63,8 @@ public class ClassDto {
     private Double round2Lat;
     private Double round2Log;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime round3Date;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate round3Date;
     private String round3PlaceName;
     private String round3PlaceLoc;
     private String round3Img;
@@ -75,8 +75,8 @@ public class ClassDto {
     private Double round3Lat;
     private Double round3Log;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime round4Date;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate round4Date;
     private String round4PlaceName;
     private String round4PlaceLoc;
     private String round4Img;
