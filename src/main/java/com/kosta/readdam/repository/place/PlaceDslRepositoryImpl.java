@@ -83,7 +83,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 
 						place.img1)
 				.from(place).leftJoin(room).on(room.place.placeId.eq(place.placeId)).where(condition) // 필터 조건
-				.groupBy(place.placeId).orderBy(place.placeId.asc()).offset(pageable.getOffset())
+				.groupBy(place.placeId).orderBy(place.placeId.desc()).offset(pageable.getOffset())
 				.limit(pageable.getPageSize()).fetch();
 
 		// DTO 변환
