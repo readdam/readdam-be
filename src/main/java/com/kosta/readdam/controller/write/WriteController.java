@@ -27,8 +27,8 @@ import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
-import com.kosta.readdam.service.WriteCommentService;
-import com.kosta.readdam.service.WriteService;
+import com.kosta.readdam.service.write.WriteCommentService;
+import com.kosta.readdam.service.write.WriteService;
 import com.kosta.readdam.util.PageInfo2;
 @RestController
 

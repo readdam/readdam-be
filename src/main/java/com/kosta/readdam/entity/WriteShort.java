@@ -14,11 +14,14 @@ import javax.persistence.Table;
 
 import com.kosta.readdam.dto.WriteShortDto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+
 
 @Entity
 @Table(name = "write_short")
@@ -53,7 +56,7 @@ public class WriteShort {
 
     @Column(name = "is_hide", nullable = false)
     private Boolean isHide;
-    
+
     public WriteShortDto toDto(long likeCount) {
         return WriteShortDto.builder()
             .writeshortId(this.writeshortId)
@@ -65,6 +68,17 @@ public class WriteShort {
             .isHide(this.isHide)
             .eventTitle(this.event.getTitle())
             .likeCount(likeCount)
+            .build();
+}
+
+    public static WriteShortDto from(WriteShort entity) {
+        return WriteShortDto.builder()
+            .writeshortId(entity.getWriteshortId())
+            .content(entity.getContent())
+            .color(entity.getColor())
+            .regDate(entity.getRegDate())
+            .username(entity.getUser().getUsername()) 
+            .nickname(entity.getUser().getNickname()) 
             .build();
     }
 }

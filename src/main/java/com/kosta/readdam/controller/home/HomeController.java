@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.dto.WriteDto;
-import com.kosta.readdam.service.WriteService;
+import com.kosta.readdam.service.write.WriteService;
 
 import lombok.RequiredArgsConstructor;
 
