@@ -1,5 +1,9 @@
 package com.kosta.readdam.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.kosta.readdam.dto.ReservationDto;
@@ -58,6 +63,15 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status;
+
+    // ↓ ReservationDetail 과의 매핑 추가 ↓
+    @OneToMany(
+        mappedBy = "reservation",
+        cascade = CascadeType.REMOVE,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private List<ReservationDetail> details = new ArrayList<>();
 
     public ReservationDto toDto() {
         return ReservationDto.builder()

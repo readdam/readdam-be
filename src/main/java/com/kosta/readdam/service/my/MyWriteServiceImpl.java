@@ -46,4 +46,11 @@ public class MyWriteServiceImpl implements MyWriteService{
                 .map(WriteCommentDto::from)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public WriteDto getWriteDetail(Integer writeId) throws Exception {
+        Write write = writeRepository.findById(writeId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 글이 없습니다. writeId=" + writeId));
+        return write.toDto();
+    }
 }

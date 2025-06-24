@@ -1,11 +1,16 @@
 package com.kosta.readdam.dto;
 
+import java.time.LocalDateTime;
+
 import com.kosta.readdam.entity.Event;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.WriteShort;
-import lombok.*;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -22,8 +27,13 @@ public class WriteShortDto {
     private Integer eventId;
     private LocalDateTime regDate;
     private Boolean isHide;
+
     private Integer likes;   // 좋아요 수
     private Boolean isLiked; // 로그인 유저가 좋아요 눌렀는지 
+
+    
+    //private String eventTitle;
+  //  private Long likeCount;
 
     public WriteShort toEntity(User user, Event event) {
         return WriteShort.builder()
@@ -36,6 +46,14 @@ public class WriteShortDto {
                 .isHide(isHide != null ? isHide : false)
                 .build();
     }
+    
+
+
+//    public WriteShortDto(String eventTitle, String content, long likeCount) {
+//        this.eventTitle = eventTitle;
+//        this.content = content;
+//        this.likeCount = likeCount;
+//    }
     
     // 일반 목록용
     public static WriteShortDto from(WriteShort entity) {
@@ -67,5 +85,6 @@ public class WriteShortDto {
                 .likes(entity.getLikes()) // 좋아요 수 포함
                 .isLiked(isLiked) // 오버로딩하여 외부에서 받은 값 사용
                 .build();
+
     }
 }

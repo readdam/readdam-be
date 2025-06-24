@@ -2,11 +2,25 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import com.kosta.readdam.dto.WriteShortDto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
 
 @Entity
 @Table(name = "write_short")
@@ -41,11 +55,29 @@ public class WriteShort {
 
     @Column(name = "is_hide", nullable = false)
     private Boolean isHide;
+
     
     @Column(name = "likes", nullable = false)
     @Builder.Default
     private Integer likes = 0;  // 좋아요 수 기본값 0으로 설정
     
+
+
+//    public WriteShortDto toDto(long likeCount) {
+//        return WriteShortDto.builder()
+//            .writeshortId(this.writeshortId)
+//            .content(this.content)
+//            .color(this.color)
+//            .username(this.user.getUsername())
+//            .eventId(this.event.getEventId())
+//            .regDate(this.regDate)
+//            .isHide(this.isHide)
+//            .eventTitle(this.event.getTitle())
+//            .likeCount(likeCount)
+//            .build();
+//}
+
+
     public static WriteShortDto from(WriteShort entity) {
         return WriteShortDto.builder()
             .writeshortId(entity.getWriteshortId())

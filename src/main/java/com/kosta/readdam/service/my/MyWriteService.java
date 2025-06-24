@@ -10,4 +10,6 @@ public interface MyWriteService {
 	List<WriteDto> getMyWrites(String username) throws Exception;
 
 	List<WriteCommentDto> getMyWriteComments(String username) throws Exception;
+	
+	WriteDto getWriteDetail(Integer writeId) throws Exception;
 }
