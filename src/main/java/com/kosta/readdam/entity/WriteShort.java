@@ -42,6 +42,10 @@ public class WriteShort {
     @Column(name = "is_hide", nullable = false)
     private Boolean isHide;
     
+    @Column(name = "likes", nullable = false)
+    @Builder.Default
+    private Integer likes = 0;  // 좋아요 수 기본값 0으로 설정
+    
     public static WriteShortDto from(WriteShort entity) {
         return WriteShortDto.builder()
             .writeshortId(entity.getWriteshortId())
@@ -50,6 +54,7 @@ public class WriteShort {
             .regDate(entity.getRegDate())
             .username(entity.getUser().getUsername()) 
             .nickname(entity.getUser().getNickname()) 
+            .likes(entity.getLikes())
             .build();
     }
 }

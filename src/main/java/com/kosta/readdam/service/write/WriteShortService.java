@@ -8,6 +8,6 @@ import com.kosta.readdam.entity.User;
 public interface WriteShortService {
 
 	WriteShortDto writePostcard(WriteShortDto writeShortDto, User user); // 등록
-    Map<String, Object> getWriteShortListByCurrentEvent(int page, int size);
-
+    Map<String, Object> getWriteShortListByCurrentEvent(int page, int size, String username);
+    boolean toggleLike(String username, Integer writeshortId);
 }
