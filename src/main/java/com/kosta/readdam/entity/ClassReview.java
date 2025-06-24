@@ -43,6 +43,7 @@ public class ClassReview {
     private String img;
 
     public ClassReviewDto toDto() {
+    	ClassEntity c = this.classEntity;
         return ClassReviewDto.builder()
                 .classReviewId(classReviewId)
                 .classId(classEntity.getClassId())
@@ -52,6 +53,13 @@ public class ClassReview {
                 .isHide(isHide)
                 .rating(rating)
                 .img(img)
+                .title(c.getTitle())
+                .mainImg(c.getMainImg())
+                .round1Date(c.getRound1Date())
+                .round1PlaceLoc(c.getRound1PlaceLoc())
+                .tag1(c.getTag1())
+                .tag2(c.getTag2())
+                .tag3(c.getTag3())
                 .build();
     }
 }

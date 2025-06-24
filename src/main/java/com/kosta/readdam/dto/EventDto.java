@@ -25,4 +25,13 @@ public class EventDto {
                 .endTime(endTime)
                 .build();
     }
+    
+    public static EventDto from(Event event) {
+        return EventDto.builder()
+                .eventId(event.getEventId())
+                .title(event.getTitle())         
+                .startTime(event.getStartTime())   
+                .endTime(event.getEndTime())      
+                .build();
+    }
 }

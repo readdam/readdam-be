@@ -1,4 +1,4 @@
-package com.kosta.readdam.service;
+package com.kosta.readdam.service.write;
 
 import java.util.List;
 import java.util.stream.Collectors;
