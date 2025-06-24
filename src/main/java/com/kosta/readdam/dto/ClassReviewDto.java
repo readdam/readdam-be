@@ -5,6 +5,7 @@ import com.kosta.readdam.entity.ClassReview;
 import com.kosta.readdam.entity.User;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,7 +26,7 @@ public class ClassReviewDto {
     
     private String title;            
     private String mainImg;          
-    private LocalDateTime round1Date; 
+    private LocalDate round1Date; 
     private String round1PlaceLoc;    
     private String tag1;
     private String tag2;
