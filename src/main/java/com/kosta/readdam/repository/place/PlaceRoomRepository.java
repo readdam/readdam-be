@@ -11,5 +11,5 @@ import com.kosta.readdam.entity.PlaceRoom;
 @Repository
 public interface PlaceRoomRepository extends JpaRepository<PlaceRoom, Integer> {
     List<PlaceRoom> findByPlace(Place place);
-    List<PlaceRoom> findByPlaceId(Integer placeId);    
+    List<PlaceRoom> findByPlace_PlaceId(Integer placeId);    
 }

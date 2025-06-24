@@ -3,10 +3,12 @@ package com.kosta.readdam.dto.place;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class PlaceEditResponseDto {
     private String name;
     private String location;

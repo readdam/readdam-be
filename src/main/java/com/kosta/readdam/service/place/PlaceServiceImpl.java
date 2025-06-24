@@ -68,11 +68,10 @@ public class PlaceServiceImpl implements PlaceService {
 	        .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
 
 	    // ✅ 방 정보
-	    List<RoomDto> rooms = placeRoomRepository.findByPlaceId(placeId)
+	    List<RoomDto> rooms = placeRoomRepository.findByPlace_PlaceId(placeId)
 	        .stream().map(RoomDto::from).collect(Collectors.toList());
 
 	    // ✅ 시간대
-	 // ✅ 이렇게 수정
 	    List<String> weekdayTimes = placeTimeDslRepository.findTimeListByPlaceIdAndIsWeekend(placeId, false);
 	    List<String> weekendTimes = placeTimeDslRepository.findTimeListByPlaceIdAndIsWeekend(placeId, true);
 
@@ -82,20 +81,26 @@ public class PlaceServiceImpl implements PlaceService {
 	        place.getTag6(), place.getTag7(), place.getTag8(), place.getTag9(), place.getTag10()
 	    ).filter(Objects::nonNull).collect(Collectors.toList());
 
-	    return PlaceEditResponseDto.builder()
-	    	    .name(place.getName())
-	    	    .location(extractLocation(place.getLocation()))
-	    	    .phone(place.getPhone())
-	    	    .introduce(place.getIntroduce())
-	    	    .lat(place.getLat())
-	    	    .log(place.getLog())
-	    	    .tags(tags)
-	    	    .images(imageRepository.findPathsByPlaceId(placeId)) // ❗이게 실제로 있어야 함
-	    	    .rooms(rooms)
-	    	    .weekdayTimes(weekdayTimes)
-	    	    .weekendTimes(weekendTimes)
-	    	    .build();
+	    // ✅ 이미지
+	    List<String> images = Stream.of(
+	        place.getImg1(), place.getImg2(), place.getImg3(), place.getImg4(), place.getImg5(),
+	        place.getImg6(), place.getImg7(), place.getImg8(), place.getImg9(), place.getImg10()
+	    ).filter(Objects::nonNull).collect(Collectors.toList());
 
+	    return PlaceEditResponseDto.builder()
+	        .name(place.getName())
+	        .location(place.getLocation())
+	        .phone(place.getPhone())
+	        .introduce(place.getIntroduce())
+	        .lat(place.getLat())
+	        .log(place.getLog())
+	        .tags(tags)
+	        .images(images)
+	        .rooms(rooms)
+	        .weekdayTimes(weekdayTimes)
+	        .weekendTimes(weekendTimes)
+	        .build();
 	}
+
 
 }

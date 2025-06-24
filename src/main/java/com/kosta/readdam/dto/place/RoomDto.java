@@ -15,6 +15,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class RoomDto {
+	private Integer roomId;
     private String name;
     private String description;
     private String size;
@@ -40,6 +41,7 @@ public class RoomDto {
         facilities.put("projector", room.getHasProjector());
 
         return new RoomDto(
+        	room.getPlaceRoomId(),
             room.getName(),
             room.getIntroduce(),
             room.getSize(),
