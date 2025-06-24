@@ -22,6 +22,14 @@ public class ClassReviewDto {
     private Boolean isHide;
     private Integer rating;
     private String img;
+    
+    private String title;            
+    private String mainImg;          
+    private LocalDateTime round1Date; 
+    private String round1PlaceLoc;    
+    private String tag1;
+    private String tag2;
+    private String tag3;
 
     public ClassReview toEntity(User user, ClassEntity classEntity) {
         return ClassReview.builder()
