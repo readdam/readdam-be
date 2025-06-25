@@ -6,9 +6,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.PlaceRoomDto;
 import com.kosta.readdam.dto.PlaceTimeDto;
+import com.kosta.readdam.dto.place.PlaceEditResponseDto;
+import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.service.FileService;
 import com.kosta.readdam.service.place.PlaceService;
 
@@ -72,4 +80,21 @@ public class PlaceController {
         placeService.registerPlace(placeDto, roomDtoList, sharedTimeSlots);
         return ResponseEntity.ok("장소 등록 완료");
     }
+    
+    @GetMapping(value = "/placeList")
+    public ResponseEntity<Page<PlaceSummaryDto>> getPlaceList(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String filterBy
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(placeService.getPlaceList(pageable, keyword, filterBy));
+    }
+    
+    @GetMapping("/place/{placeId}")
+    public ResponseEntity<PlaceEditResponseDto> getPlaceDetail(@PathVariable Integer placeId) {
+        return ResponseEntity.ok(placeService.getPlaceDetail(placeId));
+    }
+
 }
