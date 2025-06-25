@@ -86,6 +86,10 @@ public class ClassDto {
     private String round4Bookwriter;
     private Double round4Lat;
     private Double round4Log;
+    
+    private Integer likeCount;
+    private Boolean liked;
+    private Integer currentParticipants;
 
     public ClassEntity toEntity(User leader) {
         return ClassEntity.builder()

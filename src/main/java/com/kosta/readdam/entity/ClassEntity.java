@@ -147,6 +147,7 @@ public class ClassEntity {
                 .round4Bookwriter(round4Bookwriter)
                 .round4Lat(round4Lat)
                 .round4Log(round4Log)
+                
                 .build();
 	}
 }
