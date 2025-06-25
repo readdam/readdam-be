@@ -32,7 +32,10 @@ public class Place {
     private String name;
 
     @Column(length = 255)
-    private String location;
+    private String basicAddress;
+
+    @Column(length = 255)
+    private String detailAddress;
 
     @Column(precision = 9, scale = 6)
     private Double lat;
@@ -110,7 +113,8 @@ public class Place {
         return PlaceDto.builder()
                 .placeId(this.placeId)  // PlaceDto에 id 필드가 있을 것
                 .name(this.name)
-                .location(this.location)
+                .basicAddress(this.basicAddress)
+                .detailAddress(this.detailAddress)
                 .phone(this.phone)
                 .introduce(this.introduce)
                 .lat(this.lat)
@@ -140,7 +144,8 @@ public class Place {
     
     public void updateFromDto(PlaceDto dto) {
         this.name = dto.getName();
-        this.location = dto.getLocation();
+        this.basicAddress = dto.getBasicAddress();
+        this.detailAddress = dto.getDetailAddress();
         this.phone = dto.getPhone();
         this.introduce = dto.getIntroduce();
         this.lat = dto.getLat();

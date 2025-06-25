@@ -94,7 +94,8 @@ public class PlaceServiceImpl implements PlaceService {
 
 	    return PlaceEditResponseDto.builder()
 	        .name(place.getName())
-	        .location(place.getLocation())
+	        .basicAddress(place.getBasicAddress())
+	        .detailAddress(place.getDetailAddress())
 	        .phone(place.getPhone())
 	        .introduce(place.getIntroduce())
 	        .lat(place.getLat())
