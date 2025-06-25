@@ -133,15 +133,20 @@ public class PlaceServiceImpl implements PlaceService {
 	            updatedRooms.add(room);
 	        } else {
 	            // 추가
+	        	roomDto.setPlaceRoomId(null);
 	            PlaceRoom newRoom = roomDto.toEntity(place);
 	            placeRoomRepository.save(newRoom);
 	            updatedRooms.add(newRoom);
 	        }
 	    }
-
+	    
 	    // 4. 기존에만 있던 방 삭제
 	    for (PlaceRoom oldRoom : existingRooms) {
 	        if (!incomingIds.contains(oldRoom.getPlaceRoomId())) {
+	            // 🔥 먼저 시간대 삭제
+	            placeTimeRepository.deleteByPlaceRoom_PlaceRoomId(oldRoom.getPlaceRoomId());
+
+	            // ✅ 그 다음 방 삭제
 	            placeRoomRepository.delete(oldRoom);
 	        }
 	    }

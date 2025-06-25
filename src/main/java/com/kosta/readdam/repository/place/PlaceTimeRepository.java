@@ -33,5 +33,8 @@ public interface PlaceTimeRepository extends JpaRepository<PlaceTime, Integer> {
     @Query("DELETE FROM PlaceTime pt WHERE pt.placeRoom.placeRoomId = :placeRoomId")
     void deleteByPlaceRoomId(@Param("placeRoomId") Integer placeRoomId);
     
-
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PlaceTime pt WHERE pt.placeRoom.placeRoomId = :roomId")
+    void deleteByPlaceRoom_PlaceRoomId(@Param("roomId") Integer roomId);
 }
