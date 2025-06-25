@@ -6,7 +6,7 @@ import com.kosta.readdam.dto.WriteShortDto;
 
 public interface MyWriteShortService {
 
-	List<WriteShortDto> getMyWriteShorts(String username);
+	List<WriteShortDto> getMyWriteShorts(String username)throws Exception;
 
-    WriteShortDto toggleLike(Integer writeshortId, String username);
+    WriteShortDto toggleLike(Integer writeshortId, String username)throws Exception;
 }

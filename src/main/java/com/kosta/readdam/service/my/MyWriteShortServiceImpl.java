@@ -31,7 +31,7 @@ public class MyWriteShortServiceImpl implements MyWriteShortService {
     /** 1. 내 글 전체 조회 */
     @Override
     @Transactional(readOnly = true)
-    public List<WriteShortDto> getMyWriteShorts(String username) {
+    public List<WriteShortDto> getMyWriteShorts(String username) throws Exception{
         User me = userRepository.findByUsername(username)
             .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
@@ -51,7 +51,7 @@ public class MyWriteShortServiceImpl implements MyWriteShortService {
     /** 2. 좋아요 토글 후 최신 DTO 반환 */
     @Override
     @Transactional
-    public WriteShortDto toggleLike(Integer writeshortId, String username) {
+    public WriteShortDto toggleLike(Integer writeshortId, String username)throws Exception {
         WriteShort ws = writeShortRepository.findById(writeshortId)
             .orElseThrow(() -> new EntityNotFoundException("글을 찾을 수 없습니다."));
         User me = userRepository.findByUsername(username)

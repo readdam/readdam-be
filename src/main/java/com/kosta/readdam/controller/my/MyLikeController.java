@@ -16,6 +16,7 @@ import com.kosta.readdam.dto.BookDto;
 import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.service.my.MyBookLikeService;
+import com.kosta.readdam.service.my.MyClassLikeService;
 import com.kosta.readdam.service.my.MyPlaceLikeService;
 import com.kosta.readdam.service.my.MyWriteLikeService;
 
@@ -31,6 +32,8 @@ public class MyLikeController {
     private final MyBookLikeService myBookLikeService;
     private final MyWriteLikeService myWriteLikeService;
     private final MyPlaceLikeService myPlaceLikeService;
+    private final MyClassLikeService myClassLikeService;
+
     
     /** 좋아요한 책 목록 조회 */
     @GetMapping("/likeBook")
@@ -114,6 +117,31 @@ public class MyLikeController {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body("좋아요 토글 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/likeClass")
+    public ResponseEntity<?> getLikedClasses(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        String username = principalDetails.getUsername();
+        try {
+            return ResponseEntity.ok(myClassLikeService.getLikedClasses(username));
+        } catch (Exception e) {
+            log.error("좋아요 모임 조회 실패", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("좋아요 모임 조회 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/class-like")
+    public ResponseEntity<?> toggleClassLike(
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
+            @RequestParam Integer classId
+    ) {
+        String username = principalDetails.getUsername();
+        try {
+            return ResponseEntity.ok(myClassLikeService.toggleLike(username, classId));
+        } catch (Exception e) {
+            log.error("모임 좋아요 토글 실패", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("토글 중 오류 발생: " + e.getMessage());
         }
     }
 }
