@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,87 +26,124 @@ import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
+import com.kosta.readdam.repository.WriteLikeRepository;
 import com.kosta.readdam.service.write.WriteCommentService;
 import com.kosta.readdam.service.write.WriteService;
 import com.kosta.readdam.util.PageInfo2;
-@RestController
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@RequiredArgsConstructor
+@Slf4j
 public class WriteController {
-	@Autowired
-	private WriteService writeService;
-	
-	@Autowired
-	private WriteCommentService writeCommentService;
-	
+
+	private final WriteService writeService;
+	private final WriteCommentService writeCommentService;
+	private final WriteLikeRepository writeLikeRepository;
+
 	@PostMapping("/my/write")
 	public ResponseEntity<WriteDto> wirte(@ModelAttribute WriteDto writeDto,
-			@RequestParam(name="ifile", required=false) MultipartFile ifile, 
-	        @AuthenticationPrincipal PrincipalDetails principalDetails) {
+			@RequestParam(name = "ifile", required = false) MultipartFile ifile,
+			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		try {
-			User user = principalDetails.getUser(); //jwt 인증 사용자
+			User user = principalDetails.getUser(); // jwt 인증 사용자
 			Integer WriteId = writeService.writeDam(writeDto, ifile, user);
 			WriteDto nWriteDto = writeService.detailWrite(WriteId);
 			return new ResponseEntity<>(nWriteDto, HttpStatus.OK);
-		}catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@GetMapping("/writeDetail/{id}")
-	public ResponseEntity<Map<String,Object>> detail(
-	        @PathVariable("id") Integer writeId, 
-	        @AuthenticationPrincipal PrincipalDetails principalDetails) {
+	public ResponseEntity<Map<String, Object>> detail(@PathVariable("id") Integer writeId,
+			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		try {
 			WriteDto nWriteDto = writeService.detailWrite(writeId);
-	        List<WriteCommentDto> comments = writeCommentService.findByWriteId(writeId);
+			List<WriteCommentDto> comments = writeCommentService.findByWriteId(writeId);
 
-			Map<String,Object> res = new HashMap<>();
+	        boolean liked = false;
+	        if (principalDetails != null) {
+	            liked = writeService.isLiked(principalDetails.getUsername(), writeId);
+	        }
+	        
+			Map<String, Object> res = new HashMap<>();
 			res.put("write", nWriteDto);
 			res.put("comments", comments);
+	        res.put("liked", liked); // 좋아요 여부도 포함
 			return new ResponseEntity<>(res, HttpStatus.OK);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	@PostMapping("/my/comments")
-	public ResponseEntity<?> saveComment(
-	    @RequestBody WriteCommentDto dto,
-	    @AuthenticationPrincipal PrincipalDetails principal
-	) {
+	public ResponseEntity<?> saveComment(@RequestBody WriteCommentDto dto,
+			@AuthenticationPrincipal PrincipalDetails principal) {
+		try {
+			if (principal == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+			}
+
+			dto.setUsername(principal.getUsername()); // 작성자 주입
+			writeCommentService.save(dto); // 실제 저장 로직
+
+			return new ResponseEntity<>("댓글 등록 성공", HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping("/writeList")
+	public ResponseEntity<Map<String, Object>> getWriteList(@RequestBody WriteSearchRequestDto requestDto) {
+		int size = 10;
+		Pageable pageable = PageRequest.of(requestDto.getPage() - 1, size);
+
+		Page<Write> pageResult = writeService.searchWrites(requestDto, pageable);
+
+		List<WriteDto> writeList = pageResult.getContent().stream().map(WriteDto::from).collect(Collectors.toList());
+
+		PageInfo2 pageInfo = PageInfo2.from(pageResult);
+
+		try {
+			Map<String, Object> res = new HashMap<>();
+			res.put("writeList", writeList);
+			res.put("pageInfo", pageInfo);
+			return new ResponseEntity<>(res, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	// 좋아요 여부 조회용
+	@GetMapping("/write-likeCheck")
+	public ResponseEntity<Boolean> checkLike(@AuthenticationPrincipal PrincipalDetails principalDetails,
+	                                         @RequestParam Integer writeId) {
 	    try {
-	        if (principal == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-	        }
-
-	        dto.setUsername(principal.getUsername()); // 작성자 주입
-	        writeCommentService.save(dto); // 실제 저장 로직
-
-	        return new ResponseEntity<>("댓글 등록 성공", HttpStatus.OK);
+	        String username = principalDetails.getUsername();
+	        boolean liked = writeService.isLiked(username, writeId);
+	        return ResponseEntity.ok(liked);
 	    } catch (Exception e) {
-	        e.printStackTrace();
+	        log.error("좋아요 여부 확인 실패", e);
 	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	    }
 	}
 	
-	@PostMapping("/writeList")
-    public ResponseEntity<Map<String, Object>> getWriteList(@RequestBody WriteSearchRequestDto requestDto) {
-        int size = 10;
-        Pageable pageable = PageRequest.of(requestDto.getPage() - 1, size);
-
-        Page<Write> pageResult = writeService.searchWrites(requestDto, pageable);
-
-        List<WriteDto> writeList = pageResult.getContent().stream()
-        	    .map(WriteDto::from)
-        	    .collect(Collectors.toList());
-
-        PageInfo2 pageInfo = PageInfo2.from(pageResult);
-
-        Map<String, Object> res = new HashMap<>();
-        res.put("writeList", writeList);
-        res.put("pageInfo", pageInfo);
-        return ResponseEntity.ok(res);
-    }
+	@GetMapping("/write-likeCnt")
+	public ResponseEntity<Integer> getLikeCount(@RequestParam Integer writeId) {
+	    try {
+	        int count = writeService.getLikeCount(writeId);
+	        return ResponseEntity.ok(count);
+	    } catch (Exception e) {
+	        log.error("좋아요 수 확인 실패", e);
+	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	    }
+	}
+	
 }

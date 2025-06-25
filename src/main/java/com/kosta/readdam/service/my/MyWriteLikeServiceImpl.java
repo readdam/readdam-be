@@ -37,7 +37,8 @@ public class MyWriteLikeServiceImpl implements MyWriteLikeService{
                 int likeCnt = (int) writeLikeRepository.countByWriteWriteId(write.getWriteId());
                 int commentCnt = (int) writeCommentRepository.countByWriteWriteId(write.getWriteId());
                 return write.toDto().toBuilder()
-                        .likeCnt(likeCnt)
+                        //.likeCnt(likeCnt)
+                		.likeCnt(write.getLikeCnt()) // 쿼리 대신 db필드 사용
                         .commentCnt(commentCnt)
                         .build();
             })
@@ -46,7 +47,7 @@ public class MyWriteLikeServiceImpl implements MyWriteLikeService{
 
 
     @Override
-    public String toggleLike(String username, Integer writeId) throws Exception {
+    public boolean toggleLike(String username, Integer writeId) throws Exception {
         User user = userRepository.findById(username)
             .orElseThrow(() -> new IllegalArgumentException("유저가 없습니다. username=" + username));
 
@@ -57,7 +58,9 @@ public class MyWriteLikeServiceImpl implements MyWriteLikeService{
             .findByUserUsernameAndWriteWriteId(username, writeId)
             .map(existing -> {
                 writeLikeRepository.delete(existing);
-                return "좋아요 취소";
+                write.setLikeCnt(write.getLikeCnt() - 1); // 좋아요 수 감소
+                writeRepository.save(write);
+                return false; // 좋아요 취소됨
             })
             .orElseGet(() -> {
                 WriteLike newLike = WriteLike.builder()
@@ -66,7 +69,9 @@ public class MyWriteLikeServiceImpl implements MyWriteLikeService{
                     .date(LocalDateTime.now())
                     .build();
                 writeLikeRepository.save(newLike);
-                return "좋아요 완료";
+                write.setLikeCnt(write.getLikeCnt() + 1); // 좋아요 수 증가
+                writeRepository.save(write); 
+                return true; // 좋아요 추가됨
             });
     }
 

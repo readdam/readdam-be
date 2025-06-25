@@ -28,11 +28,11 @@ public class MyWriteServiceImpl implements MyWriteService{
         List<Write> writes = writeRepository.findByUserUsernameOrderByRegDateDesc(username);
 
         return writes.stream().map(write -> {
-            long likeCnt = writeLikeRepository.countByWriteWriteId(write.getWriteId());
+            //long likeCnt = writeLikeRepository.countByWriteWriteId(write.getWriteId());
             long commentCnt = writeCommentRepository.countByWriteWriteId(write.getWriteId());
 
             return write.toDto().toBuilder()
-                    .likeCnt((int) likeCnt)
+                    .likeCnt(write.getLikeCnt()) // 쿼리 대신 db필드 사용
                     .commentCnt((int) commentCnt)
                     .build();
         }).collect(Collectors.toList());
