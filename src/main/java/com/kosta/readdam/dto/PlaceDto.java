@@ -39,6 +39,9 @@ public class PlaceDto {
     private String img8;
     private String img9;
     private String img10;
+    
+    private long likeCount;
+    private boolean liked;
 
     public Place toEntity() {
         return Place.builder()

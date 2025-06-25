@@ -62,22 +62,6 @@ public class WriteShort {
     private Integer likes = 0;  // 좋아요 수 기본값 0으로 설정
     
 
-
-//    public WriteShortDto toDto(long likeCount) {
-//        return WriteShortDto.builder()
-//            .writeshortId(this.writeshortId)
-//            .content(this.content)
-//            .color(this.color)
-//            .username(this.user.getUsername())
-//            .eventId(this.event.getEventId())
-//            .regDate(this.regDate)
-//            .isHide(this.isHide)
-//            .eventTitle(this.event.getTitle())
-//            .likeCount(likeCount)
-//            .build();
-//}
-
-
     public static WriteShortDto from(WriteShort entity) {
         return WriteShortDto.builder()
             .writeshortId(entity.getWriteshortId())
