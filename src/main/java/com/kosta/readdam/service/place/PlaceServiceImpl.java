@@ -1,6 +1,7 @@
 package com.kosta.readdam.service.place;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -118,31 +119,33 @@ public class PlaceServiceImpl implements PlaceService {
 	    Map<Integer, PlaceRoom> existingRoomMap = existingRooms.stream()
 	        .collect(Collectors.toMap(PlaceRoom::getPlaceRoomId, Function.identity()));
 
-	    Set<Integer> incomingIds = roomDtos.stream()
-	        .map(PlaceRoomDto::getPlaceRoomId)
-	        .filter(Objects::nonNull)
-	        .collect(Collectors.toSet());
-
 	    // 3. 기존 방 수정 or 신규 추가
 	    List<PlaceRoom> updatedRooms = new ArrayList<>();
+	    Set<Integer> incomingRoomIds = new HashSet<>();
+
 	    for (PlaceRoomDto roomDto : roomDtos) {
-	        if (roomDto.getPlaceRoomId() != null && existingRoomMap.containsKey(roomDto.getPlaceRoomId())) {
-	            // 수정
-	            PlaceRoom room = existingRoomMap.get(roomDto.getPlaceRoomId());
-	            room.updateFromDto(roomDto);
-	            updatedRooms.add(room);
-	        } else {
-	            // 추가
-	        	roomDto.setPlaceRoomId(null);
+	        Integer dtoRoomId = roomDto.getPlaceRoomId();
+	        boolean isNew = (dtoRoomId == null || !existingRoomMap.containsKey(dtoRoomId));
+
+	        if (isNew) {
+	            // 🔹 신규 방 추가
+	            roomDto.setPlaceRoomId(null); // 명시적 null 처리
 	            PlaceRoom newRoom = roomDto.toEntity(place);
-	            placeRoomRepository.save(newRoom);
-	            updatedRooms.add(newRoom);
+	            PlaceRoom savedRoom = placeRoomRepository.save(newRoom);
+	            updatedRooms.add(savedRoom);
+	            incomingRoomIds.add(savedRoom.getPlaceRoomId());
+	        } else {
+	            // 🔹 기존 방 수정
+	            PlaceRoom existingRoom = existingRoomMap.get(dtoRoomId);
+	            existingRoom.updateFromDto(roomDto);
+	            updatedRooms.add(existingRoom);
+	            incomingRoomIds.add(dtoRoomId);
 	        }
 	    }
-	    
-	    // 4. 기존에만 있던 방 삭제
+
+	    // 4. 기존에만 있던 방 삭제 (프론트에서 안 보낸 방)
 	    for (PlaceRoom oldRoom : existingRooms) {
-	        if (!incomingIds.contains(oldRoom.getPlaceRoomId())) {
+	        if (!incomingRoomIds.contains(oldRoom.getPlaceRoomId())) {
 	            // 🔥 먼저 시간대 삭제
 	            placeTimeRepository.deleteByPlaceRoom_PlaceRoomId(oldRoom.getPlaceRoomId());
 
@@ -151,9 +154,8 @@ public class PlaceServiceImpl implements PlaceService {
 	        }
 	    }
 
-	    // 5. 기존 시간대 삭제 (모든 방 기준)
+	    // 5. 기존 시간대 삭제 (모든 방에 대해)
 	    for (PlaceRoom room : updatedRooms) {
-//	        placeTimeRepository.deleteByPlaceRoom_Place_PlaceId(room.getPlaceRoomId());
 	        placeTimeRepository.deleteByPlaceId(room.getPlaceRoomId());
 	    }
 

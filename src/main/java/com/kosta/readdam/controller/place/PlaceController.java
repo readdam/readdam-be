@@ -114,14 +114,11 @@ public class PlaceController {
         placeDto.setPlaceId(placeId);
 
         // 1. 장소 이미지 병합
-        List<String> newPlaceImagePaths = new ArrayList<>();
-        if (placeImages != null && !placeImages.isEmpty()) {
-            newPlaceImagePaths = fileService.save(placeImages); // 새로 저장
-        }
+        List<String> newPlaceImagePaths = (placeImages != null) ? fileService.save(placeImages) : new ArrayList<>();
 
         List<String> totalPlaceImages = new ArrayList<>();
         if (existingPlaceImages != null) totalPlaceImages.addAll(existingPlaceImages);
-        totalPlaceImages.addAll(newPlaceImagePaths); // 순서: 기존 → 새로 추가
+        totalPlaceImages.addAll(newPlaceImagePaths); // 기존 → 신규 순서
 
         for (int i = 0; i < totalPlaceImages.size(); i++) {
             Field field = PlaceDto.class.getDeclaredField("img" + (i + 1));
@@ -129,59 +126,65 @@ public class PlaceController {
             field.set(placeDto, totalPlaceImages.get(i));
         }
 
-     // 2. 방 이미지 병합
-        Map<Integer, List<MultipartFile>> newRoomImagesMap = new HashMap<>();
+        // 2. 방 이미지 병합
+        // ✅ 신규 방 roomIndex 기반으로 이미지 매핑
+        Map<Integer, List<MultipartFile>> roomImageMapByIndex = new HashMap<>();
         if (roomImagesFlat != null) {
             for (MultipartFile file : roomImagesFlat) {
-                String filename = file.getOriginalFilename(); // ex: room_123_0.jpg
+                String filename = file.getOriginalFilename(); // 예: room_0_2.jpg
                 if (filename != null && filename.startsWith("room_")) {
                     String[] parts = filename.split("_");
-                    int roomId = Integer.parseInt(parts[1]); // ✅ roomId 사용
-                    newRoomImagesMap.computeIfAbsent(roomId, k -> new ArrayList<>()).add(file);
+                    try {
+                        int roomIndex = Integer.parseInt(parts[1]); // index 기반
+                        roomImageMapByIndex.computeIfAbsent(roomIndex, k -> new ArrayList<>()).add(file);
+                    } catch (NumberFormatException e) {
+                        System.out.println("room index parse 실패: " + filename);
+                    }
                 }
             }
         }
 
-        Map<Integer, List<String>> existingRoomMap = new HashMap<>();
+        // ✅ 기존 이미지 (roomId 기반) 매핑
+        Map<Integer, List<String>> existingRoomImageMap = new HashMap<>();
         if (existingRoomImages != null) {
             for (String path : existingRoomImages) {
                 if (path.contains("|")) {
                     String[] parts = path.split("\\|");
                     int roomId = Integer.parseInt(parts[0]);
                     String imagePath = parts[1];
-                    existingRoomMap.computeIfAbsent(roomId, k -> new ArrayList<>()).add(imagePath);
+                    existingRoomImageMap.computeIfAbsent(roomId, k -> new ArrayList<>()).add(imagePath);
                 }
             }
         }
 
-        for (PlaceRoomDto roomDto : roomDtoList) {
-            Integer roomId = roomDto.getPlaceRoomId();
+        // ✅ roomDtoList 순회하며 이미지 병합
+        for (int i = 0; i < roomDtoList.size(); i++) {
+            PlaceRoomDto roomDto = roomDtoList.get(i);
             List<String> finalRoomImages = new ArrayList<>();
-
+            
             // 기존 이미지
-            if (existingRoomMap.containsKey(roomId)) {
-                finalRoomImages.addAll(existingRoomMap.get(roomId));
+            if (existingRoomImageMap.containsKey(i)) {
+                finalRoomImages.addAll(existingRoomImageMap.get(i));
             }
 
-            // 새 이미지
-            if (newRoomImagesMap.containsKey(roomId)) {
-                List<MultipartFile> newFiles = newRoomImagesMap.get(roomId);
+            // 신규 업로드 이미지
+            if (roomImageMapByIndex.containsKey(i)) {
+                List<MultipartFile> newFiles = roomImageMapByIndex.get(i);
                 List<String> saved = fileService.save(newFiles);
                 finalRoomImages.addAll(saved);
             }
 
-            // 매핑: img1 ~ img10
+            // img1 ~ img10 필드 설정
             for (int j = 0; j < finalRoomImages.size(); j++) {
                 Field field = PlaceRoomDto.class.getDeclaredField("img" + (j + 1));
                 field.setAccessible(true);
                 field.set(roomDto, finalRoomImages.get(j));
             }
+
         }
 
-        
-        // 3. 저장
+        // 3. 최종 저장
         placeService.updatePlace(placeId, placeDto, roomDtoList, sharedTimeSlots);
         return ResponseEntity.ok("장소 수정 완료");
     }
-
 }
