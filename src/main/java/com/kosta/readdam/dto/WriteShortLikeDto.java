@@ -1,10 +1,6 @@
-
-// com/kosta/readdam/dto/WriteShortLikeDto.java
-
 package com.kosta.readdam.dto;
 
 import java.time.LocalDateTime;
-
 
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.WriteShort;
@@ -16,35 +12,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class WriteShortLikeDto {
-
     private Integer likeId;
     private String username;
     private Integer writeshortId;
-    private LocalDateTime date;
+    private LocalDateTime date;  // 좋아요 누른 시각
 
+    /**
+     * 엔티티 → DTO
+     */
+    public static WriteShortLikeDto from(WriteShortLike entity) {
+        return WriteShortLikeDto.builder()
+            .likeId(entity.getLikeId())
+            .username(entity.getUser().getUsername())
+            .writeshortId(entity.getWriteShort().getWriteshortId())
+            .date(entity.getDate())
+            .build();
+    }
 
-//public class WriteShortLikeDto {
-//
-//    private Long likeId;
-//    private Integer writeshortId;
-//    private String username;
-//    private LocalDateTime likedAt;
-
+    public WriteShortLike toEntity(WriteShort writeShort, User user) {
+        return WriteShortLike.builder()
+            .likeId(this.likeId)
+            .writeShort(writeShort)
+            .user(user)
+            .date(this.date != null ? this.date : LocalDateTime.now())
+            .build();
+    }
     
-//    public WriteShortLike toEntity(WriteShort writeShort, User user) {
-//        return WriteShortLike.builder()
-//            .likeId(this.likeId)
-//            .writeShort(writeShort)
-//            .user(user)
-//            .likedAt(this.likedAt != null ? this.likedAt : LocalDateTime.now())
-//            .build();
-//    }
 
 }
