@@ -49,6 +49,7 @@ public class ClassServiceImpl implements ClassService {
 			setter.invoke(dto, savedFilename);
 		}catch (Exception e) {
 			System.err.println("이미지매핑 실패: "+ fieldName);
+			e.printStackTrace();
 		}
 	}
 	
@@ -73,9 +74,11 @@ public class ClassServiceImpl implements ClassService {
 	            // 파일 실제 저장
 	            File dest = new File(uploadDir, savedFilename);
 	            file.transferTo(dest);
-
+	            
+	         // F 접미사 제거해서 DTO 필드명에 매핑
+	            String cleanedField = field.endsWith("F") ? field.substring(0, field.length() - 1) : field;
 	            // DTO에 저장된 파일명 매핑
-	            mapImageToDto(classDto, field, savedFilename);
+	            mapImageToDto(classDto, cleanedField, savedFilename);
 	        }
 		}
 		
