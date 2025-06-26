@@ -1,10 +1,12 @@
 package com.kosta.readdam.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -15,9 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.ClassDto;
+import com.kosta.readdam.dto.ClassQnaDto;
 import com.kosta.readdam.entity.ClassEntity;
+import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.repository.ClassQnaRepository;
 import com.kosta.readdam.repository.ClassRepository;
+import com.kosta.readdam.repository.UserRepository;
 
 @Service
 public class ClassServiceImpl implements ClassService {
@@ -28,19 +34,15 @@ public class ClassServiceImpl implements ClassService {
 	@Autowired
 	ClassRepository classRepository;
 	
+	@Autowired
+	ClassQnaRepository classQnaRepository;
+	
+	@Autowired
+	UserRepository userRepository;
+	
 	@Value("${iupload.path}")
 	private String iuploadPath;
 	
-	
-//	private String saveImage(MultipartFile ifile) throws IOException {
-//	    if (ifile != null && !ifile.isEmpty()) {
-//	        String filename = UUID.randomUUID() + "_" + ifile.getOriginalFilename();
-//	        File dest = new File(iuploadPath, filename);
-//	        ifile.transferTo(dest);
-//	        return filename;
-//	    }
-//	    return null;
-//	}
 
 	private void mapImageToDto(ClassDto dto, String fieldName, String savedFilename) {
 		try {
@@ -94,6 +96,47 @@ public class ClassServiceImpl implements ClassService {
 		ClassEntity cEntity = classRepository.findById(classId).orElseThrow(()->new Exception("모임글번호 오류"));
 		System.out.println(cEntity.getClassIntro());
 		return cEntity.toDto();
+	}
+
+	@Override
+	@Transactional
+	public void createQna(ClassQnaDto classQnaDto, String username) throws Exception {
+		ClassEntity cEntity = classRepository.findById(classQnaDto.getClassId())
+				.orElseThrow(() -> new Exception("해당 모임이 존재하지 않습니다."));
+		
+		User user = userRepository.findById(username)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+		
+		ClassQna qna = ClassQna.builder()
+				.classEntity(cEntity)
+				.user(user)
+				.content(classQnaDto.getContent())
+				.isSecret(classQnaDto.getIsSecret())
+				.isHide(false)
+				.regDate(LocalDateTime.now())
+				.build();
+		
+		classQnaRepository.save(qna);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ClassQnaDto> getQnaList(Integer classId) throws Exception {
+		List<ClassQna> qnaEntities = classQnaRepository.findByClassEntity_ClassIdOrderByRegDateDesc(classId);
+		
+		List<ClassQnaDto> dtoList = qnaEntities.stream().map(qna -> {
+			ClassQnaDto dto = ClassQnaDto.builder()
+					.classQnaId(qna.getClassQnaId())
+					.classId(classId)
+					.content(qna.getContent())
+					.isSecret(qna.getIsSecret())
+					.answer(qna.getAnswer())
+					.regDate(qna.getRegDate())
+					.username(qna.getUser().getUsername())
+					.build();
+			return dto;
+		}).collect(Collectors.toList());
+		return dtoList;
 	}
 
 }
