@@ -21,7 +21,10 @@ public class OtherPlace {
     private Integer otherPlaceId;
 
     private String name;
-    private String location;
+    @Column(length = 255)
+    private String basicAddress;
+    @Column(length = 255)
+    private String detailAddress;    
     private Double lat;
 
     @Column(name = "log") // DB에선 log지만 실무에선 lng로 생각됨
@@ -56,7 +59,8 @@ public class OtherPlace {
         return OtherPlaceDto.builder()
                 .otherPlaceId(otherPlaceId)
                 .name(name)
-                .location(location)
+                .basicAddress(basicAddress)
+                .detailAddress(detailAddress)
                 .lat(lat)
                 .lng(lng)
                 .phone(phone)

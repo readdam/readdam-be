@@ -10,7 +10,8 @@ import lombok.Data;
 public class PlaceSummaryDto {
     private Integer placeId;
     private String name;
-    private String location;
+    private String basicAddress;
+    private String detailAddress;   
     private String introduce;
     private String phone;
     private Long roomCount;

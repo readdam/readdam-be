@@ -1,7 +1,12 @@
 package com.kosta.readdam.service.place;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,7 +94,8 @@ public class PlaceServiceImpl implements PlaceService {
 
 	    return PlaceEditResponseDto.builder()
 	        .name(place.getName())
-	        .location(place.getLocation())
+	        .basicAddress(place.getBasicAddress())
+	        .detailAddress(place.getDetailAddress())
 	        .phone(place.getPhone())
 	        .introduce(place.getIntroduce())
 	        .lat(place.getLat())
@@ -100,6 +106,67 @@ public class PlaceServiceImpl implements PlaceService {
 	        .weekdayTimes(weekdayTimes)
 	        .weekendTimes(weekendTimes)
 	        .build();
+	}
+
+	@Transactional
+	public void updatePlace(Integer placeId, PlaceDto placeDto, List<PlaceRoomDto> roomDtos, List<PlaceTimeDto> timeDtos) {
+	    // 1. 기존 장소 조회 및 수정
+	    Place place = placeRepository.findById(placeId)
+	        .orElseThrow(() -> new IllegalArgumentException("해당 장소가 존재하지 않습니다."));
+	    place.updateFromDto(placeDto);
+
+	    // 2. 기존 방 조회
+	    List<PlaceRoom> existingRooms = placeRoomRepository.findByPlace_PlaceId(placeId);
+	    Map<Integer, PlaceRoom> existingRoomMap = existingRooms.stream()
+	        .collect(Collectors.toMap(PlaceRoom::getPlaceRoomId, Function.identity()));
+
+	    // 3. 기존 방 수정 or 신규 추가
+	    List<PlaceRoom> updatedRooms = new ArrayList<>();
+	    Set<Integer> incomingRoomIds = new HashSet<>();
+
+	    for (PlaceRoomDto roomDto : roomDtos) {
+	        Integer dtoRoomId = roomDto.getPlaceRoomId();
+	        boolean isNew = (dtoRoomId == null || !existingRoomMap.containsKey(dtoRoomId));
+
+	        if (isNew) {
+	            // 🔹 신규 방 추가
+	            roomDto.setPlaceRoomId(null); // 명시적 null 처리
+	            PlaceRoom newRoom = roomDto.toEntity(place);
+	            PlaceRoom savedRoom = placeRoomRepository.save(newRoom);
+	            updatedRooms.add(savedRoom);
+	            incomingRoomIds.add(savedRoom.getPlaceRoomId());
+	        } else {
+	            // 🔹 기존 방 수정
+	            PlaceRoom existingRoom = existingRoomMap.get(dtoRoomId);
+	            existingRoom.updateFromDto(roomDto);
+	            updatedRooms.add(existingRoom);
+	            incomingRoomIds.add(dtoRoomId);
+	        }
+	    }
+
+	    // 4. 기존에만 있던 방 삭제 (프론트에서 안 보낸 방)
+	    for (PlaceRoom oldRoom : existingRooms) {
+	        if (!incomingRoomIds.contains(oldRoom.getPlaceRoomId())) {
+	            // 🔥 먼저 시간대 삭제
+	            placeTimeRepository.deleteByPlaceRoom_PlaceRoomId(oldRoom.getPlaceRoomId());
+
+	            // ✅ 그 다음 방 삭제
+	            placeRoomRepository.delete(oldRoom);
+	        }
+	    }
+
+	    // 5. 기존 시간대 삭제 (모든 방에 대해)
+	    for (PlaceRoom room : updatedRooms) {
+	        placeTimeRepository.deleteByPlaceId(room.getPlaceRoomId());
+	    }
+
+	    // 6. 모든 방에 동일한 시간대 복사 저장
+	    for (PlaceRoom room : updatedRooms) {
+	        for (PlaceTimeDto dto : timeDtos) {
+	            PlaceTime time = dto.toEntity(room);
+	            placeTimeRepository.save(time);
+	        }
+	    }
 	}
 
 

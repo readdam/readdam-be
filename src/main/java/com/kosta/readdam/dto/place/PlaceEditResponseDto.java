@@ -11,7 +11,8 @@ import lombok.Data;
 @Builder
 public class PlaceEditResponseDto {
     private String name;
-    private String location;
+    private String basicAddress;
+    private String detailAddress;
     private String phone;
     private String introduce;
     private Double lat;
