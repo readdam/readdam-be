@@ -17,67 +17,75 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.repository.UserRepository;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
-        super(authenticationManager);
-        setFilterProcessesUrl("/loginProc"); // POST 요청 경로 설정
-    }
+	private final JwtToken jwtToken = new JwtToken();
+	private String fcmToken;
+	private final UserRepository userRepository;
 
-    private final JwtToken jwtToken = new JwtToken();
+	public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
+		super(authenticationManager);
+		this.userRepository = userRepository;
+		setFilterProcessesUrl("/loginProc"); // POST 요청 경로 설정
+	}
 
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            // JSON 파싱
-            ObjectMapper om = new ObjectMapper();
-            Map<String, String> credentials = om.readValue(request.getInputStream(), Map.class);
-            String username = credentials.get("username");
-            String password = credentials.get("password");
+	@Override
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			// JSON 파싱
+			ObjectMapper om = new ObjectMapper();
+			Map<String, String> credentials = om.readValue(request.getInputStream(), Map.class);
+			String username = credentials.get("username");
+			String password = credentials.get("password");
+			this.fcmToken = credentials.get("fcmToken");
 
-            // 인증 시도
-            UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(username, password);
+			// 인증 시도
+			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
+					password);
 
-            return this.getAuthenticationManager().authenticate(authenticationToken);
+			return this.getAuthenticationManager().authenticate(authenticationToken);
 
-        } catch (IOException e) {
-            throw new RuntimeException("로그인 요청 JSON 파싱 실패", e);
-        }
-    }
+		} catch (IOException e) {
+			throw new RuntimeException("로그인 요청 JSON 파싱 실패", e);
+		}
+	}
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authResult)
-                                            throws IOException, ServletException {
+	@Override
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+			Authentication authResult) throws IOException, ServletException {
 
-        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        User user = principalDetails.getUser();
+		PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+		User user = principalDetails.getUser();
 
-        String username = user.getUsername();
-        String nickname = user.getNickname();
-        Boolean isAdmin = user.getIsAdmin();
-        Double lat = user.getLat();
-        Double lng = user.getLng();
+		if (fcmToken != null && !fcmToken.isBlank()) {
+			user.setFcmToken(fcmToken);
+			userRepository.save(user);
+		}
 
-        String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
-        String refreshToken = jwtToken.makeRefreshToken(username);
+		String username = user.getUsername();
+		String nickname = user.getNickname();
+		Boolean isAdmin = user.getIsAdmin();
+		Double lat = user.getLat();
+		Double lng = user.getLng();
 
-        response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
+		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
+		String refreshToken = jwtToken.makeRefreshToken(username);
 
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("username", username);
-        responseBody.put("nickname", nickname);
-        responseBody.put("isAdmin", isAdmin);
-        responseBody.put("lat", lat);
-        responseBody.put("lng", lng);
-        responseBody.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
-        responseBody.put("access_token", JwtProperties.TOKEN_PREFIX + accessToken);
+		response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
 
-        response.setContentType("application/json; charset=utf-8");
-        ObjectMapper objectMapper = new ObjectMapper();
-        response.getWriter().write(objectMapper.writeValueAsString(responseBody));
-    }
+		Map<String, Object> responseBody = new HashMap<>();
+		responseBody.put("username", username);
+		responseBody.put("nickname", nickname);
+		responseBody.put("isAdmin", isAdmin);
+		responseBody.put("lat", lat);
+		responseBody.put("lng", lng);
+		responseBody.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
+		responseBody.put("access_token", JwtProperties.TOKEN_PREFIX + accessToken);
+
+		response.setContentType("application/json; charset=utf-8");
+		ObjectMapper objectMapper = new ObjectMapper();
+		response.getWriter().write(objectMapper.writeValueAsString(responseBody));
+	}
 }
-

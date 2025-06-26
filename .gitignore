@@ -45,3 +45,6 @@ src/main/resources/application-secret.properties
 
 # QueryDSL Q타입 무시
 **/generated/querydsl/
+
+# 절대 올리면 안됨
+src/main/resources/firebase/

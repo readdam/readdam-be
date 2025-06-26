@@ -14,7 +14,8 @@ public class OtherPlaceDto {
 
     private Integer otherPlaceId;
     private String name;
-    private String location;
+    private String basicAddress;
+    private String detailAddress;
     private Double lat;
     private Double lng;
     private String phone;
@@ -32,7 +33,8 @@ public class OtherPlaceDto {
         return OtherPlace.builder()
                 .otherPlaceId(otherPlaceId)
                 .name(name)
-                .location(location)
+                .basicAddress(basicAddress)
+                .detailAddress(detailAddress)
                 .lat(lat)
                 .lng(lng)
                 .phone(phone)
