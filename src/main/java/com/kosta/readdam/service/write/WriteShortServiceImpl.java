@@ -73,8 +73,14 @@ public class WriteShortServiceImpl implements WriteShortService {
 	    }).collect(Collectors.toList());
 	    
 		// 5. 페이징 정보 구성
-		PageInfo2 pageInfo = new PageInfo2(page, size, false, (int) pageResult.getTotalElements(),
-				pageResult.getTotalPages());
+		PageInfo2 pageInfo = new PageInfo2(    
+				page,
+			    size,
+			    pageResult.isLast(),
+			    pageResult.getTotalElements(),
+			    pageResult.getTotalPages(),
+			    pageResult.hasNext() 
+			);
 	   
 		// 6. map으로 결과 구성
 		Map<String, Object> map = new HashMap<>();
