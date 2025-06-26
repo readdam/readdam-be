@@ -13,6 +13,7 @@ public class PageInfo2 {
     private boolean isLastPage;
     private long totalElements;
     private int totalPages;
+    private boolean hasNext; 
 
     public static PageInfo2 from(org.springframework.data.domain.Page<?> page) {
         return new PageInfo2(
@@ -20,7 +21,8 @@ public class PageInfo2 {
             page.getSize(),
             page.isLast(),
             page.getTotalElements(),
-            page.getTotalPages()
+            page.getTotalPages(),
+            page.hasNext() 
         );
     }
 }

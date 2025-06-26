@@ -14,8 +14,9 @@ import lombok.*;
 @Builder
 public class ReservationResponseDto {
     private Integer reservationId;
-    private String placeName;    
-    private String location;     
+    private String placeName;  
+    private String basicAddress;
+    private String detailAddress;   
     private LocalDate date;
     private LocalTime time;
     private Integer participantCount;

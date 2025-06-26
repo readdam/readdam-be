@@ -54,7 +54,7 @@ public class SecurityConfig {
 		.and()
 		.formLogin().disable()
 		.httpBasic().disable()
-		.addFilterAt(new JwtAuthenticationFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
+		.addFilterAt(new JwtAuthenticationFilter(authenticationManager, userRepository), UsernamePasswordAuthenticationFilter.class)
 		.addFilterBefore(
 			new JwtAuthorizationFilter(authenticationManager, userRepository),
 			UsernamePasswordAuthenticationFilter.class

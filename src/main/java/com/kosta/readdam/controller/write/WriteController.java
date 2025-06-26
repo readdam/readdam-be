@@ -146,4 +146,15 @@ public class WriteController {
 	    }
 	}
 	
+	@PostMapping("/write-ViewCount")
+	public ResponseEntity<Void> increaseViewCount(@RequestBody Map<String, Integer> body) {
+	    try {
+	        Integer writeId = body.get("writeId");
+	        writeService.increaseViewCount(writeId);
+	        return ResponseEntity.ok().build();
+	    } catch (Exception e) {
+	        log.error("❌ 조회수 증가 실패", e);
+	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	    }
+	}
 }

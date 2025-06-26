@@ -2,7 +2,6 @@ package com.kosta.readdam.repository.place;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,14 +67,15 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		if (keyword != null && !keyword.isBlank()) {
 			if ("name".equals(filterBy)) {
 				condition = place.name.containsIgnoreCase(keyword);
-			} else if ("location".equals(filterBy)) {
-				condition = place.location.containsIgnoreCase(keyword);
+			} 
+			else if ("basic_address".equals(filterBy)) {
+				condition = place.basicAddress.containsIgnoreCase(keyword);
 			}
 		}
 
 		// SELECT
 		List<Tuple> results = query
-				.select(place.placeId, place.name, place.location, place.introduce, place.phone,
+				.select(place.placeId, place.name, place.basicAddress, place.detailAddress, place.introduce, place.phone,
 						room.placeRoomId.countDistinct(),
 
 						place.tag1, place.tag2, place.tag3, place.tag4, place.tag5, place.tag6, place.tag7, place.tag8,
@@ -90,7 +90,8 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		List<PlaceSummaryDto> content = results.stream().map(tuple -> {
 			Integer id = tuple.get(place.placeId);
 			String name = tuple.get(place.name);
-			String location = tuple.get(place.location);
+			String basicAddress = tuple.get(place.basicAddress);
+			String detailAddress = tuple.get(place.detailAddress);
 			String introduce = tuple.get(place.introduce);
 			String phone = tuple.get(place.phone);
 			Long roomCount = tuple.get(room.placeRoomId.countDistinct());
@@ -112,7 +113,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 			String thumbnail = images.isEmpty() ? null : images.get(0);
 			Integer likeCount = likeMap.getOrDefault(id, 0);
 
-			return new PlaceSummaryDto(id, name, location, introduce, phone, roomCount, tags, thumbnail, images,
+			return new PlaceSummaryDto(id, name, basicAddress, detailAddress, introduce, phone, roomCount, tags, thumbnail, images,
 					weekdayMap.getOrDefault(id, List.of()), weekendMap.getOrDefault(id, List.of()), likeCount);
 		}).collect(Collectors.toList());
 
