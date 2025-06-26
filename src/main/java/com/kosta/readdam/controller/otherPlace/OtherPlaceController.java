@@ -1,0 +1,60 @@
+package com.kosta.readdam.controller.otherPlace;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.service.FileService;
+import com.kosta.readdam.service.otherPlace.OtherPlaceService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/admin")
+public class OtherPlaceController {
+
+	private final FileService fileService;
+	private final OtherPlaceService otherPlaceService;
+	
+	
+	@PostMapping(value = "/otherPlaceAdd", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<String> registerOtherPlace(
+	        @RequestPart("placeDto") OtherPlaceDto placeDto,
+	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+	        @RequestPart(value = "keywords", required = false) List<String> keywords
+	) throws Exception {
+
+	    // 1. 이미지 저장
+	    if (images != null) {
+	        List<String> savedPaths = fileService.save(images); // 예: /uploads/xxx.jpg
+	        for (int i = 0; i < savedPaths.size(); i++) {
+	            Field field = OtherPlaceDto.class.getDeclaredField("img" + (i + 1));
+	            field.setAccessible(true);
+	            field.set(placeDto, savedPaths.get(i));
+	        }
+	    }
+
+	    // 2. 키워드 저장
+	    if (keywords != null) {
+	        for (int i = 0; i < keywords.size(); i++) {
+	            Field field = OtherPlaceDto.class.getDeclaredField("tag" + (i + 1));
+	            field.setAccessible(true);
+	            field.set(placeDto, keywords.get(i));
+	        }
+	    }
+
+	    // 3. 저장
+	    otherPlaceService.save(placeDto);
+	    return ResponseEntity.ok("외부 장소 저장 완료");
+	}
+
+}
