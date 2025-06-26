@@ -78,6 +78,7 @@ public class WriteDto {
             .img(write.getImg())
             .viewCnt(write.getViewCnt())
             .visibility(write.isHide() ? "private" : "public")
+            .likeCnt(write.getLikeCnt())
             
             // 작성자 정보 추가 
             .username(user != null ? user.getUsername() : null)

@@ -16,4 +16,8 @@ public interface WriteService {
 	WriteDto detailWrite(Integer writeId) throws Exception;
 	List<WriteDto> findLatest(int limit);
 	Page<Write> searchWrites(WriteSearchRequestDto cond, Pageable pageable);
+	boolean isLiked(String username, Integer writeId) throws Exception;
+	public int getLikeCount(Integer writeId) throws Exception; // 좋아요 수는 null 없어서 int로 함
+
+
 }

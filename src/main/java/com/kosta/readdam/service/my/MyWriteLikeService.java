@@ -8,6 +8,6 @@ public interface MyWriteLikeService {
 
 	List<WriteDto> getLikedWrites(String username) throws Exception;
 
-	String toggleLike(String username, Integer writeId) throws Exception;
+	boolean toggleLike(String username, Integer writeId) throws Exception;
 
 }

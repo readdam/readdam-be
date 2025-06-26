@@ -12,7 +12,8 @@ public class PlaceDto {
 
     private Integer placeId;
     private String name;
-    private String location;
+    private String basicAddress;
+    private String detailAddress;
     private Double lat;
     private Double log;
     private String phone;
@@ -47,7 +48,8 @@ public class PlaceDto {
         return Place.builder()
                 .placeId(placeId)
                 .name(name)
-                .location(location)
+                .basicAddress(basicAddress)
+                .detailAddress(detailAddress)
                 .lat(lat)
                 .log(log)
                 .phone(phone)
