@@ -15,20 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ClassQnaDto;
-import com.kosta.readdam.service.ClassService;
+import com.kosta.readdam.service.ClassQnAReviewsService;
 
 @RestController
 public class ClassQnaReviewsController {
 	
 	@Autowired
-	private ClassService classService;
+	private ClassQnAReviewsService classQRService;
 	
 	@PostMapping("/classQna")
 	public ResponseEntity<?> createQna(@RequestBody ClassQnaDto classQnaDto, 
 			@AuthenticationPrincipal PrincipalDetails principal){
 		try {
 			String username = principal.getUsername();
-			classService.createQna(classQnaDto, username);
+			classQRService.createQna(classQnaDto, username);
 			return ResponseEntity.ok().body("질문 등록 완료");
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -39,11 +39,28 @@ public class ClassQnaReviewsController {
 	@GetMapping("/classQna/{classId}")
 	public ResponseEntity<?> getQnaList(@PathVariable Integer classId) {
 		try {
-			List<ClassQnaDto> list = classService.getQnaList(classId);
+			List<ClassQnaDto> list = classQRService.getQnaList(classId);
 			return ResponseEntity.ok().body(Map.of("data",list));
 		}catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Q&A 목록 조회 실패: "+e.getMessage());
+		}
+	}
+	
+	@PostMapping("/classQnaAnswer")
+	public ResponseEntity<?> answerQna(@RequestBody Map<String, Object> payload, 
+			@AuthenticationPrincipal PrincipalDetails principal) {
+		try {
+			Integer classQnaId = (Integer) payload.get("classQnaId");
+			String username = principal.getUsername();
+			String answer = (String) payload.get("answer");
+			
+			classQRService.answerQna(classQnaId, answer, username);
+			return ResponseEntity.ok().body("답변 등록 완료");
+		}catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("답변 등록 실패: "+e.getMessage());
 		}
 	}
 

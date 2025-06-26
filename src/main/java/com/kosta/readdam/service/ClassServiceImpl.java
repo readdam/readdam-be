@@ -98,45 +98,5 @@ public class ClassServiceImpl implements ClassService {
 		return cEntity.toDto();
 	}
 
-	@Override
-	@Transactional
-	public void createQna(ClassQnaDto classQnaDto, String username) throws Exception {
-		ClassEntity cEntity = classRepository.findById(classQnaDto.getClassId())
-				.orElseThrow(() -> new Exception("해당 모임이 존재하지 않습니다."));
-		
-		User user = userRepository.findById(username)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-		
-		ClassQna qna = ClassQna.builder()
-				.classEntity(cEntity)
-				.user(user)
-				.content(classQnaDto.getContent())
-				.isSecret(classQnaDto.getIsSecret())
-				.isHide(false)
-				.regDate(LocalDateTime.now())
-				.build();
-		
-		classQnaRepository.save(qna);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ClassQnaDto> getQnaList(Integer classId) throws Exception {
-		List<ClassQna> qnaEntities = classQnaRepository.findByClassEntity_ClassIdOrderByRegDateDesc(classId);
-		
-		List<ClassQnaDto> dtoList = qnaEntities.stream().map(qna -> {
-			ClassQnaDto dto = ClassQnaDto.builder()
-					.classQnaId(qna.getClassQnaId())
-					.classId(classId)
-					.content(qna.getContent())
-					.isSecret(qna.getIsSecret())
-					.answer(qna.getAnswer())
-					.regDate(qna.getRegDate())
-					.username(qna.getUser().getUsername())
-					.build();
-			return dto;
-		}).collect(Collectors.toList());
-		return dtoList;
-	}
 
 }
