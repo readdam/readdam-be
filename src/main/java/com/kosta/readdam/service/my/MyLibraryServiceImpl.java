@@ -2,7 +2,6 @@ package com.kosta.readdam.service.my;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -33,56 +32,57 @@ public class MyLibraryServiceImpl implements MyLibraryService {
     private LibraryBookRepository libraryBookRepository;
 
     @Override
-    public List<LibraryDto> getMyLibraryList(String username) throws Exception{
+    public List<LibraryDto> getMyLibraryList(String username) throws Exception {
         User user = userRepository.findById(username)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 사용자 서재 전체 조회
+        // 1) 현재 저장된 서재 전체 조회
         List<Library> libraries = libraryRepository.findByUser_Username(username);
 
-        // 기본 서재 이름
+        // 2) 기본 서재 이름 목록
         List<String> defaultNames = List.of("인생 책", "읽은 책");
 
-        // name 기준으로 빠르게 접근할 수 있도록 Map 변환
-        Map<String, Library> libraryMap = libraries.stream()
-            .collect(Collectors.toMap(Library::getName, lib -> lib));
-
-        List<LibraryDto> result = new ArrayList<>();
-
-        // 1. 기본 서재 포함 (DB에 없으면 빈 서재로 대체)
+        // 3) 기본 서재가 없으면 생성
         for (String name : defaultNames) {
-            if (libraryMap.containsKey(name)) {
-                Library lib = libraryMap.get(name);
-                List<LibraryBookDto> books = lib.getLibraryBooks().stream()
-                    .map(LibraryBook::toDto)
-                    .collect(Collectors.toList());
-
-                result.add(LibraryDto.builder()
-                    .libraryId(lib.getLibraryId())
-                    .username(username)
-                    .name(lib.getName())
-                    .isShow(lib.getIsShow())
-                    .books(books)
-                    .build());
-            } else {
-                result.add(LibraryDto.builder()
-                    .libraryId(null)
-                    .username(username)
+            boolean exists = libraries.stream()
+                .anyMatch(lib -> name.equals(lib.getName()));
+            if (!exists) {
+                Library lib = Library.builder()
+                    .user(user)
                     .name(name)
                     .isShow(1)
-                    .books(new ArrayList<>())
-                    .build());
+                    .build();
+                libraryRepository.save(lib);
+                libraries.add(lib);
             }
         }
 
-        // 2. 사용자 커스텀 서재들 추가
+        // 4) DTO 변환: 기본 서재 순서 유지
+        List<LibraryDto> result = new ArrayList<>();
+        for (String name : defaultNames) {
+            Library lib = libraries.stream()
+                .filter(l -> name.equals(l.getName()))
+                .findFirst()
+                .get();
+            List<LibraryBookDto> books = lib.getLibraryBooks().stream()
+                .map(LibraryBook::toDto)
+                .collect(Collectors.toList());
+            result.add(LibraryDto.builder()
+                .libraryId(lib.getLibraryId())
+                .username(username)
+                .name(name)
+                .isShow(lib.getIsShow())
+                .books(books)
+                .build());
+        }
+
+        // 5) 커스텀 서재들 추가
         libraries.stream()
             .filter(lib -> !defaultNames.contains(lib.getName()))
             .forEach(lib -> {
                 List<LibraryBookDto> books = lib.getLibraryBooks().stream()
                     .map(LibraryBook::toDto)
                     .collect(Collectors.toList());
-
                 result.add(LibraryDto.builder()
                     .libraryId(lib.getLibraryId())
                     .username(username)
@@ -94,7 +94,7 @@ public class MyLibraryServiceImpl implements MyLibraryService {
 
         return result;
     }
-    
+
     @Override
     public void addLibrary(String username, LibraryDto dto) {
         User user = userRepository.findById(username)
@@ -129,33 +129,53 @@ public class MyLibraryServiceImpl implements MyLibraryService {
     @Override
     @Transactional
     public LibraryDto updateLibrary(LibraryDto dto) throws Exception {
-        Library library = libraryRepository.findById(dto.getLibraryId())
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
+        // 1) 사용자 엔티티는 dto에 username이 담겨있다고 가정
+        User user = userRepository.findById(dto.getUsername())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 1. 이름 수정 (기본 서재는 수정 불가)
-        if (!List.of("인생 책", "읽은 책").contains(library.getName())) {
-            library.setName(dto.getName());
+        Library library;
+        if (dto.getLibraryId() == null) {
+            // 기본 서재: 이름으로 조회
+            library = libraryRepository.findByUser_UsernameAndName(dto.getUsername(), dto.getName())
+                .orElseGet(() -> {
+                    // 없으면 새로 생성
+                    Library lib = Library.builder()
+                        .user(user)
+                        .name(dto.getName())
+                        .isShow(1)
+                        .build();
+                    return libraryRepository.save(lib);
+                });
+        } else {
+            // 커스텀 서재: ID로 조회
+            library = libraryRepository.findById(dto.getLibraryId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
+            // 기본 서재명 변경 금지
+            if (!List.of("인생 책", "읽은 책").contains(library.getName())) {
+                library.setName(dto.getName());
+            }
         }
 
-        // 2. 기존 책 삭제
+        // 2) 기존 책 삭제
         libraryBookRepository.deleteAllByLibrary(library);
 
-        // 3. 새 책 저장
+        // 3) 새 책 저장
         List<LibraryBook> newBooks = dto.getBooks().stream()
             .map(bookDto -> LibraryBook.builder()
                 .library(library)
                 .isbn(bookDto.getIsbn())
                 .title(bookDto.getTitle())
-                .authors(bookDto.getAuthors() != null ? String.join(", ", bookDto.getAuthors()) : null)
+                .authors(bookDto.getAuthors() != null
+                         ? String.join(", ", bookDto.getAuthors())
+                         : null)
                 .thumbnail(bookDto.getThumbnail())
                 .publisher(bookDto.getPublisher())
                 .datetime(bookDto.getDatetime())
                 .build())
             .collect(Collectors.toList());
-
         libraryBookRepository.saveAll(newBooks);
 
-        // 4. 반환용 DTO
+        // 4) 반환용 DTO
         return LibraryDto.builder()
             .libraryId(library.getLibraryId())
             .username(library.getUser().getUsername())
@@ -164,6 +184,7 @@ public class MyLibraryServiceImpl implements MyLibraryService {
             .books(newBooks.stream().map(LibraryBook::toDto).collect(Collectors.toList()))
             .build();
     }
+
 
 
     @Override

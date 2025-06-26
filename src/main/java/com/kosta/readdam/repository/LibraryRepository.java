@@ -1,6 +1,7 @@
 package com.kosta.readdam.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -16,6 +17,8 @@ public interface LibraryRepository extends JpaRepository<Library, Integer> {
 	List<Library> findByUser_Username(String username);
 
 	void deleteByLibraryIdAndUser_Username(Integer libraryId, String username);
+	
+	Optional<Library> findByUser_UsernameAndName(String username, String name);
 
 	@Modifying
 	@Transactional

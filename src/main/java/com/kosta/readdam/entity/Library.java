@@ -47,6 +47,7 @@ public class Library {
 	private Integer isShow;
 	
 	@OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
+	@Builder.Default
 	private List<LibraryBook> libraryBooks = new ArrayList<>();
 	
 	public static LibraryDto fromEntity(Library library) {
