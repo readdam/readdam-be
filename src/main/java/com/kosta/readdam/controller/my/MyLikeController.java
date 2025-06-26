@@ -1,12 +1,15 @@
 package com.kosta.readdam.controller.my;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,12 +75,16 @@ public class MyLikeController {
     @PostMapping("/write-like")
     public ResponseEntity<?> toggleLike(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
-            @RequestParam Integer writeId
+            //@RequestParam Integer writeId
+            @RequestBody Map<String, String> payload // Map<String, String> 으로 받기
     ) {
         String username = principalDetails.getUsername();
         try {
-            String result = myWriteLikeService.toggleLike(username, writeId);
-            return ResponseEntity.ok(result);
+            //String result = myWriteLikeService.toggleLike(username, writeId);
+            //return ResponseEntity.ok(result);
+        	Integer writeId = Integer.parseInt(payload.get("writeId")); // 👈 직접 변환
+        	boolean liked = myWriteLikeService.toggleLike(username, writeId);
+        	return ResponseEntity.ok(liked); // ✅ true 또는 false
         } catch (Exception e) {
             log.error("좋아요 토글 실패", e);
             return ResponseEntity

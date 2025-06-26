@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -19,14 +19,19 @@ import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
+import com.kosta.readdam.repository.WriteLikeRepository;
 import com.kosta.readdam.repository.WriteRepository;
 @Service
+@Slf4j
 public class WriteServiceImpl implements WriteService {
 	@Autowired
 	EntityManager entityManager; // 영속성 컨텍스트 초기화용 (clear)
 	
 	@Autowired
 	private WriteRepository writeRepository;
+	
+	@Autowired
+	private WriteLikeRepository writeLikeRepository;
 	
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -71,6 +76,28 @@ public class WriteServiceImpl implements WriteService {
 	@Override
 	public Page<Write> searchWrites(WriteSearchRequestDto requestDto, Pageable pageable) {
 		return writeRepository.searchWrites(requestDto, pageable);
+	}
+
+	@Override
+	public boolean isLiked(String username, Integer writeId) throws Exception {
+	    try {
+	        return writeLikeRepository
+	                .findByUserUsernameAndWriteWriteId(username, writeId)
+	                .isPresent();
+	    } catch (Exception e) {
+	        log.error("좋아요 여부 확인 중 오류", e);
+	        throw new RuntimeException("좋아요 여부 확인 중 오류 발생");
+	    }
+	}
+	
+	@Override
+	public int getLikeCount(Integer writeId) {
+	    try {
+	        return (int) writeLikeRepository.countByWriteWriteId(writeId);
+	    } catch (Exception e) {
+	        log.error("좋아요 수 조회 중 오류", e);
+	        throw new RuntimeException("좋아요 수 조회 중 오류 발생");
+	    }
 	}
 
 

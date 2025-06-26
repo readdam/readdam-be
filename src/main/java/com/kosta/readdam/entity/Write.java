@@ -64,6 +64,9 @@ public class Write {
     @Column(name = "is_hide", nullable = false)
     private boolean isHide;
     
+    @Column(name = "like_cnt", nullable = false)
+    @Builder.Default
+    private Integer likeCnt = 0;  // 좋아요 수 기본값 0으로 설정
     
     public WriteDto toDto() {
         return WriteDto.builder()
@@ -85,6 +88,7 @@ public class Write {
                 .introduce(user != null ? user.getIntroduce() : null)       
                 .viewCnt(viewCnt)
                 .isHide(isHide)
+                .likeCnt(likeCnt)
                 .build();
     }
     
