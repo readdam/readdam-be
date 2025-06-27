@@ -68,6 +68,11 @@ public class Write {
     @Builder.Default
     private Integer likeCnt = 0;  // 좋아요 수 기본값 0으로 설정
     
+    @Column(name = "comment_cnt", nullable = false)
+    @Builder.Default
+    private Integer commentCnt = 0;
+   
+    
     public WriteDto toDto() {
         return WriteDto.builder()
                 .writeId(writeId)
@@ -89,6 +94,7 @@ public class Write {
                 .viewCnt(viewCnt)
                 .isHide(isHide)
                 .likeCnt(likeCnt)
+                .commentCnt(commentCnt)
                 .build();
     }
     

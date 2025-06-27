@@ -8,6 +8,6 @@ import com.kosta.readdam.entity.User;
 public interface WriteCommentService {
     List<WriteCommentDto> findByWriteId(Integer writeId) throws Exception;
 
-	void save(WriteCommentDto dto);
+	void save(WriteCommentDto dto) throws Exception;
 	
 }

@@ -47,4 +47,4 @@ src/main/resources/application-secret.properties
 **/generated/querydsl/
 
 # 절대 올리면 안됨
-src/main/resources/firebase/firebase-service-account.json
+src/main/resources/firebase/

@@ -1,10 +1,12 @@
 package com.kosta.readdam.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -15,9 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.ClassDto;
+import com.kosta.readdam.dto.ClassQnaDto;
 import com.kosta.readdam.entity.ClassEntity;
+import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.repository.ClassQnaRepository;
 import com.kosta.readdam.repository.ClassRepository;
+import com.kosta.readdam.repository.UserRepository;
 
 @Service
 public class ClassServiceImpl implements ClassService {
@@ -28,19 +34,15 @@ public class ClassServiceImpl implements ClassService {
 	@Autowired
 	ClassRepository classRepository;
 	
+	@Autowired
+	ClassQnaRepository classQnaRepository;
+	
+	@Autowired
+	UserRepository userRepository;
+	
 	@Value("${iupload.path}")
 	private String iuploadPath;
 	
-	
-//	private String saveImage(MultipartFile ifile) throws IOException {
-//	    if (ifile != null && !ifile.isEmpty()) {
-//	        String filename = UUID.randomUUID() + "_" + ifile.getOriginalFilename();
-//	        File dest = new File(iuploadPath, filename);
-//	        ifile.transferTo(dest);
-//	        return filename;
-//	    }
-//	    return null;
-//	}
 
 	private void mapImageToDto(ClassDto dto, String fieldName, String savedFilename) {
 		try {
@@ -49,6 +51,7 @@ public class ClassServiceImpl implements ClassService {
 			setter.invoke(dto, savedFilename);
 		}catch (Exception e) {
 			System.err.println("이미지매핑 실패: "+ fieldName);
+			e.printStackTrace();
 		}
 	}
 	
@@ -73,9 +76,11 @@ public class ClassServiceImpl implements ClassService {
 	            // 파일 실제 저장
 	            File dest = new File(uploadDir, savedFilename);
 	            file.transferTo(dest);
-
+	            
+	         // F 접미사 제거해서 DTO 필드명에 매핑
+	            String cleanedField = field.endsWith("F") ? field.substring(0, field.length() - 1) : field;
 	            // DTO에 저장된 파일명 매핑
-	            mapImageToDto(classDto, field, savedFilename);
+	            mapImageToDto(classDto, cleanedField, savedFilename);
 	        }
 		}
 		
@@ -92,5 +97,6 @@ public class ClassServiceImpl implements ClassService {
 		System.out.println(cEntity.getClassIntro());
 		return cEntity.toDto();
 	}
+
 
 }
