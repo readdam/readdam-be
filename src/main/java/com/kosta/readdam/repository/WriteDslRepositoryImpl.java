@@ -1,6 +1,7 @@
 package com.kosta.readdam.repository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -20,12 +21,12 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 @Repository
 public class WriteDslRepositoryImpl implements WriteDslRepository {
 
-    private final JPAQueryFactory queryFactory;
+	private final JPAQueryFactory queryFactory;
 
-    public WriteDslRepositoryImpl(EntityManager em) {
-        this.queryFactory = new JPAQueryFactory(em);
-    }
-	
+	public WriteDslRepositoryImpl(EntityManager em) {
+		this.queryFactory = new JPAQueryFactory(em);
+	}
+
 	@Override
 	public Page<Write> searchWrites(WriteSearchRequestDto requestDto, Pageable pageable) {
 		 QWrite write = QWrite.write;
@@ -39,9 +40,13 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 
 	        if (requestDto.getStatus() != null && !requestDto.getStatus().equals("all")) {
 	            if (requestDto.getStatus().equals("open")) {
-	                builder.and(write.endDate.gt(LocalDateTime.now()));
+	                builder.and(write.endDate.isNotNull())
+	                		.and(write.endDate.gt(LocalDateTime.now()));
 	            } else if (requestDto.getStatus().equals("closed")) {
-	                builder.and(write.endDate.loe(LocalDateTime.now()));
+	                builder.and(write.endDate.isNotNull())
+	                		.and(write.endDate.loe(LocalDateTime.now()));
+	            } else if (requestDto.getStatus().equals("none")) {
+	                builder.and(write.endDate.isNull());
 	            }
 	        }
 
@@ -59,19 +64,23 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 	            );
 	        }
 
-	        // 정렬 조건
-	        OrderSpecifier<?> order;
+	        // 다중 정렬 조건 
+	        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
-	        if ("view".equals(requestDto.getSort())) {
-	            order = write.viewCnt.desc();
+	        if ("views".equals(requestDto.getSort())) {
+	            orderSpecifiers.add(write.viewCnt.desc());
+	            orderSpecifiers.add(write.regDate.desc());
+	        } else if ("likes".equals(requestDto.getSort())) {
+	            orderSpecifiers.add(write.likeCnt.desc());
+	            orderSpecifiers.add(write.regDate.desc());
 	        } else {
-	            order = write.regDate.desc(); // 기본: 최신순
+	            orderSpecifiers.add(write.regDate.desc());
 	        }
 
 	        List<Write> result = queryFactory
 	            .selectFrom(write)
 	            .where(builder)
-	            .orderBy(order)
+	            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
 	            .offset(pageable.getOffset())
 	            .limit(pageable.getPageSize())
 	            .fetch();
@@ -84,4 +93,4 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 
 	        return new PageImpl<>(result, pageable, count);
 	    }
-	}
+}
