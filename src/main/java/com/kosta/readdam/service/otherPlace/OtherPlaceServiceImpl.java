@@ -1,5 +1,10 @@
 package com.kosta.readdam.service.otherPlace;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,5 +27,16 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
 	    otherPlaceRepository.save(entity);
 	}
 
-
+	@Override
+    public List<OtherPlaceDto> getAllPlaces() {
+        return otherPlaceRepository.findAll().stream()
+                .map(OtherPlaceDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+	
+	@Override
+	public Page<OtherPlaceDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy) {
+	    Page<OtherPlace> placePage = otherPlaceRepository.findAllByFilter(pageable, keyword, filterBy);
+	    return placePage.map(OtherPlaceDto::fromEntity);
+	}
 }

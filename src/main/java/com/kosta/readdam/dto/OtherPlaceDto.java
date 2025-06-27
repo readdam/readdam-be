@@ -1,9 +1,20 @@
 package com.kosta.readdam.dto;
 
-import com.kosta.readdam.entity.OtherPlace;
-import lombok.*;
-
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.BeanUtils;
+
+import com.kosta.readdam.entity.OtherPlace;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -45,6 +56,8 @@ public class OtherPlaceDto {
     // ✅ 주의사항
     private String caution;
 
+    private List<String> tags;
+    
     public OtherPlace toEntity() {
         return OtherPlace.builder()
                 .otherPlaceId(otherPlaceId)
@@ -74,5 +87,26 @@ public class OtherPlaceDto {
                 .tag5(tag5)
                 .caution(caution)
                 .build();
+    }
+    
+    public static OtherPlaceDto fromEntity(OtherPlace place) {
+        OtherPlaceDto dto = new OtherPlaceDto();
+        BeanUtils.copyProperties(place, dto);
+
+        // tags 리스트 생성
+        dto.setTags(
+            Stream.of(
+                place.getTag1(),
+                place.getTag2(),
+                place.getTag3(),
+                place.getTag4(),
+                place.getTag5()
+            )
+            .filter(Objects::nonNull)
+            .filter(s -> !s.isBlank())
+            .collect(Collectors.toList())
+        );
+
+        return dto;
     }
 }

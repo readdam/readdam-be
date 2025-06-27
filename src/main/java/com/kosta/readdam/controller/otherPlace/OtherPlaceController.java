@@ -3,10 +3,15 @@ package com.kosta.readdam.controller.otherPlace;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,5 +61,18 @@ public class OtherPlaceController {
 	    otherPlaceService.save(placeDto);
 	    return ResponseEntity.ok("외부 장소 저장 완료");
 	}
+
+	@GetMapping("/otherPlaceList")
+	public ResponseEntity<Page<OtherPlaceDto>> getOtherPlaceList(
+	        @RequestParam(name = "page", defaultValue = "0") int page,
+	        @RequestParam(name = "size", defaultValue = "10") int size,
+	        @RequestParam(name = "keyword", required = false) String keyword,
+	        @RequestParam(name = "filterBy", required = false) String filterBy
+	) {
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<OtherPlaceDto> placePage = otherPlaceService.getOtherPlaceList(pageable, keyword, filterBy);
+	    return ResponseEntity.ok(placePage);
+	}
+
 
 }
