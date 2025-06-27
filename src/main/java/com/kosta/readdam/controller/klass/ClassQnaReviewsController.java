@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ClassQnaDto;
-import com.kosta.readdam.service.ClassQnAReviewsService;
+import com.kosta.readdam.service.klass.ClassQnAReviewsService;
 
 @RestController
 public class ClassQnaReviewsController {

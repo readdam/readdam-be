@@ -1,4 +1,4 @@
-package com.kosta.readdam.service;
+package com.kosta.readdam.service.klass;
 
 import java.time.LocalDateTime;
 import java.util.List;
