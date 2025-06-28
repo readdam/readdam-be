@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.dto.OtherPlaceDto;
 import com.kosta.readdam.service.FileService;
 import com.kosta.readdam.service.otherPlace.OtherPlaceService;
@@ -35,7 +37,7 @@ public class OtherPlaceController {
 	public ResponseEntity<String> registerOtherPlace(
 	        @RequestPart("placeDto") OtherPlaceDto placeDto,
 	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
-	        @RequestPart(value = "keywords", required = false) List<String> keywords
+	        @RequestPart(value = "keywords", required = false) String keywordsJson
 	) throws Exception {
 
 	    // 1. 이미지 저장
@@ -49,7 +51,10 @@ public class OtherPlaceController {
 	    }
 
 	    // 2. 키워드 저장
-	    if (keywords != null) {
+	    if (keywordsJson != null && !keywordsJson.isEmpty()) {
+	    	ObjectMapper objectMapper = new ObjectMapper();
+	        List<String> keywords = objectMapper.readValue(keywordsJson, new TypeReference<List<String>>() {});
+
 	        for (int i = 0; i < keywords.size(); i++) {
 	            Field field = OtherPlaceDto.class.getDeclaredField("tag" + (i + 1));
 	            field.setAccessible(true);

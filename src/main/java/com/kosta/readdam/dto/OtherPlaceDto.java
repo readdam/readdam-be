@@ -36,7 +36,8 @@ public class OtherPlaceDto {
     private LocalTime weekendStime;
     private LocalTime weekendEtime;
     private String introduce;
-    private Integer fee;
+//    private Integer fee;
+    private String fee;
     private String facilities;
 
     // ✅ 추가 이미지

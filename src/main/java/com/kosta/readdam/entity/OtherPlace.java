@@ -52,7 +52,8 @@ public class OtherPlace {
     @Column(columnDefinition = "TEXT")
     private String introduce;
 
-    private Integer fee;
+    @Column(length = 255)
+    private String fee;
 
     @Column(columnDefinition = "TEXT")
     private String facilities;
