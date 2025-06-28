@@ -54,6 +54,9 @@ public class OtherPlace {
 
     @Column(length = 255)
     private String fee;
+    
+    @Column(columnDefinition = "TEXT")
+    private String usageGuide;
 
     @Column(columnDefinition = "TEXT")
     private String facilities;
@@ -92,6 +95,7 @@ public class OtherPlace {
                 .weekendEtime(weekendEtime)
                 .introduce(introduce)
                 .fee(fee)
+                .usageGuide(usageGuide)
                 .facilities(facilities)
                 .img1(img1)
                 .img2(img2)
