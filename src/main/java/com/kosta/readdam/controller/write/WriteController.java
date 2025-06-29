@@ -101,6 +101,12 @@ public class WriteController {
 
 	@PostMapping("/writeList")
 	public ResponseEntity<Map<String, Object>> getWriteList(@RequestBody WriteSearchRequestDto requestDto) {
+//	    log.info("✅ 수신된 WriteSearchRequestDto: {}", requestDto);
+//	    log.info(" - sort: {}", requestDto.getSort());
+//	    log.info(" - type: {}", requestDto.getType());
+//	    log.info(" - status: {}", requestDto.getStatus());
+//	    log.info(" - keyword: {}", requestDto.getKeyword());
+//	    log.info(" - page: {}", requestDto.getPage());
 		int size = 10;
 		Pageable pageable = PageRequest.of(requestDto.getPage() - 1, size);
 
@@ -114,6 +120,7 @@ public class WriteController {
 			Map<String, Object> res = new HashMap<>();
 			res.put("writeList", writeList);
 			res.put("pageInfo", pageInfo);
+			res.put("totalCount", pageResult.getTotalElements()); 
 			return new ResponseEntity<>(res, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();

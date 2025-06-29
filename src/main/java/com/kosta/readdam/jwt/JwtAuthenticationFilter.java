@@ -67,10 +67,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String username = user.getUsername();
 		String nickname = user.getNickname();
 		Boolean isAdmin = user.getIsAdmin();
-		Double lat = user.getLat();
-		Double lng = user.getLng();
+//		Double lat = user.getLat();
+//		Double lng = user.getLng();
 
-		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
+		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin);
 		String refreshToken = jwtToken.makeRefreshToken(username);
 
 		response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
@@ -79,8 +79,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		responseBody.put("username", username);
 		responseBody.put("nickname", nickname);
 		responseBody.put("isAdmin", isAdmin);
-		responseBody.put("lat", lat);
-		responseBody.put("lng", lng);
+//		responseBody.put("lat", lat);
+//		responseBody.put("lng", lng);
 		responseBody.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
 		responseBody.put("access_token", JwtProperties.TOKEN_PREFIX + accessToken);
 

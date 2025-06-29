@@ -36,7 +36,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		Double lat = principalDetails.getUser().getLat();
 		Double lng = principalDetails.getUser().getLng();
 
-		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin, lat, lng);
+		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin);
 		String refreshToken = jwtToken.makeRefreshToken(username);
 
 		// access_token도 쿠키로 내려줌 (HttpOnly 아님!)
