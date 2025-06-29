@@ -36,6 +36,17 @@ public class ClassLikeController {
 	}
 	
 	//좋아요 토글
-//	@PostMapping("/classDetail/{classId}/like")
+	@PostMapping("/classDetail/{classId}/like")
+	public ResponseEntity<?> toggleLike(@PathVariable Integer classId,
+			@AuthenticationPrincipal PrincipalDetails principal) {
+		try {
+			String username = principal.getUsername();
+			Map<String, Object> result = classLikeService.toggleLike(classId, username);
+			return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("좋아요 처리 실패: " + e.getMessage());
+		}
+	}
 
 }

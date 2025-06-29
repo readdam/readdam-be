@@ -15,5 +15,5 @@ public interface ClassLikeRepository extends JpaRepository<ClassLike, Integer> {
 
 	List<ClassLike> findAllByUserUsername(String username);
 
-	long countByClassIdClassId(Integer classId);
+	Integer countByClassIdClassId(Integer classId);
 }
