@@ -1,7 +1,9 @@
 package com.kosta.readdam.service.otherPlace;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 import com.kosta.readdam.entity.OtherPlace;
 import com.kosta.readdam.repository.otherPlace.OtherPlaceRepository;
 
@@ -35,8 +38,19 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
     }
 	
 	@Override
-	public Page<OtherPlaceDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy) {
-	    Page<OtherPlace> placePage = otherPlaceRepository.findAllByFilter(pageable, keyword, filterBy);
-	    return placePage.map(OtherPlaceDto::fromEntity);
+	public Page<OtherPlaceSummaryDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy) {
+		Page<OtherPlaceSummaryDto> page = otherPlaceRepository.findAllByFilter(pageable, keyword, filterBy);
+
+	    // tags 리스트 조립
+	    page.getContent().forEach(dto -> {
+	        dto.setTags(
+	            Stream.of(dto.getTag1(), dto.getTag2(), dto.getTag3(), dto.getTag4(), dto.getTag5())
+	                .filter(Objects::nonNull)
+	                .filter(s -> !s.isBlank())
+	                .collect(Collectors.toList())
+	        );
+	    });
+
+	    return page;
 	}
 }

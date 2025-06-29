@@ -59,6 +59,8 @@ public class OtherPlaceDto {
 
     private List<String> tags;
     
+    private Long likeCount;
+    
     public OtherPlace toEntity() {
         return OtherPlace.builder()
                 .otherPlaceId(otherPlaceId)

@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 import com.kosta.readdam.service.FileService;
 import com.kosta.readdam.service.otherPlace.OtherPlaceService;
 
@@ -68,14 +69,14 @@ public class OtherPlaceController {
 	}
 
 	@GetMapping("/otherPlaceList")
-	public ResponseEntity<Page<OtherPlaceDto>> getOtherPlaceList(
+	public ResponseEntity<Page<OtherPlaceSummaryDto>> getOtherPlaceList(
 	        @RequestParam(name = "page", defaultValue = "0") int page,
 	        @RequestParam(name = "size", defaultValue = "10") int size,
 	        @RequestParam(name = "keyword", required = false) String keyword,
 	        @RequestParam(name = "filterBy", required = false) String filterBy
 	) {
 	    Pageable pageable = PageRequest.of(page, size);
-	    Page<OtherPlaceDto> placePage = otherPlaceService.getOtherPlaceList(pageable, keyword, filterBy);
+	    Page<OtherPlaceSummaryDto> placePage = otherPlaceService.getOtherPlaceList(pageable, keyword, filterBy);
 	    return ResponseEntity.ok(placePage);
 	}
 

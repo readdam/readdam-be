@@ -6,9 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 
 public interface OtherPlaceService {
 	void save(OtherPlaceDto dto);
 	List<OtherPlaceDto> getAllPlaces();
-	Page<OtherPlaceDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy);	
+	Page<OtherPlaceSummaryDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy);	
 }
