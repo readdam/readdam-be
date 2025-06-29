@@ -86,7 +86,7 @@ public class WriteShortServiceImpl implements WriteShortService {
 		Map<String, Object> map = new HashMap<>();
 		map.put("list", list);
 		map.put("pageInfo", pageInfo);
-
+		map.put("totalCount", pageResult.getTotalElements());
 		return map;
 	}
 
