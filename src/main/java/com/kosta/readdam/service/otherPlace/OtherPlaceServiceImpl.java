@@ -53,4 +53,12 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
 
 	    return page;
 	}
+	
+	public OtherPlaceDto getOtherPlaceDetail(Integer id) {
+	    OtherPlace entity = otherPlaceRepository.findById(id)
+	        .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
+
+	    return entity.toDto();
+	}
+
 }

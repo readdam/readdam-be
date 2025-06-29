@@ -58,7 +58,8 @@ public class OtherPlaceDto {
     private String caution;
 
     private List<String> tags;
-    
+    private List<String> images;
+   
     private Long likeCount;
     
     public OtherPlace toEntity() {
@@ -97,7 +98,6 @@ public class OtherPlaceDto {
         OtherPlaceDto dto = new OtherPlaceDto();
         BeanUtils.copyProperties(place, dto);
 
-        // tags 리스트 생성
         dto.setTags(
             Stream.of(
                 place.getTag1(),
@@ -111,6 +111,19 @@ public class OtherPlaceDto {
             .collect(Collectors.toList())
         );
 
+        dto.setImages(
+            Stream.of(
+                place.getImg1(),
+                place.getImg2(),
+                place.getImg3(),
+                place.getImg4(),
+                place.getImg5()
+            )
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList())
+        );
+
         return dto;
     }
+
 }
