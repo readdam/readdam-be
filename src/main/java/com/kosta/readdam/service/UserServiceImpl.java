@@ -4,7 +4,10 @@ import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kosta.readdam.dto.UserDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
 @Service
 public class UserServiceImpl implements UserService{
 	
@@ -58,5 +60,26 @@ public class UserServiceImpl implements UserService{
 	    User user = userDto.toEntity();
 	    userRepository.save(user);
 	}
+
+	@Override
+    @Transactional
+	public UserDto updateLocation(String username, Double latitude, Double longitude) throws Exception{
+        User user = userRepository.findById(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        user.setLat(latitude);
+        user.setLng(longitude);
+
+        return user.toDto();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public UserDto getUser(String username) throws Exception {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+
+            return user.toDto();
+        }
 
 }

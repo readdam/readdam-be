@@ -1,4 +1,4 @@
-package com.kosta.readdam.controller;
+package com.kosta.readdam.controller.user;
 
 import java.io.File;
 import java.util.Map;
@@ -22,7 +22,7 @@ import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.service.UserService;
 
 @RestController
-public class Login {
+public class LoginController {
 	
 	@Autowired
 	private UserService userService;
@@ -64,7 +64,6 @@ public class Login {
 	        @RequestPart(value = "file", required = false) MultipartFile file
 	) {
 		try {
-//			userdto.setPassword(bCryptPasswordEncoder.encode(userdto.getPassword()));
 			userService.join(userdto, file);
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		} catch(Exception e) {

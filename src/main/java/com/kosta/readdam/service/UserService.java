@@ -10,4 +10,7 @@ public interface UserService {
 
 	void join(UserDto userDto, MultipartFile file) throws Exception;
 
+	UserDto updateLocation(String username, Double latitude, Double longitude) throws Exception;
+
+	UserDto getUser(String username)throws Exception ;
 }
