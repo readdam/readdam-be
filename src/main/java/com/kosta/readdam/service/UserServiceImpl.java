@@ -1,15 +1,20 @@
 package com.kosta.readdam.service;
 
+import java.io.File;
 import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.UserDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
-
 @Service
 public class UserServiceImpl implements UserService{
 	
@@ -18,6 +23,9 @@ public class UserServiceImpl implements UserService{
 	
 	@Autowired
     private BCryptPasswordEncoder passwordEncoder;	
+	
+	@Value("${iupload.path}")
+	private String iuploadPath;
 
 	@Override
 	public UserDto login(String username, String password) throws Exception {
@@ -27,10 +35,51 @@ public class UserServiceImpl implements UserService{
 	}
 	
 	@Override
-	public void join(UserDto userDto) throws Exception {
+	public void join(UserDto userDto, MultipartFile file) throws Exception {
+	    // 1. 중복 체크
 		Optional<User> omember = userRepository.findById(userDto.getUsername());
 		if(omember.isPresent()) throw new Exception("아이디 중복오류");
-		userRepository.save(userDto.toEntity());
+
+	    // 2. 파일 업로드
+	    String profileImgName = null;
+	    if (file != null && !file.isEmpty()) {
+	        String ext = file.getOriginalFilename()
+	                         .substring(file.getOriginalFilename().lastIndexOf("."));
+	        profileImgName = UUID.randomUUID().toString() + ext;
+	        File saveFile = new File(iuploadPath, profileImgName);
+	        file.transferTo(saveFile);
+	    }
+
+	    // 3. DTO에 이미지 세팅
+	    userDto.setProfileImg(profileImgName);
+	    
+	    // 4. password 암호화
+	    userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
+	    // 5. 저장
+	    User user = userDto.toEntity();
+	    userRepository.save(user);
 	}
+
+	@Override
+    @Transactional
+	public UserDto updateLocation(String username, Double latitude, Double longitude) throws Exception{
+        User user = userRepository.findById(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        user.setLat(latitude);
+        user.setLng(longitude);
+
+        return user.toDto();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public UserDto getUser(String username) throws Exception {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+
+            return user.toDto();
+        }
 
 }
