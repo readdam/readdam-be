@@ -13,4 +13,7 @@ public interface WriteShortRepository extends JpaRepository<WriteShort, Integer>
     Page<WriteShort> findByEvent_EventIdAndIsHideFalse(Integer eventId, Pageable pageable);
     
     List<WriteShort> findByUser_UsernameAndIsHideFalseOrderByRegDateDesc(String username);
+    
+    List<WriteShort> findTop3ByEvent_EventIdAndIsHideFalseOrderByLikesDesc(Integer eventId);
+
 }

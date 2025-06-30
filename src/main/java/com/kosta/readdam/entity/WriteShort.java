@@ -73,4 +73,21 @@ public class WriteShort {
             .likes(entity.getLikes())
             .build();
     }
+    
+    public WriteShortDto toDto() {
+        return WriteShortDto.builder()
+            .writeshortId(this.writeshortId)
+            .content(this.content)
+            .color(this.color)
+            .username(this.user.getUsername())
+            .nickname(this.user.getNickname())
+            .eventId(this.event.getEventId())
+            .eventTitle(this.event.getTitle())
+            .regDate(this.regDate)
+            .isHide(this.isHide)
+            .likes(this.likes)
+            .likeCount(this.likes.longValue())
+            .isLiked(false)
+            .build();
+    }
 }
