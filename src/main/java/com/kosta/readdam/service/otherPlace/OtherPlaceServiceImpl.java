@@ -1,6 +1,5 @@
 package com.kosta.readdam.service.otherPlace;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,13 +29,6 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
 	    OtherPlace entity = dto.toEntity();
 	    otherPlaceRepository.save(entity);
 	}
-
-	@Override
-    public List<OtherPlaceDto> getAllPlaces() {
-        return otherPlaceRepository.findAll().stream()
-                .map(OtherPlaceDto::fromEntity)
-                .collect(Collectors.toList());
-    }
 	
 	@Override
 	public Page<OtherPlaceSummaryDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy) {
