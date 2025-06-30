@@ -1,9 +1,20 @@
 package com.kosta.readdam.dto;
 
-import com.kosta.readdam.entity.OtherPlace;
-import lombok.*;
-
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.BeanUtils;
+
+import com.kosta.readdam.entity.OtherPlace;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -25,7 +36,8 @@ public class OtherPlaceDto {
     private LocalTime weekendStime;
     private LocalTime weekendEtime;
     private String introduce;
-    private Integer fee;
+    private String fee;
+    private String usageGuide;
     private String facilities;
 
     // ✅ 추가 이미지
@@ -45,6 +57,11 @@ public class OtherPlaceDto {
     // ✅ 주의사항
     private String caution;
 
+    private List<String> tags;
+    private List<String> images;
+   
+    private Long likeCount;
+    
     public OtherPlace toEntity() {
         return OtherPlace.builder()
                 .otherPlaceId(otherPlaceId)
@@ -61,6 +78,7 @@ public class OtherPlaceDto {
                 .weekendEtime(weekendEtime)
                 .introduce(introduce)
                 .fee(fee)
+                .usageGuide(usageGuide)
                 .facilities(facilities)
                 .img1(img1)
                 .img2(img2)
@@ -75,4 +93,37 @@ public class OtherPlaceDto {
                 .caution(caution)
                 .build();
     }
+    
+    public static OtherPlaceDto fromEntity(OtherPlace place) {
+        OtherPlaceDto dto = new OtherPlaceDto();
+        BeanUtils.copyProperties(place, dto);
+
+        dto.setTags(
+            Stream.of(
+                place.getTag1(),
+                place.getTag2(),
+                place.getTag3(),
+                place.getTag4(),
+                place.getTag5()
+            )
+            .filter(Objects::nonNull)
+            .filter(s -> !s.isBlank())
+            .collect(Collectors.toList())
+        );
+
+        dto.setImages(
+            Stream.of(
+                place.getImg1(),
+                place.getImg2(),
+                place.getImg3(),
+                place.getImg4(),
+                place.getImg5()
+            )
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList())
+        );
+
+        return dto;
+    }
+
 }
