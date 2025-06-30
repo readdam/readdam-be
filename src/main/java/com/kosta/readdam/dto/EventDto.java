@@ -53,6 +53,7 @@ public class EventDto {
                 .startTime(event.getStartTime())
                 .endTime(event.getEndTime())
                 .topParticipants(top3)
+                .pointsDistributed(event.getPointsDistributed())
                 .build();
     }
 }
