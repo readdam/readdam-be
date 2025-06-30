@@ -7,10 +7,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
+import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QOtherPlace;
 import com.kosta.readdam.entity.QOtherPlaceLike;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -80,4 +86,60 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
 	    return new PageImpl<>(content, pageable, total);
 	}
 
+	@Override
+    public List<UnifiedPlaceDto> searchPlaces(
+        String tag,
+        String keyword,
+        Double lat,
+        Double lng,
+        Double radiusKm,
+        int offset,
+        int limit
+    ) {
+        QOtherPlace p = QOtherPlace.otherPlace;
+        QOtherPlaceLike pl = QOtherPlaceLike.otherPlaceLike;
+
+        SubQueryExpression<Long> likeCountSubquery = JPAExpressions
+            .select(Wildcard.count)
+            .from(pl)
+            .where(pl.otherPlace.eq(p));
+
+        return queryFactory
+            .select(Projections.constructor(UnifiedPlaceDto.class,
+                p.otherPlaceId,
+                p.name,
+                p.basicAddress,
+                p.img1,
+                p.tag1,
+                p.tag2,
+                p.tag3,
+                p.tag4,
+                p.tag5,
+                likeCountSubquery,
+                Expressions.constant("OTHER")
+            ))
+            .from(p)
+            .where(
+                tag != null ? anyTagMatch(p, tag) : null,
+                keyword != null ? keywordMatch(p, keyword) : null
+            )
+            .offset(offset)
+            .limit(limit)
+            .fetch();
+    }
+
+    private BooleanBuilder anyTagMatch(QOtherPlace p, String tag) {
+        return new BooleanBuilder()
+            .or(p.tag1.eq(tag))
+            .or(p.tag2.eq(tag))
+            .or(p.tag3.eq(tag))
+            .or(p.tag4.eq(tag))
+            .or(p.tag5.eq(tag));
+    }
+
+    private BooleanBuilder keywordMatch(QOtherPlace p, String keyword) {
+        return new BooleanBuilder()
+            .or(p.name.containsIgnoreCase(keyword))
+            .or(p.basicAddress.containsIgnoreCase(keyword));
+    }
 }

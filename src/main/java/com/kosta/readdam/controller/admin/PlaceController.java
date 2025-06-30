@@ -30,7 +30,7 @@ import com.kosta.readdam.service.place.PlaceService;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@RestController("adminPlaceController")
 @RequiredArgsConstructor
 public class PlaceController {
 	private final PlaceService placeService;

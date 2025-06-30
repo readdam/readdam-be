@@ -11,12 +11,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
+import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QPlace;
 import com.kosta.readdam.entity.QPlaceLike;
 import com.kosta.readdam.entity.QPlaceRoom;
 import com.kosta.readdam.entity.QPlaceTime;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.Wildcard;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -123,4 +130,61 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 
 		return new PageImpl<>(content, pageable, total == null ? 0 : total);
 	}
+	
+	 @Override
+	    public List<UnifiedPlaceDto> searchPlaces(
+	        String tag,
+	        String keyword,
+	        Double lat,
+	        Double lng,
+	        Double radiusKm,
+	        int offset,
+	        int limit
+	    ) {
+	        QPlace p = QPlace.place;
+	        QPlaceLike pl = QPlaceLike.placeLike;
+
+	        SubQueryExpression<Long> likeCountSubquery = JPAExpressions
+	            .select(Wildcard.count)
+	            .from(pl)
+	            .where(pl.place.eq(p));
+
+	        return query
+	            .select(Projections.constructor(UnifiedPlaceDto.class,
+	                p.placeId,
+	                p.name,
+	                p.basicAddress,
+	                p.img1,
+	                p.tag1,
+	                p.tag2,
+	                p.tag3,
+	                p.tag4,
+	                p.tag5,
+	                likeCountSubquery,
+	                Expressions.constant("PLACE")
+	            ))
+	            .from(p)
+	            .where(
+	                tag != null ? anyTagMatch(p, tag) : null,
+	                keyword != null ? keywordMatch(p, keyword) : null
+	            )
+	            .offset(offset)
+	            .limit(limit)
+	            .fetch();
+	    }
+
+	    private BooleanBuilder anyTagMatch(QPlace p, String tag) {
+	        return new BooleanBuilder()
+	            .or(p.tag1.eq(tag))
+	            .or(p.tag2.eq(tag))
+	            .or(p.tag3.eq(tag))
+	            .or(p.tag4.eq(tag))
+	            .or(p.tag5.eq(tag));
+	    }
+
+	    private BooleanBuilder keywordMatch(QPlace p, String keyword) {
+	        return new BooleanBuilder()
+	            .or(p.name.containsIgnoreCase(keyword))
+	            .or(p.basicAddress.containsIgnoreCase(keyword));
+	    }
 }
