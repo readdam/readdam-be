@@ -1,0 +1,19 @@
+package com.kosta.readdam.service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.kosta.readdam.entity.Report;
+
+public interface ReportService {
+
+	List<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
+			LocalDate startDate, LocalDate endDate);
+
+	Page<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
+			LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+}

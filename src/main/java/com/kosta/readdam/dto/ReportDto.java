@@ -21,6 +21,7 @@ public class ReportDto {
     private String category;
     private String categoryId;
     private LocalDateTime reportedAt;
+    private LocalDateTime processedAt;
     private ReportStatus status;
 
     public Report toEntity(User reporter, User reported) {
