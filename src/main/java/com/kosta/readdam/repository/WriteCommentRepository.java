@@ -10,4 +10,5 @@ public interface WriteCommentRepository extends JpaRepository<WriteComment, Inte
 	long countByWriteWriteId(Integer writeId);
 	List<WriteComment> findByUserUsernameOrderByRegDateDesc(String username);
 	boolean existsByWrite_WriteIdAndUser_Username(Integer writeId, String username);
+	boolean existsByWrite_WriteIdAndAdoptedTrue(Integer writeId);
 }

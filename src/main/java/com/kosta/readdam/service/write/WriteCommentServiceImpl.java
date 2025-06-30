@@ -56,4 +56,27 @@ public class WriteCommentServiceImpl implements WriteCommentService {
 	    // 댓글 수 +1 처리
 	    writeRepository.updateCommentCnt(write.getWriteId(), 1);
 	}
+
+	@Override
+	public boolean existsByWrite_WriteIdAndAdoptedTrue(Integer writeId) throws Exception {
+		return writeCommentRepository.existsByWrite_WriteIdAndAdoptedTrue(writeId);
+	}
+
+	@Transactional
+	@Override
+	public void adoptComment(Integer writeCommentId) throws Exception {
+	    WriteComment comment = writeCommentRepository.findById(writeCommentId)
+	            .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+
+	    Integer writeId = comment.getWrite().getWriteId();
+
+	    boolean alreadyAdopted = writeCommentRepository.existsByWrite_WriteIdAndAdoptedTrue(writeId);
+	    if (alreadyAdopted) {
+	        throw new IllegalStateException("이미 채택된 댓글이 존재합니다.");
+	    }
+
+	    comment.setAdopted(true);
+	    writeCommentRepository.save(comment);
+		
+	}
 }
