@@ -1,21 +1,28 @@
 package com.kosta.readdam.service.klass;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.ClassQnaDto;
+import com.kosta.readdam.dto.ClassReviewDto;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassQna;
+import com.kosta.readdam.entity.ClassReview;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.ClassQnaRepository;
 import com.kosta.readdam.repository.ClassRepository;
+import com.kosta.readdam.repository.ClassReviewRepository;
 import com.kosta.readdam.repository.UserRepository;
 
 @Service
@@ -31,7 +38,13 @@ public class ClassQnAReviewsServiceImpl implements ClassQnAReviewsService {
 	ClassQnaRepository classQnaRepository;
 	
 	@Autowired
+	ClassReviewRepository classReviewRepository;
+	
+	@Autowired
 	UserRepository userRepository;
+	
+	@Value("${iupload.path}")
+	private String iuploadPath;
 	
 	@Override
 	@Transactional
@@ -93,5 +106,61 @@ public class ClassQnAReviewsServiceImpl implements ClassQnAReviewsService {
 		classQnaRepository.save(qna);
 		
 	}
+
+	
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ClassReviewDto> getReviewsByClassId(Integer classId) {
+		List<ClassReview> reviewEntities = classReviewRepository.findByClassEntity_ClassId(classId);
+		
+		List<ClassReviewDto> reviewDtoList = reviewEntities.stream().map(reviews -> {
+			ClassReviewDto rDto = ClassReviewDto.builder()
+					.classId(classId)
+					.classReviewId(reviews.getClassReviewId())
+					.content(reviews.getContent())
+					.img(reviews.getImg())
+					.rating(reviews.getRating())
+					.isHide(reviews.getIsHide())
+					.regDate(reviews.getRegDate())
+					.username(reviews.getUser().getUsername())
+					.build();
+			return rDto;
+		}).collect(Collectors.toList());
+		return reviewDtoList;
+	}
+
+
+	@Override
+	@Transactional
+	public void createReview(User user, Integer classId, String content, Integer rating, String img, MultipartFile ifile) throws Exception{
+		ClassEntity classEntity = classRepository.findById(classId)
+				.orElseThrow(()-> new Exception("해당 모임을 찾을 수 없습니다."));
+		
+//		user = userRepository.findById(user.getUsername())
+//				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+		
+		if(ifile != null && !ifile.isEmpty()) {
+			img = ifile.getOriginalFilename();
+			File upFile = new File(iuploadPath, img);
+			ifile.transferTo(upFile);
+		}
+		
+		ClassReview review = ClassReview.builder()
+				.classEntity(classEntity)
+				.user(user)
+				.content(content)
+				.rating(rating)
+				.img(img)
+				.regDate(LocalDateTime.now())
+				.isHide(false)
+				.build();
+		
+		classReviewRepository.save(review);
+		
+	}
+
+
+
 
 }
