@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,12 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
 	        .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
 
 	    return entity.toDto();
+	}
+
+	@Transactional
+	public void updateOtherPlace(Integer id, OtherPlaceDto dto) {
+	    OtherPlace entity = otherPlaceRepository.findById(id).orElseThrow(() -> new RuntimeException("해당 장소 없음"));
+	    BeanUtils.copyProperties(dto, entity, "otherPlaceId");
 	}
 
 }

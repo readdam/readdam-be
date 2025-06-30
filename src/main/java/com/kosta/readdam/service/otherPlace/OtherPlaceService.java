@@ -14,4 +14,6 @@ public interface OtherPlaceService {
 //	void update(Long id, OtherPlaceDto dto);
 	OtherPlaceDto getOtherPlaceDetail(Integer id);
 	Page<OtherPlaceSummaryDto> getOtherPlaceList(Pageable pageable, String keyword, String filterBy);
+//	void updateOtherPlace(Integer placeId, OtherPlaceDto placeDto, List<MultipartFile> newImages, List<String> existingImages, String keywordsJson);
+	void updateOtherPlace(Integer id, OtherPlaceDto dto);
 }

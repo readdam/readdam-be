@@ -1,6 +1,7 @@
 package com.kosta.readdam.controller.otherPlace;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -86,4 +88,45 @@ public class OtherPlaceController {
 		OtherPlaceDto dto = otherPlaceService.getOtherPlaceDetail(id);
 	    return ResponseEntity.ok(dto);
 	}
+	
+	@PostMapping(value = "/otherPlaceEdit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Transactional
+	public ResponseEntity<String> editOtherPlace(
+	    @PathVariable Integer id,
+	    @RequestPart("placeDto") OtherPlaceDto dto,
+	    @RequestPart(value = "placeImages", required = false) List<MultipartFile> newImages,
+	    @RequestPart(value = "existingImages", required = false) List<String> existingImages,
+	    @RequestPart(value = "keywords", required = false) String keywordsJson
+	) throws Exception {
+
+	    // 1. 이미지 저장
+	    List<String> saved = (newImages != null) ? fileService.save(newImages) : new ArrayList<>();
+	    List<String> all = new ArrayList<>();
+	    if (existingImages != null) all.addAll(existingImages);
+	    all.addAll(saved);
+
+	    for (int i = 0; i < 5; i++) {
+	        Field f = OtherPlaceDto.class.getDeclaredField("img" + (i + 1));
+	        f.setAccessible(true);
+	        f.set(dto, i < all.size() ? all.get(i) : null);
+	    }
+
+	    // 2. 태그 세팅
+	    if (keywordsJson != null && !keywordsJson.isBlank()) {
+	        ObjectMapper mapper = new ObjectMapper();
+	        List<String> tags = mapper.readValue(keywordsJson, new TypeReference<List<String>>() {});
+	        for (int i = 0; i < 5; i++) {
+	            Field f = OtherPlaceDto.class.getDeclaredField("tag" + (i + 1));
+	            f.setAccessible(true);
+	            f.set(dto, i < tags.size() ? tags.get(i) : null);
+	        }
+	    }
+
+	    // 3. 서비스에 DTO만 전달
+	    otherPlaceService.updateOtherPlace(id, dto);
+
+	    return ResponseEntity.ok("수정 완료");
+	}
+
+
 }
