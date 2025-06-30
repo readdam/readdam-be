@@ -17,14 +17,26 @@ import com.kosta.readdam.entity.enums.ReportStatus;
 
 public class ReportSpecification {
 
-    public static Specification<Report> hasKeyword(String filterType, String keyword) {
+	public static Specification<Report> hasKeyword(String filterType, String keyword) {
         return (root, query, cb) -> {
-            if (keyword == null || keyword.isBlank()) return null;
-            if ("reporter".equals(filterType)) {
+            if (keyword == null || keyword.isBlank()) {
+                return null;
+            }
+            
+            if ("user".equals(filterType)) {
                 Join<Report, User> reporter = root.join("reporter", JoinType.INNER);
-                return cb.like(reporter.get("username"), "%" + keyword + "%");
-            } else {
+                Join<Report, User> reported = root.join("reported", JoinType.INNER);
+                return cb.or(
+                    cb.like(reporter.get("username"), "%" + keyword + "%"),
+                    cb.like(reported.get("username"), "%" + keyword + "%")
+                );
+                
+            } else if ("content".equals(filterType)) {
+                // 내용(reason) 검색
                 return cb.like(root.get("reason"), "%" + keyword + "%");
+                
+            } else {
+                return null;
             }
         };
     }

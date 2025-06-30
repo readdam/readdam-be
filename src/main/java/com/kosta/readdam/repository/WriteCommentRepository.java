@@ -2,8 +2,11 @@ package com.kosta.readdam.repository;
 
 import java.util.List;
 
-import com.kosta.readdam.entity.WriteComment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.kosta.readdam.entity.WriteComment;
 
 public interface WriteCommentRepository extends JpaRepository<WriteComment, Integer> {
 	List<WriteComment> findByWrite_WriteId(Integer writeId); 
@@ -11,4 +14,5 @@ public interface WriteCommentRepository extends JpaRepository<WriteComment, Inte
 	List<WriteComment> findByUserUsernameOrderByRegDateDesc(String username);
 	boolean existsByWrite_WriteIdAndUser_Username(Integer writeId, String username);
 	boolean existsByWrite_WriteIdAndAdoptedTrue(Integer writeId);
+	
 }

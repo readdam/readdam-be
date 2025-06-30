@@ -47,6 +47,9 @@ public class Report {
 
     @Column(length = 255)
     private String reason;
+    
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     @Column(length = 255)
     private String category;
@@ -76,6 +79,7 @@ public class Report {
             .reportedAt(this.reportedAt)
             .processedAt(this.processedAt)
             .status(this.status)
+            .content(this.content) 
             .build();
     }
 }

@@ -4,51 +4,98 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.dto.ReportDto;
 import com.kosta.readdam.entity.Report;
 import com.kosta.readdam.service.ReportService;
+import com.kosta.readdam.util.PageInfo2;
 
 @RestController
-@RequestMapping("/api/admin/reports")
+@RequestMapping("/admin/report")
 public class ReportController {
 
-	private final ReportService service;
+    private final ReportService service;
 
-	public ReportController(ReportService service) {
-		this.service = service;
-	}
+    public ReportController(ReportService service) {
+        this.service = service;
+    }
 
-	@GetMapping
-	public List<ReportDto> listReports(@RequestParam(required = false) String keyword,
-			@RequestParam(defaultValue = "reporter") String filterType, @RequestParam(required = false) String category,
-			@RequestParam(required = false) String status, // 이건 한글로 옴
-			@RequestParam(defaultValue = "접수일") String dateType,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-		// 프론트의 한글 상태를 영어 enum 이름으로 변환
-		String enumStatus = null;
-		if (status != null && !status.isBlank()) {
-			switch (status) {
-			case "미처리":
-				enumStatus = "PENDING";
-				break;
-			case "처리":
-				enumStatus = "RESOLVED";
-				break;
-			case "반려":
-				enumStatus = "REJECTED";
-				break;
-			default:
-				enumStatus = status; // 혹시 영어 코드일 때
-			}
-		}
-		List<Report> list = service.getReports(keyword, filterType, category, enumStatus, dateType, startDate, endDate);
-		return list.stream().map(Report::toDto).collect(Collectors.toList());
-	}
+    @GetMapping
+    public PagedResponse<ReportDto> listReports(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "user") String filterType,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String status,    // 한글 상태
+            @RequestParam(defaultValue = "접수일") String dateType,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        // 한글 상태 → 영문 enum 코드 매핑
+        String enumStatus = null;
+        if (status != null && !status.isBlank()) {
+            switch (status) {
+                case "미처리": enumStatus = "PENDING"; break;
+                case "처리":   enumStatus = "RESOLVED"; break;
+                case "반려":   enumStatus = "REJECTED"; break;
+                default:       enumStatus = status;
+            }
+        }
+        // Pageable 생성 (0-based page index)
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("reportedAt").descending());
+
+        // 페이징된 Report 조회
+        Page<Report> paged = service.getReports(
+            keyword, filterType, category, enumStatus,
+            dateType, startDate, endDate,
+            pageable
+        );
+
+        // 엔티티 → DTO 변환
+        List<ReportDto> dtoList = paged.stream()
+            .map(Report::toDto)
+            .collect(Collectors.toList());
+
+        // PageInfo2 생성
+        PageInfo2 pageInfo = PageInfo2.from(paged);
+
+        // PagedResponse 반환
+        return new PagedResponse<>(dtoList, pageInfo);
+    }
+    
+    @GetMapping("/{id}")
+    public ReportDto detail(@PathVariable("id") Integer id) {
+        return service.getReportDetail(id);
+    }
+
+    /**
+     * 신고 반려 처리 (REJECTED, processedAt 기록)
+     */
+    @PutMapping("/{id}/reject")
+    public ReportDto reject(@PathVariable("id") Integer id) {
+        return service.processReport(id, "REJECTED");
+    }
+
+    /**
+     * 신고 숨김 처리 (RESOLVED + 해당 콘텐츠 is_hide=1)
+     */
+    @PutMapping("/{id}/hide")
+    public ReportDto hide(@PathVariable("id") Integer id) {
+        return service.hideContentAndResolve(id);
+    }
 }
