@@ -1,10 +1,24 @@
 package com.kosta.readdam.entity;
 
-import com.kosta.readdam.dto.OtherPlaceDto;
-import lombok.*;
-
-import javax.persistence.*;
 import java.time.LocalTime;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.kosta.readdam.dto.OtherPlaceDto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "other_place")
@@ -52,7 +66,11 @@ public class OtherPlace {
     @Column(columnDefinition = "TEXT")
     private String introduce;
 
-    private Integer fee;
+    @Column(length = 255)
+    private String fee;
+    
+    @Column(columnDefinition = "TEXT")
+    private String usageGuide;
 
     @Column(columnDefinition = "TEXT")
     private String facilities;
@@ -91,6 +109,7 @@ public class OtherPlace {
                 .weekendEtime(weekendEtime)
                 .introduce(introduce)
                 .fee(fee)
+                .usageGuide(usageGuide)
                 .facilities(facilities)
                 .img1(img1)
                 .img2(img2)
@@ -102,6 +121,19 @@ public class OtherPlace {
                 .tag3(tag3)
                 .tag4(tag4)
                 .tag5(tag5)
+                // ✅ tags 리스트 꼭 넣기
+                .tags(
+                    Stream.of(tag1, tag2, tag3, tag4, tag5)
+                        .filter(Objects::nonNull)
+                        .filter(s -> !s.isBlank())
+                        .collect(Collectors.toList())
+                )
+                // ✅ images 리스트도 넣기
+                .images(
+                    Stream.of(img1, img2, img3, img4, img5)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList())
+                )
                 .caution(caution)
                 .build();
     }

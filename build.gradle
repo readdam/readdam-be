@@ -18,6 +18,9 @@ java {
 	sourceCompatibility = '11'
 }
 
+springBoot {
+    mainClass = 'com.kosta.readdam.MyAppApplication'
+}
 
 repositories {
 	mavenCentral()

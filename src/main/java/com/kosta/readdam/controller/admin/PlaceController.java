@@ -1,4 +1,4 @@
-package com.kosta.readdam.controller.place;
+package com.kosta.readdam.controller.admin;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
