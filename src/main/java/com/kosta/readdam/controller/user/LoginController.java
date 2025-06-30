@@ -1,6 +1,8 @@
-package com.kosta.readdam.controller;
+package com.kosta.readdam.controller.user;
 
+import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,7 +11,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.UserDto;
@@ -18,7 +22,7 @@ import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.service.UserService;
 
 @RestController
-public class Login {
+public class LoginController {
 	
 	@Autowired
 	private UserService userService;
@@ -55,10 +59,12 @@ public class Login {
 
 	
 	@PostMapping("/join")
-	public ResponseEntity<Boolean> join(@RequestBody UserDto userdto) {
+	public ResponseEntity<Boolean> join(
+	        @RequestPart("userDto") UserDto userdto,
+	        @RequestPart(value = "file", required = false) MultipartFile file
+	) {
 		try {
-			userdto.setPassword(bCryptPasswordEncoder.encode(userdto.getPassword()));
-			userService.join(userdto);
+			userService.join(userdto, file);
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		} catch(Exception e) {
 			e.printStackTrace();
