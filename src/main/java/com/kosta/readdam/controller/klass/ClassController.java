@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.entity.User;
-import com.kosta.readdam.service.ClassService;
+import com.kosta.readdam.service.klass.ClassService;
 
 @RestController
 public class ClassController {

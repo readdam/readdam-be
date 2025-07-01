@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.kosta.readdam.service;
+package com.kosta.readdam.service.klass;
 
 import java.util.Map;
 
