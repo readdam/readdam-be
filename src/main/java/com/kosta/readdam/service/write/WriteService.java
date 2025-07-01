@@ -14,7 +14,7 @@ import com.kosta.readdam.entity.Write;
 public interface WriteService {
 	Integer writeDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception;
 	WriteDto detailWrite(Integer writeId) throws Exception;
-	List<WriteDto> findLatest(int limit);
+	List<WriteDto> findLatest(int limit) throws Exception;
 	Page<Write> searchWrites(WriteSearchRequestDto cond, Pageable pageable);
 	boolean isLiked(String username, Integer writeId) throws Exception;
 	int getLikeCount(Integer writeId) throws Exception; // 좋아요 수는 null 없어서 int로 함
