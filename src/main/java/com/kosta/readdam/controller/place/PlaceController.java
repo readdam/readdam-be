@@ -2,7 +2,6 @@ package com.kosta.readdam.controller.place;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.dto.place.UnifiedPlacePageResponse;
 import com.kosta.readdam.service.otherPlace.OtherPlaceService;
@@ -160,7 +160,7 @@ public class PlaceController {
                 : merged.subList(start, end);
 
         PageInfo2 pageInfo = new PageInfo2(
-                page + 1,
+                page,
                 size,
                 end == totalElements,
                 totalElements,
