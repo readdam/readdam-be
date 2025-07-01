@@ -261,9 +261,10 @@ public class PlaceServiceImpl implements PlaceService {
 			    Double lng,
 			    Double radiusKm,
 			    int offset,
-			    int limit
+			    int limit,
+			    String sortBy
 			) {
-			    return placeDslRepository.searchPlaces(tag, keyword, lat, lng, radiusKm, offset, limit);
+			    return placeDslRepository.searchPlaces(tag, keyword, lat, lng, radiusKm, offset, limit, sortBy);
 			}
 
 }

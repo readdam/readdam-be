@@ -1,5 +1,6 @@
 package com.kosta.readdam.repository.otherPlace;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -11,12 +12,10 @@ import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QOtherPlace;
 import com.kosta.readdam.entity.QOtherPlaceLike;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.Wildcard;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -94,39 +93,54 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
         Double lng,
         Double radiusKm,
         int offset,
-        int limit
+        int limit,
+        String sortBy
     ) {
         QOtherPlace p = QOtherPlace.otherPlace;
         QOtherPlaceLike pl = QOtherPlaceLike.otherPlaceLike;
 
-        SubQueryExpression<Long> likeCountSubquery = JPAExpressions
-            .select(Wildcard.count)
-            .from(pl)
-            .where(pl.otherPlace.eq(p));
+//        SubQueryExpression<Long> likeCountSubquery = JPAExpressions
+//            .select(Wildcard.count)
+//            .from(pl)
+//            .where(pl.otherPlace.eq(p));
 
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        if (tag != null) whereBuilder.and(anyTagMatch(p, tag));
+        if (keyword != null) whereBuilder.and(keywordMatch(p, keyword));
+
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        if ("likes".equalsIgnoreCase(sortBy)) {
+            orderSpecifiers.add(pl.likeId.count().desc());
+            orderSpecifiers.add(p.otherPlaceId.desc());
+        } else {
+            orderSpecifiers.add(p.otherPlaceId.desc());
+        }
+        
         return queryFactory
-            .select(Projections.constructor(UnifiedPlaceDto.class,
-                p.otherPlaceId,
-                p.name,
-                p.basicAddress,
-                p.img1,
-                p.tag1,
-                p.tag2,
-                p.tag3,
-                p.tag4,
-                p.tag5,
-                likeCountSubquery,
-                Expressions.constant("OTHER")
-            ))
-            .from(p)
-            .where(
-                tag != null ? anyTagMatch(p, tag) : null,
-                keyword != null ? keywordMatch(p, keyword) : null
-            )
-            .offset(offset)
-            .limit(limit)
-            .fetch();
-    }
+        	    .select(Projections.constructor(UnifiedPlaceDto.class,
+        	        p.otherPlaceId,
+        	        p.name,
+        	        p.basicAddress,
+        	        p.img1,
+        	        p.tag1,
+        	        p.tag2,
+        	        p.tag3,
+        	        p.tag4,
+        	        p.tag5,
+        	        pl.likeId.count(),
+        	        Expressions.constant("OTHER")
+        	    ))
+        	    .from(p)
+        	    .leftJoin(pl).on(pl.otherPlace.eq(p))
+        	    .where(whereBuilder)
+                .groupBy(p.otherPlaceId)
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
+                .offset(offset)
+                .limit(limit)
+                .fetch();
+
+
+	}
 
     private BooleanBuilder anyTagMatch(QOtherPlace p, String tag) {
         return new BooleanBuilder()

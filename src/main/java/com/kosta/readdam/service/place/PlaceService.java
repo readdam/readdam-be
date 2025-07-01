@@ -19,6 +19,6 @@ public interface PlaceService {
 	void updatePlace(Integer placeId, PlaceDto placeDto, List<PlaceRoomDto> roomDtos, List<PlaceTimeDto> timeDtos);
 	List<UnifiedPlaceDto> getUnifiedList();
 //	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double userLat, Double userLng, Double radiusKm);
-	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset, int limit);
+	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset, int limit, String sortBy);
 }
 

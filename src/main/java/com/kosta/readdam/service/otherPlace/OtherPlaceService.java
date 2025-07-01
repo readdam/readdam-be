@@ -17,5 +17,5 @@ public interface OtherPlaceService {
 	List<UnifiedPlaceDto> getUnifiedList();
 //	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double userLat, Double userLng, Double radiusKm);
 	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset,
-			int limit);
+			int limit, String sortBy);
 }

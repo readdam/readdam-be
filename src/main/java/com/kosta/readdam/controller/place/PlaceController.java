@@ -119,7 +119,7 @@ public class PlaceController {
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lng,
             @RequestParam(required = false) Double radiusKm,
-            @RequestParam(defaultValue = "likes") String sortBy
+            @RequestParam(defaultValue = "latest") String sortBy
     ) {
         // 가져올 갯수 넉넉히
         int fetchSize = size * 3;
@@ -135,10 +135,10 @@ public class PlaceController {
 //        }
 
         if (!"OTHER".equalsIgnoreCase(placeType)) {
-            placeList = placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize);
+            placeList = placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize, sortBy);
         }
         if (!"PLACE".equalsIgnoreCase(placeType)) {
-            otherPlaceList = otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize);
+            otherPlaceList = otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize, sortBy);
         }
 
         
@@ -149,19 +149,7 @@ public class PlaceController {
 
         // 
 //        정렬: 좋아요순 + 동점 시 외부 우선
-        merged.sort((a, b) -> {
-            int compareLikes = Integer.compare(b.getLikeCount(), a.getLikeCount());
-            if (compareLikes != 0) return compareLikes;
-
-            // 좋아요 동점이면 외부(OTHER)가 우선
-            if ("OTHER".equals(b.getType()) && !"OTHER".equals(a.getType())) {
-                return -1;
-            } else if (!"OTHER".equals(b.getType()) && "OTHER".equals(a.getType())) {
-                return 1;
-            } else {
-                return 0;
-            }
-        });
+       
 
         // 최종 페이지 처리
         int totalElements = merged.size();

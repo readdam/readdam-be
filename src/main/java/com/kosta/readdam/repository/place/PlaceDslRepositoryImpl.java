@@ -1,5 +1,6 @@
 package com.kosta.readdam.repository.place;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,12 +19,10 @@ import com.kosta.readdam.entity.QPlaceRoom;
 import com.kosta.readdam.entity.QPlaceTime;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.Wildcard;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -131,47 +130,66 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		return new PageImpl<>(content, pageable, total == null ? 0 : total);
 	}
 	
-	 @Override
-	    public List<UnifiedPlaceDto> searchPlaces(
-	        String tag,
-	        String keyword,
-	        Double lat,
-	        Double lng,
-	        Double radiusKm,
-	        int offset,
-	        int limit
-	    ) {
-	        QPlace p = QPlace.place;
-	        QPlaceLike pl = QPlaceLike.placeLike;
+	@Override
+	public List<UnifiedPlaceDto> searchPlaces(
+	    String tag,
+	    String keyword,
+	    Double lat,
+	    Double lng,
+	    Double radiusKm,
+	    int offset,
+	    int limit,
+	    String sortBy // 정렬 기준 파라미터 추가
+	) {
+	    QPlace p = QPlace.place;
+	    QPlaceLike pl = QPlaceLike.placeLike;
 
-	        SubQueryExpression<Long> likeCountSubquery = JPAExpressions
-	            .select(Wildcard.count)
-	            .from(pl)
-	            .where(pl.place.eq(p));
-
-	        return query
-	            .select(Projections.constructor(UnifiedPlaceDto.class,
-	                p.placeId,
-	                p.name,
-	                p.basicAddress,
-	                p.img1,
-	                p.tag1,
-	                p.tag2,
-	                p.tag3,
-	                p.tag4,
-	                p.tag5,
-	                likeCountSubquery,
-	                Expressions.constant("PLACE")
-	            ))
-	            .from(p)
-	            .where(
-	                tag != null ? anyTagMatch(p, tag) : null,
-	                keyword != null ? keywordMatch(p, keyword) : null
-	            )
-	            .offset(offset)
-	            .limit(limit)
-	            .fetch();
+	    // 기본 where 조건
+	    BooleanBuilder whereBuilder = new BooleanBuilder();
+	    if (tag != null) {
+	        whereBuilder.and(anyTagMatch(p, tag));
 	    }
+	    if (keyword != null) {
+	        whereBuilder.and(keywordMatch(p, keyword));
+	    }
+
+	    // 거리 계산식(선택)
+	    // DoubleExpression distanceExpression = ...;
+
+	    // 정렬 조건
+	    List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+	    if ("likes".equalsIgnoreCase(sortBy)) {
+	        orderSpecifiers.add(pl.likeId.count().desc());
+	        orderSpecifiers.add(p.placeId.desc());
+	    } else {
+	        // 최신순(등록 id 내림차순)
+	        orderSpecifiers.add(p.placeId.desc());
+	    }
+
+	    return query
+	        .select(Projections.constructor(UnifiedPlaceDto.class,
+	            p.placeId,
+	            p.name,
+	            p.basicAddress,
+	            p.img1,
+	            p.tag1,
+	            p.tag2,
+	            p.tag3,
+	            p.tag4,
+	            p.tag5,
+	            pl.likeId.count(), // 좋아요 개수
+	            Expressions.constant("PLACE")
+	        ))
+	        .from(p)
+	        .leftJoin(pl).on(pl.place.eq(p))
+	        .where(whereBuilder)
+	        .groupBy(p.placeId)
+	        .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
+	        .offset(offset)
+	        .limit(limit)
+	        .fetch();
+	}
+
 
 	    private BooleanBuilder anyTagMatch(QPlace p, String tag) {
 	        return new BooleanBuilder()

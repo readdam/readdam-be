@@ -150,10 +150,11 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
         Double lng,
         Double radiusKm,
         int offset,
-        int limit
+        int limit,
+        String sortBy
     ) {
         return otherPlaceRepository.searchPlaces(
-            tag, keyword, lat, lng, radiusKm, offset, limit
+            tag, keyword, lat, lng, radiusKm, offset, limit, sortBy
         );
     }
 }

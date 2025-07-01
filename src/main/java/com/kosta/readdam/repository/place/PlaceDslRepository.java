@@ -17,6 +17,7 @@ public interface PlaceDslRepository {
 	        Double lng,
 	        Double radiusKm,
 	        int offset,
-	        int limit
+	        int limit,
+	        String sortBy
 	    );
 }
