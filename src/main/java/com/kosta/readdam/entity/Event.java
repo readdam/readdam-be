@@ -28,4 +28,8 @@ public class Event {
 
     @Column(name = "e_time")
     private LocalDateTime endTime;
+    
+    @Column(name = "points_distributed", nullable = false)
+    @Builder.Default
+    private Boolean pointsDistributed = false;
 }

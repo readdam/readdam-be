@@ -54,6 +54,7 @@ public class WriteComment {
                     .regDate(regDate)
     		        .username(user != null ? user.getUsername() : null)
     		        .nickname(user != null ? user.getNickname() : null)
+    		        .profileImg(user != null ? user.getProfileImg() : null)
     		        .build();
     		}
 }

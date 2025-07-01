@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface WriteCommentRepository extends JpaRepository<WriteComment, Integer> {
 	List<WriteComment> findByWrite_WriteId(Integer writeId); 
 	long countByWriteWriteId(Integer writeId);
-	 List<WriteComment> findByUserUsernameOrderByRegDateDesc(String username);
+	List<WriteComment> findByUserUsernameOrderByRegDateDesc(String username);
+	boolean existsByWrite_WriteIdAndUser_Username(Integer writeId, String username);
+	boolean existsByWrite_WriteIdAndAdoptedTrue(Integer writeId);
 }
