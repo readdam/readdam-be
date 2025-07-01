@@ -164,4 +164,23 @@ public class WriteController {
 	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	    }
 	}
+	
+	@PostMapping("/my/writeComment-adopt")
+	public ResponseEntity<?> adoptComment(@RequestBody Map<String, Integer> req) {
+		Integer writeCommentId = req.get("writeCommentId");
+		try {
+	        writeCommentService.adoptComment(writeCommentId);
+	        return ResponseEntity.ok().build();
+	    } catch (IllegalStateException e) {
+	        log.error("중복 채택 오류", e);
+	        return ResponseEntity
+	                .status(HttpStatus.CONFLICT)
+	                .body(e.getMessage());
+	    } catch (Exception e) {
+	        log.error("서버 오류", e);
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("서버 오류가 발생했습니다.");
+	    }
+	}
 }

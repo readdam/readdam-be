@@ -63,7 +63,7 @@ public class WriteServiceImpl implements WriteService {
 	}
 
 	@Override
-	public List<WriteDto> findLatest(int limit) {
+	public List<WriteDto> findLatest(int limit) throws Exception {
 		// 1. 페이징 객체 생성: 0번째 페이지부터 limit 개수만큼 조회
 		Pageable pageable = PageRequest.of(0, limit);
 

@@ -27,6 +27,7 @@ public class WriteCommentDto {
     private String title;          
     private String type;           
     private String postNickname;
+    private String profileImg;
 
     public WriteComment toEntity(Write write, User user) {
         return WriteComment.builder()
@@ -60,6 +61,7 @@ public class WriteCommentDto {
             .title(write.getTitle())
             .type(write.getType())
             .postNickname(postAuthor != null ? postAuthor.getNickname() : null)
+            .profileImg(comment.getUser().getProfileImg())
             .build();
     }
 }
