@@ -1,3 +1,4 @@
+// src/main/java/com/kosta/readdam/controller/admin/ReportController.java
 package com.kosta.readdam.controller.admin;
 
 import java.time.LocalDate;
@@ -9,8 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,11 +27,11 @@ import com.kosta.readdam.util.PageInfo2;
 
 @RestController
 @RequestMapping("/admin/report")
-public class ReportController {
+public class AdminReportController {
 
     private final ReportService service;
 
-    public ReportController(ReportService service) {
+    public AdminReportController(ReportService service) {
         this.service = service;
     }
 
@@ -84,18 +87,37 @@ public class ReportController {
     }
 
     /**
-     * 신고 반려 처리 (REJECTED, processedAt 기록)
+     * 신고 반려 처리 (REJECTED + 해당 콘텐츠 is_hide = 0)
      */
     @PutMapping("/{id}/reject")
     public ReportDto reject(@PathVariable("id") Integer id) {
-        return service.processReport(id, "REJECTED");
+        return service.rejectAndUnhide(id);
     }
 
     /**
-     * 신고 숨김 처리 (RESOLVED + 해당 콘텐츠 is_hide=1)
+     * 신고 숨김 처리 (RESOLVED + 해당 콘텐츠 is_hide = 1)
      */
     @PutMapping("/{id}/hide")
     public ReportDto hide(@PathVariable("id") Integer id) {
         return service.hideContentAndResolve(id);
     }
+    
+    @PostMapping("/bulk-hide")
+    public ResponseEntity<Void> bulkHide(
+        @RequestParam String category,
+        @RequestParam String categoryId
+    ) {
+    	service.bulkHideAndResolve(category, categoryId);
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/bulk-reject")
+    public ResponseEntity<Void> bulkReject(
+        @RequestParam String category,
+        @RequestParam String categoryId
+    ) {
+    	service.bulkRejectAndUnhide(category, categoryId);
+        return ResponseEntity.ok().build();
+    }
+
 }

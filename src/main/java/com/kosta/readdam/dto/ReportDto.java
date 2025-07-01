@@ -1,11 +1,17 @@
 package com.kosta.readdam.dto;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kosta.readdam.entity.Report;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.enums.ReportStatus;
-import lombok.*;
 
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
