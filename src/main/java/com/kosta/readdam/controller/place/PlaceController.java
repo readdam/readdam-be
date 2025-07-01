@@ -2,6 +2,7 @@ package com.kosta.readdam.controller.place;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.dto.place.UnifiedPlacePageResponse;
 import com.kosta.readdam.service.otherPlace.OtherPlaceService;
@@ -121,37 +121,53 @@ public class PlaceController {
             @RequestParam(required = false) Double radiusKm,
             @RequestParam(defaultValue = "latest") String sortBy
     ) {
-        // 가져올 갯수 넉넉히
-        int fetchSize = size * 3;
-
-        List<UnifiedPlaceDto> placeList = new ArrayList<>();
-        List<UnifiedPlaceDto> otherPlaceList = new ArrayList<>();
-
-//        if (!"OTHER".equalsIgnoreCase(placeType)) {
-//            placeList = placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, fetchSize);
-//        }
-//        if (!"PLACE".equalsIgnoreCase(placeType)) {
-//            otherPlaceList = otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, fetchSize);
-//        }
-
-        if (!"OTHER".equalsIgnoreCase(placeType)) {
-            placeList = placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize, sortBy);
-        }
-        if (!"PLACE".equalsIgnoreCase(placeType)) {
-            otherPlaceList = otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, fetchSize, sortBy);
-        }
-
-        
-        // 합치기
         List<UnifiedPlaceDto> merged = new ArrayList<>();
-        merged.addAll(placeList);
-        merged.addAll(otherPlaceList);
 
-        // 
-//        정렬: 좋아요순 + 동점 시 외부 우선
-       
+        // === 거리순 처리 ===
+        if ("distance".equalsIgnoreCase(sortBy)) {
+            if (lat == null || lng == null) {
+                throw new IllegalArgumentException("거리순 정렬에는 lat/lng가 필요합니다.");
+            }
 
-        // 최종 페이지 처리
+            // DB에서 넉넉히 가져오기 (페이징 X)
+            if (!"OTHER".equalsIgnoreCase(placeType)) {
+                merged.addAll(placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, size * 5, "latest"));
+            }
+            if (!"PLACE".equalsIgnoreCase(placeType)) {
+                merged.addAll(otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, 0, size * 5, "latest"));
+            }
+
+            // 거리 계산 및 세팅
+            for (UnifiedPlaceDto dto : merged) {
+                if (dto.getLat() != null && dto.getLng() != null) {
+                    dto.setDistanceKm(calculateDistanceKm(lat, lng, dto.getLat(), dto.getLng()));
+                } else {
+                    dto.setDistanceKm(Double.MAX_VALUE);
+                }
+            }
+
+            // 거리순 정렬
+            merged.sort(Comparator.comparing(UnifiedPlaceDto::getDistanceKm));
+        }
+        // === 최신순, 인기순 처리 ===
+        else {
+            // DB에서 이미 정렬 + 페이징 처리
+            if (!"OTHER".equalsIgnoreCase(placeType)) {
+                merged.addAll(placeService.searchPlaces(tag, keyword, lat, lng, radiusKm, page * size, size, sortBy));
+            }
+            if (!"PLACE".equalsIgnoreCase(placeType)) {
+                merged.addAll(otherPlaceService.searchPlaces(tag, keyword, lat, lng, radiusKm, page * size, size, sortBy));
+            }
+
+            // 여러 리스트 합쳤으니 정렬 보정 필요
+            if ("likes".equalsIgnoreCase(sortBy)) {
+                merged.sort(Comparator.comparing(UnifiedPlaceDto::getLikeCount, Comparator.nullsLast(Comparator.reverseOrder())));
+            } else {
+                merged.sort(Comparator.comparing(UnifiedPlaceDto::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+            }
+        }
+
+        // === 페이징 ===
         int totalElements = merged.size();
         int start = page * size;
         int end = Math.min(start + size, totalElements);
@@ -170,5 +186,6 @@ public class PlaceController {
 
         return new UnifiedPlacePageResponse(pagedContent, pageInfo);
     }
+
 
 }

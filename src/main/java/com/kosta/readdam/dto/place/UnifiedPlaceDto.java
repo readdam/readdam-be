@@ -28,6 +28,8 @@ public class UnifiedPlaceDto {
     private String tag10;
     private Integer likeCount;
     private String type; // "PLACE" or "OTHER"
+    private Double lat;
+    private Double lng;
     private Double distanceKm; // ✅ 거리 (km)
     
     public UnifiedPlaceDto(

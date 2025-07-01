@@ -193,66 +193,7 @@ public class PlaceServiceImpl implements PlaceService {
 	        	    })
 	        	    .collect(Collectors.toList());
 	    }
-	 
-//	 public List<UnifiedPlaceDto> searchPlaces(
-//	            String tag,
-//	            String keyword,
-//	            Double userLat,
-//	            Double userLng,
-//	            Double radiusKm
-//	    ) {
-//	        List<Place> places = placeRepository.findAll();
-//
-//	        return places.stream()
-//	                .map(p -> {
-//	                    // 거리 계산 (nullable)
-//	                    Double distance = null;
-//	                    if (userLat != null && userLng != null) {
-//	                        distance = DistanceUtil.calculateDistanceKm(userLat, userLng, p.getLat(), p.getLog());
-//	                    }
-//
-//	                    return UnifiedPlaceDto.builder()
-//	                            .id(p.getPlaceId().longValue())
-//	                            .name(p.getName())
-//	                            .basicAddress(p.getBasicAddress())
-//	                            .img1(p.getImg1())
-//	                            .tag1(p.getTag1())
-//	                            .tag2(p.getTag2())
-//	                            .tag3(p.getTag3())
-//	                            .tag4(p.getTag4())
-//	                            .tag5(p.getTag5())
-//	                            .likeCount((int) placeLikeRepository.countByPlace(p))
-//	                            .type("PLACE")
-//	                            .distanceKm(distance)
-//	                            .build();
-//	                })
-//	                // 태그 필터
-//	                .filter(dto -> {
-//	                    if (tag == null || tag.isEmpty()) return true;
-//	                    return tag.equalsIgnoreCase(dto.getTag1())
-//	                        || tag.equalsIgnoreCase(dto.getTag2())
-//	                        || tag.equalsIgnoreCase(dto.getTag3())
-//	                        || tag.equalsIgnoreCase(dto.getTag4())
-//	                        || tag.equalsIgnoreCase(dto.getTag5())
-//	                        || tag.equalsIgnoreCase(dto.getTag6())
-//	                        || tag.equalsIgnoreCase(dto.getTag7())
-//	                        || tag.equalsIgnoreCase(dto.getTag8())
-//	                        || tag.equalsIgnoreCase(dto.getTag9())
-//	                        || tag.equalsIgnoreCase(dto.getTag10());
-//	                })
-//	                // 검색어 필터
-//	                .filter(dto -> {
-//	                    if (keyword == null || keyword.isEmpty()) return true;
-//	                    return dto.getName().toLowerCase().contains(keyword.toLowerCase())
-//	                            || dto.getBasicAddress().toLowerCase().contains(keyword.toLowerCase());
-//	                })
-//	                // 거리 필터
-//	                .filter(dto -> {
-//	                    if (radiusKm == null || dto.getDistanceKm() == null) return true;
-//	                    return dto.getDistanceKm() <= radiusKm;
-//	                })
-//	                .collect(Collectors.toList());
-//	    }
+	
 	 
 	 public List<UnifiedPlaceDto> searchPlaces(
 			    String tag,
