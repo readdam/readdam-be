@@ -26,6 +26,7 @@ public class BookListDto {
 	private String imageName;
 	private String author;
 	private String publisher;
+	private Integer ranking;
 	private BookListCategory category;   
 	private int reviewCnt;               
 	private BigDecimal rating;
@@ -38,6 +39,7 @@ public class BookListDto {
                 .imageName(this.imageName)
                 .author(this.author)
                 .publisher(this.publisher)
+                .ranking(this.ranking)
                 .category(this.category)
                 .build();
     }

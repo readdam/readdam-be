@@ -124,6 +124,12 @@ public class KyoboCrawlerService {
                 log.debug("[Kakao] 썸네일 보강 실패 isbn={}", isbn);
             }
         }
+        
+        
+        Integer ranking = n.path("prstRnkn").isInt()
+                ? n.path("prstRnkn").asInt()
+                : null;
+
 
         return BookList.builder()
                 .id(saleId + "_" + cat.name())
@@ -132,6 +138,7 @@ public class KyoboCrawlerService {
                 .imageName(img)            
                 .author(n.path("chrcName").asText(null))
                 .publisher(n.path("pbcmName").asText(null))
+                .ranking(ranking)
                 .category(cat)
                 .build();
     }

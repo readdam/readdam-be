@@ -47,6 +47,9 @@ public class BookList {
     private String publisher;
     
     @Column(nullable = true)
+    private Integer ranking;
+    
+    @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private BookListCategory category;
     
@@ -58,6 +61,7 @@ public class BookList {
                 .imageName(this.imageName)
                 .author(this.author)
                 .publisher(this.publisher)
+                .ranking(this.ranking)
                 .reviewCnt(reviewCnt)
                 .rating(rating)
                 .build();
