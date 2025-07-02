@@ -30,26 +30,30 @@ public class BookList {
     @Id
     @Column(length =  255)
     private String id;
+    
+    @Column(nullable = true)
+    private String title;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = true, length = 20)
     private String isbn;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String imageName;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String author;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String publisher;
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private BookListCategory category;
     
     public BookListDto toDto(Integer reviewCnt, BigDecimal rating) {
         return BookListDto.builder()
                 .id(this.id)
+                .title(this.title) 
                 .isbn(this.isbn)
                 .imageName(this.imageName)
                 .author(this.author)

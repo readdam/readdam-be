@@ -65,13 +65,8 @@ dependencies {
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
 	
 	//크롤링용 jsoup
-	implementation 'org.jsoup:jsoup:1.15.3'
-	// Selenium
-    implementation 'org.seleniumhq.selenium:selenium-java:4.9.0'
-    // ChromeDriver 자동 관리
-    implementation 'io.github.bonigarcia:webdrivermanager:5.4.0'
-    // Apache HttpClient 5
-    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+	implementation 'org.jsoup:jsoup:1.17.2' 
+	   
 }
 
 war {

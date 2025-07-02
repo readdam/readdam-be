@@ -21,6 +21,7 @@ import lombok.Setter;
 public class BookListDto {
 
 	private String id;
+	private String title;
 	private String isbn;
 	private String imageName;
 	private String author;
@@ -32,6 +33,7 @@ public class BookListDto {
     public BookList toEntity() {
         return BookList.builder()
                 .id(this.id)
+                .title(this.title)
                 .isbn(this.isbn)
                 .imageName(this.imageName)
                 .author(this.author)
