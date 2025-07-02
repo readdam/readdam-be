@@ -15,5 +15,6 @@ public interface PlaceLikeRepository extends JpaRepository<PlaceLike, Integer>{
     Optional<PlaceLike> findByUserAndPlace(User user, Place place);
     long countByPlace(Place place);
     void deleteByUserAndPlace(User user, Place place);
-    
+    int countByPlace_PlaceId(Integer placeId);
+    boolean existsByPlace_PlaceIdAndUser_Username(Integer placeId, String username);
 }
