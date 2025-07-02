@@ -101,7 +101,7 @@ public class PlaceServiceImpl implements PlaceService {
 	        .phone(place.getPhone())
 	        .introduce(place.getIntroduce())
 	        .lat(place.getLat())
-	        .log(place.getLog())
+	        .lng(place.getLng())
 	        .tags(tags)
 	        .images(images)
 	        .rooms(rooms)

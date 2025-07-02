@@ -44,7 +44,7 @@ public class OtherPlace {
 
     private Double lat;
 
-    @Column(name = "log") // 실제론 lng
+    @Column(name = "lng") // 실제론 lng
     private Double lng;
 
     private String phone;

@@ -16,7 +16,7 @@ public class PlaceEditResponseDto {
     private String phone;
     private String introduce;
     private Double lat;
-    private Double log;
+    private Double lng;
     private List<String> tags;
     private List<String> images;
     private List<RoomDto> rooms;
