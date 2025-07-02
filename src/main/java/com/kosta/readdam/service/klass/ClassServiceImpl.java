@@ -12,12 +12,16 @@ import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassQnaDto;
+import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
@@ -96,6 +100,12 @@ public class ClassServiceImpl implements ClassService {
 		ClassEntity cEntity = classRepository.findById(classId).orElseThrow(()->new Exception("모임글번호 오류"));
 		System.out.println(cEntity.getClassIntro());
 		return cEntity.toDto();
+	}
+
+	@Override
+	public Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable) {
+		
+		return classRepository.searchClasses(condition,pageable);
 	}
 
 
