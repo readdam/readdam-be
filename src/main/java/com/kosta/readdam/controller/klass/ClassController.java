@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
+import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
+import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.service.klass.ClassService;
 
@@ -78,6 +83,12 @@ public class ClassController {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+	}
+	
+	@GetMapping("/api/classList")
+	public Slice<ClassCardDto> getClassList(ClassSearchConditionDto condition,
+			@PageableDefault(size=8) Pageable pageable){
+		return classService.searchClasses(condition,pageable);
 	}
 	
 
