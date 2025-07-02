@@ -15,7 +15,7 @@ import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 public interface PlaceService {
 	void registerPlace(PlaceDto placeDto, List<PlaceRoomDto> roomDtoList, List<PlaceTimeDto> sharedTimeSlots);
 	Page<PlaceSummaryDto> getPlaceList(Pageable pageable, String keyword, String filterBy);
-	PlaceEditResponseDto getPlaceDetail(Integer placeId);
+	PlaceEditResponseDto getPlaceEditDetail(Integer placeId);
 	void updatePlace(Integer placeId, PlaceDto placeDto, List<PlaceRoomDto> roomDtos, List<PlaceTimeDto> timeDtos);
 	List<UnifiedPlaceDto> getUnifiedList();
 	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset, int limit, String sortBy);

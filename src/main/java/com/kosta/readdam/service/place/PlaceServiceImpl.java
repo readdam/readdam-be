@@ -70,7 +70,7 @@ public class PlaceServiceImpl implements PlaceService {
         return placeDslRepository.findPlaceList(pageable, keyword, filterBy);
     }
 
-	public PlaceEditResponseDto getPlaceDetail(Integer placeId) {
+	public PlaceEditResponseDto getPlaceEditDetail(Integer placeId) {
 	    Place place = placeRepository.findById(placeId)
 	        .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
 
