@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import com.kosta.readdam.dto.CreateReportRequest;
 import com.kosta.readdam.dto.ReportDto;
 import com.kosta.readdam.entity.Report;
+import com.kosta.readdam.entity.enums.ReportCategory;
 
 public interface ReportService {
 
@@ -29,7 +30,7 @@ public interface ReportService {
 
 	void saveReport(String reporterUsername, CreateReportRequest req);
 
-	void bulkHideAndResolve(String category, String categoryId);
+	void bulkHideAndResolve(ReportCategory category, String categoryId);
 
-	void bulkRejectAndUnhide(String category, String categoryId);
+	void bulkRejectAndUnhide(ReportCategory category, String categoryId);
 }
