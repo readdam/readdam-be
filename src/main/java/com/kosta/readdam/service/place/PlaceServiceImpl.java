@@ -21,10 +21,12 @@ import com.kosta.readdam.dto.PlaceTimeDto;
 import com.kosta.readdam.dto.place.PlaceEditResponseDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.dto.place.RoomDto;
+import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.Place;
 import com.kosta.readdam.entity.PlaceRoom;
 import com.kosta.readdam.entity.PlaceTime;
 import com.kosta.readdam.repository.place.PlaceDslRepository;
+import com.kosta.readdam.repository.place.PlaceLikeRepository;
 import com.kosta.readdam.repository.place.PlaceRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeDslRepository;
@@ -41,7 +43,7 @@ public class PlaceServiceImpl implements PlaceService {
     private final PlaceTimeRepository placeTimeRepository;
     private final PlaceDslRepository placeDslRepository;
     private final PlaceTimeDslRepository placeTimeDslRepository;
-
+    private final PlaceLikeRepository placeLikeRepository;
     
 	@Override
 	@Transactional
@@ -169,5 +171,41 @@ public class PlaceServiceImpl implements PlaceService {
 	    }
 	}
 
+	 public List<UnifiedPlaceDto> getUnifiedList() {
+	        List<Place> places = placeRepository.findAll();
+
+	        return places.stream()
+	        	    .map(p -> {
+	        	        UnifiedPlaceDto dto = UnifiedPlaceDto.builder()
+	        	            .id(p.getPlaceId())
+	        	            .name(p.getName())
+	        	            .basicAddress(p.getBasicAddress())
+	        	            .img1(p.getImg1())
+	        	            .tag1(p.getTag1())
+	        	            .tag2(p.getTag2())
+	        	            .tag3(p.getTag3())
+	        	            .tag4(p.getTag4())
+	        	            .tag5(p.getTag5())
+	        	            .likeCount((int) placeLikeRepository.countByPlace(p))
+	        	            .type("PLACE")
+	        	            .build();
+	        	        return dto;
+	        	    })
+	        	    .collect(Collectors.toList());
+	    }
+	
+	 
+	 public List<UnifiedPlaceDto> searchPlaces(
+			    String tag,
+			    String keyword,
+			    Double lat,
+			    Double lng,
+			    Double radiusKm,
+			    int offset,
+			    int limit,
+			    String sortBy
+			) {
+			    return placeDslRepository.searchPlaces(tag, keyword, lat, lng, radiusKm, offset, limit, sortBy);
+			}
 
 }
