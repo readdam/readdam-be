@@ -10,14 +10,19 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.PlaceRoomDto;
 import com.kosta.readdam.dto.PlaceTimeDto;
+import com.kosta.readdam.dto.place.PlaceDetailResponseDto;
 import com.kosta.readdam.dto.place.PlaceEditResponseDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.dto.place.RoomDto;
@@ -70,7 +75,7 @@ public class PlaceServiceImpl implements PlaceService {
         return placeDslRepository.findPlaceList(pageable, keyword, filterBy);
     }
 
-	public PlaceEditResponseDto getPlaceDetail(Integer placeId) {
+	public PlaceEditResponseDto getPlaceEditDetail(Integer placeId) {
 	    Place place = placeRepository.findById(placeId)
 	        .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
 
@@ -208,4 +213,60 @@ public class PlaceServiceImpl implements PlaceService {
 			    return placeDslRepository.searchPlaces(tag, keyword, lat, lng, radiusKm, offset, limit, sortBy);
 			}
 
+	 @Override
+	 @Transactional(readOnly = true)
+	 public PlaceDetailResponseDto getPlaceDetail(Integer placeId) {
+	     // 1) 장소 엔티티
+	     Place place = placeRepository.findById(placeId)
+	         .orElseThrow(() -> new RuntimeException("해당 장소 없음"));
+
+	     // 2) 방 정보
+	     List<RoomDto> rooms = placeRoomRepository.findByPlace_PlaceId(placeId)
+	         .stream().map(RoomDto::from).collect(Collectors.toList());
+
+	     // 3) 시간대
+	     List<String> weekdayTimes = placeTimeDslRepository.findTimeListByPlaceIdAndIsWeekend(placeId, false);
+	     List<String> weekendTimes = placeTimeDslRepository.findTimeListByPlaceIdAndIsWeekend(placeId, true);
+
+	     // 4) 태그
+	     List<String> tags = Stream.of(
+	         place.getTag1(), place.getTag2(), place.getTag3(), place.getTag4(), place.getTag5(),
+	         place.getTag6(), place.getTag7(), place.getTag8(), place.getTag9(), place.getTag10()
+	     ).filter(Objects::nonNull).collect(Collectors.toList());
+
+	     // 5) 이미지
+	     List<String> images = Stream.of(
+	         place.getImg1(), place.getImg2(), place.getImg3(), place.getImg4(), place.getImg5(),
+	         place.getImg6(), place.getImg7(), place.getImg8(), place.getImg9(), place.getImg10()
+	     ).filter(Objects::nonNull).collect(Collectors.toList());
+
+	     // 6) 좋아요 개수
+	     int likeCount = placeLikeRepository.countByPlace_PlaceId(placeId);
+
+	     // 7) 유저 좋아요 여부
+	     boolean liked = false;
+	     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	     if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+	         String username = auth.getName();
+	         liked = placeLikeRepository.existsByPlace_PlaceIdAndUser_Username(placeId, username);
+	     }
+
+	     // 8) 반환
+	     return PlaceDetailResponseDto.builder()
+	         .name(place.getName())
+	         .basicAddress(place.getBasicAddress())
+	         .detailAddress(place.getDetailAddress())
+	         .phone(place.getPhone())
+	         .introduce(place.getIntroduce())
+	         .lat(place.getLat())
+	         .log(place.getLog())
+	         .tags(tags)
+	         .images(images)
+	         .rooms(rooms)
+	         .weekdayTimes(weekdayTimes)
+	         .weekendTimes(weekendTimes)
+	         .likeCount(likeCount)
+	         .liked(liked)
+	         .build();
+	 }
 }
