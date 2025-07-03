@@ -18,6 +18,7 @@ import com.kosta.readdam.dto.ReportDto;
 import com.kosta.readdam.dto.WriteCommentDto;
 import com.kosta.readdam.entity.Report;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
 import com.kosta.readdam.repository.BookReviewRepository;
 import com.kosta.readdam.repository.ClassQnaRepository;
@@ -77,8 +78,12 @@ public class ReportServiceImpl implements ReportService {
 
 		ReportDto dto = r.toDto();
 
-		String cat = r.getCategory();
+		String cat = r.getCategory() != null ? r.getCategory().name() : null;
 		String catId = r.getCategoryId();
+		
+		if (cat == null) {
+		    return dto;
+		}
 
 		switch (cat) {
 		case "write_short":
@@ -153,17 +158,11 @@ public class ReportServiceImpl implements ReportService {
 	/** 공통: 테이블별 is_hide 플래그 업데이트 */
 	private void updateHideFlag(Integer reportId, int hideFlag) {
 		Report r = reportRepository.getById(reportId);
-		String table = r.getCategory();
+		String table = r.getCategory().name();
+	    String pkColumn = r.getCategory().getIdColumn();
 		String pk = r.getCategoryId();
 
-		String idColumn;
-		if ("write_short".equals(table)) {
-			idColumn = "writeshort_id";
-		} else {
-			idColumn = table + "_id";
-		}
-
-		String sql = String.format("UPDATE `%s` SET is_hide = ? WHERE %s = ?", table, idColumn);
+		String sql = String.format("UPDATE `%s` SET is_hide = ? WHERE %s = ?", table, pkColumn);
 		jdbc.update(sql, hideFlag, Integer.valueOf(pk));
 	}
 	
@@ -196,32 +195,30 @@ public class ReportServiceImpl implements ReportService {
 	
 	@Transactional
 	@Override
-	public void bulkHideAndResolve(String category, String categoryId) {
+	public void bulkHideAndResolve(ReportCategory category, String categoryId) {
 	    
 	    reportRepository.updateStatusByContent(
 	        category, categoryId, ReportStatus.RESOLVED, LocalDateTime.now()
 	    );
-	    String idColumn = "write_short".equals(category)
-	                    ? "writeshort_id"
-	                    : category + "_id";
+
 	    String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?",
-	                               category, idColumn);
+	                               category.name(), category.getIdColumn());
 	    jdbc.update(sql, Integer.valueOf(categoryId));
 	}
 	
 	@Transactional
 	@Override
-    public void bulkRejectAndUnhide(String category, String categoryId) {
+    public void bulkRejectAndUnhide(ReportCategory category, String categoryId) {
         // 상태 일괄 REJECTED
         reportRepository.updateStatusByContent(
             category, categoryId, ReportStatus.REJECTED, LocalDateTime.now()
         );
         // 본문 unhide
-        String idCol = "write_short".equals(category) ? "writeshort_id" : category + "_id";
-        jdbc.update(
-          String.format("UPDATE `%s` SET is_hide = 0 WHERE %s = ?", category, idCol),
-          Integer.valueOf(categoryId)
-        );
-    }
+        String sql = String.format(
+                "UPDATE `%s` SET is_hide = 0 WHERE %s = ?",
+                category.name(), category.getIdColumn());
+
+            jdbc.update(sql, Integer.valueOf(categoryId));
+        }
 
 }

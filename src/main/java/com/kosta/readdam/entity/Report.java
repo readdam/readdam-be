@@ -15,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.kosta.readdam.dto.ReportDto;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
 
 import lombok.AllArgsConstructor;
@@ -51,8 +52,8 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(length = 255)
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private ReportCategory category;
 
     @Column(name = "category_id", length = 255)
     private String categoryId;

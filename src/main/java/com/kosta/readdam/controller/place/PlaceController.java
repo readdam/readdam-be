@@ -1,15 +1,20 @@
 package com.kosta.readdam.controller.place;
 
+import static com.kosta.readdam.util.DistanceUtil.calculateDistanceKm;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kosta.readdam.dto.place.PlaceDetailResponseDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.dto.place.UnifiedPlacePageResponse;
 import com.kosta.readdam.service.otherPlace.OtherPlaceService;
@@ -17,7 +22,6 @@ import com.kosta.readdam.service.place.PlaceService;
 import com.kosta.readdam.util.PageInfo2;
 
 import lombok.RequiredArgsConstructor;
-import static com.kosta.readdam.util.DistanceUtil.calculateDistanceKm;
 
 
 @RestController
@@ -130,5 +134,9 @@ public class PlaceController {
 
         return new UnifiedPlacePageResponse(pagedContent, pageInfo);
     }
-
+    
+    @GetMapping("/{placeId}")
+    public ResponseEntity<PlaceDetailResponseDto> getPlaceDetail(@PathVariable Integer placeId) {
+        return ResponseEntity.ok(placeService.getPlaceDetail(placeId));
+    }
 }

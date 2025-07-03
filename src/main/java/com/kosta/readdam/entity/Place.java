@@ -41,7 +41,7 @@ public class Place {
     private Double lat;
 
     @Column(precision = 9, scale = 6)
-    private Double log;
+    private Double lng;
 
     @Column(length = 20)
     private String phone;
@@ -118,7 +118,7 @@ public class Place {
                 .phone(this.phone)
                 .introduce(this.introduce)
                 .lat(this.lat)
-                .log(this.log)
+                .lng(this.lng)
                 .tag1(this.tag1)
                 .tag2(this.tag2)
                 .tag3(this.tag3)
@@ -149,7 +149,7 @@ public class Place {
         this.phone = dto.getPhone();
         this.introduce = dto.getIntroduce();
         this.lat = dto.getLat();
-        this.log = dto.getLog();
+        this.lng = dto.getLng();
         this.tag1 = dto.getTag1();
         this.tag2 = dto.getTag2();
         this.tag3 = dto.getTag3();

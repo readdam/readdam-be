@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController("adminPlaceController")
 @RequiredArgsConstructor
+@RequestMapping("/admin")
 public class PlaceController {
 	private final PlaceService placeService;
     private final FileService fileService;
@@ -95,7 +97,7 @@ public class PlaceController {
     
     @GetMapping("/place/{placeId}")
     public ResponseEntity<PlaceEditResponseDto> getPlaceDetail(@PathVariable Integer placeId) {
-        return ResponseEntity.ok(placeService.getPlaceDetail(placeId));
+        return ResponseEntity.ok(placeService.getPlaceEditDetail(placeId));
     }
 
     @Transactional
