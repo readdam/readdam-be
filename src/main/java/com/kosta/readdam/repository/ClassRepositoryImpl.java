@@ -9,6 +9,7 @@ import org.springframework.data.domain.SliceImpl;
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.QClassEntity;
+import com.kosta.readdam.entity.QClassLike;
 import com.kosta.readdam.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -24,6 +25,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 	@Override
 	public Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable) {
 		QClassEntity c = QClassEntity.classEntity;
+		QClassLike cl = QClassLike.classLike;
 		
 		BooleanBuilder builder = new BooleanBuilder();
 
@@ -54,10 +56,12 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 c.maxPerson,
                 c.mainImg,
                 c.round1Date,
-                c.round1PlaceName
+                c.round1PlaceName,
+                cl.count().intValue().as("likeCnt")
             ))
             .from(c)
-            .where(builder)
+            .leftJoin(cl).on(cl.classId.eq(c))
+            .groupBy(c.classId)
 //            .orderBy(getSortOrder(condition.getSort(),c))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize()+1)	// +1개 더 가져와서 hasNext 확인

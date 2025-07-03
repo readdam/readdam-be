@@ -32,14 +32,13 @@ public class ClassCardDto {
     private LocalDate round1Date;
     private String round1PlaceName;
     
-//    private Integer likeCnt;
+    private Integer likeCnt;
 //    private Integer currentParticipants;
     
     
 	public ClassCardDto(Integer classId, String title, String shortIntro, String tag1,
 			String tag2, String tag3, Integer minPerson, Integer maxPerson, String mainImg, LocalDate round1Date,
-			String round1PlaceName
-//			Integer likeCnt,
+			String round1PlaceName, Integer likeCnt
 //			Integer currentParticipants
 			) {
 		super();
@@ -54,7 +53,7 @@ public class ClassCardDto {
 		this.mainImg = mainImg;
 		this.round1Date = round1Date;
 		this.round1PlaceName = round1PlaceName;
-//		this.likeCnt = likeCnt;
+		this.likeCnt = likeCnt;
 //		this.currentParticipants = currentParticipants;
 	}
 
