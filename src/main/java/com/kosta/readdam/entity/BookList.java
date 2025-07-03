@@ -34,7 +34,7 @@ public class BookList {
     @Column(nullable = true)
     private String title;
 
-    @Column(nullable = true, length = 20)
+    @Column(nullable = true, length = 255)
     private String isbn;
 
     @Column(nullable = true)
