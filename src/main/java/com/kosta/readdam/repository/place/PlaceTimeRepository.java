@@ -33,4 +33,7 @@ public interface PlaceTimeRepository extends JpaRepository<PlaceTime, Integer> {
     void deleteByPlaceRoom_PlaceRoomId(@Param("roomId") Integer roomId);
     
     List<PlaceTime> findByPlaceRoom_PlaceRoomIdAndActiveAndIsWeekend(Integer placeRoomId, boolean active, boolean isWeekend);
+    
+    // 방 ID로 시간대 전부 조회
+    List<PlaceTime> findByPlaceRoom_PlaceRoomId(Integer placeRoomId);
 }
