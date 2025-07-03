@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.kosta.readdam.entity.Report;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
 
 public interface ReportRepository extends JpaRepository<Report, Integer>, JpaSpecificationExecutor<Report> {
@@ -17,7 +18,7 @@ public interface ReportRepository extends JpaRepository<Report, Integer>, JpaSpe
     @Query("UPDATE Report r " +
            "   SET r.status = :status, r.processedAt = :now " +
            " WHERE r.category = :category AND r.categoryId = :categoryId")
-    int updateStatusByContent(@Param("category")   String category,
+    int updateStatusByContent(@Param("category")   ReportCategory category,
                               @Param("categoryId") String categoryId,
                               @Param("status")     ReportStatus status,
                               @Param("now")        LocalDateTime now);

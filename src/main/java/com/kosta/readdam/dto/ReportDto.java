@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kosta.readdam.entity.Report;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
 
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class ReportDto {
     private String reportedUsername;
     private String reason;
     private String content;
-    private String category;
+    private ReportCategory category;
     private String categoryId;
     private LocalDateTime reportedAt;
     private LocalDateTime processedAt;

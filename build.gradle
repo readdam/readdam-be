@@ -63,6 +63,10 @@ dependencies {
 	
 	//파이어베이스 추가
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	
+	//크롤링용 jsoup
+	implementation 'org.jsoup:jsoup:1.17.2' 
+	   
 }
 
 war {

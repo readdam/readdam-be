@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.dto.ReportDto;
 import com.kosta.readdam.entity.Report;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.service.ReportService;
 import com.kosta.readdam.util.PageInfo2;
 
@@ -104,7 +105,7 @@ public class AdminReportController {
     
     @PostMapping("/bulk-hide")
     public ResponseEntity<Void> bulkHide(
-        @RequestParam String category,
+        @RequestParam ReportCategory category,
         @RequestParam String categoryId
     ) {
     	service.bulkHideAndResolve(category, categoryId);
@@ -113,7 +114,7 @@ public class AdminReportController {
     
     @PostMapping("/bulk-reject")
     public ResponseEntity<Void> bulkReject(
-        @RequestParam String category,
+        @RequestParam ReportCategory category,
         @RequestParam String categoryId
     ) {
     	service.bulkRejectAndUnhide(category, categoryId);
