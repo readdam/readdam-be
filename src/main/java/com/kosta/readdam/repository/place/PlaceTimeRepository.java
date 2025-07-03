@@ -16,12 +16,6 @@ import com.kosta.readdam.entity.PlaceTime;
 public interface PlaceTimeRepository extends JpaRepository<PlaceTime, Integer> {
     List<PlaceTime> findByPlaceRoom(PlaceRoom placeRoom);
     
-//    @Modifying
-//    @Transactional
-//    @Query("DELETE FROM PlaceTime pt WHERE pt.placeRoom.place.placeId = :placeId")
-//    void deleteByPlaceRoom_Place_PlaceId(@Param("placeId") Integer placeId);
-    
-
     @Modifying
     @Transactional
     @Query("DELETE FROM PlaceTime pt WHERE pt.placeRoom.placeRoomId IN (" +
@@ -37,4 +31,6 @@ public interface PlaceTimeRepository extends JpaRepository<PlaceTime, Integer> {
     @Transactional
     @Query("DELETE FROM PlaceTime pt WHERE pt.placeRoom.placeRoomId = :roomId")
     void deleteByPlaceRoom_PlaceRoomId(@Param("roomId") Integer roomId);
+    
+    List<PlaceTime> findByPlaceRoom_PlaceRoomIdAndActiveAndIsWeekend(Integer placeRoomId, boolean active, boolean isWeekend);
 }
