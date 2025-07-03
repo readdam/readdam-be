@@ -24,6 +24,7 @@ public class InquiryDto {
     private String content;
     private String answer;
     private LocalDateTime regDate;
+    private LocalDateTime answerDate;
     private InquiryStatus status;
     private String username;
     private String reason;
@@ -36,6 +37,7 @@ public class InquiryDto {
                 .content(content)
                 .answer(answer)
                 .regDate(regDate != null ? regDate : LocalDateTime.now())
+                .answerDate(answerDate)
                 .status(status != null ? status : InquiryStatus.UNANSWERED)
                 .user(user)
                 .reason(reason)

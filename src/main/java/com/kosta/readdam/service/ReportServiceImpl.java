@@ -158,7 +158,7 @@ public class ReportServiceImpl implements ReportService {
 	/** 공통: 테이블별 is_hide 플래그 업데이트 */
 	private void updateHideFlag(Integer reportId, int hideFlag) {
 		Report r = reportRepository.getById(reportId);
-		String table = r.getCategory().name();
+		String table = r.getCategory().getTableName();
 	    String pkColumn = r.getCategory().getIdColumn();
 		String pk = r.getCategoryId();
 
@@ -202,7 +202,7 @@ public class ReportServiceImpl implements ReportService {
 	    );
 
 	    String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?",
-	                               category.name(), category.getIdColumn());
+	                               category.getTableName(), category.getIdColumn());
 	    jdbc.update(sql, Integer.valueOf(categoryId));
 	}
 	
@@ -216,7 +216,7 @@ public class ReportServiceImpl implements ReportService {
         // 본문 unhide
         String sql = String.format(
                 "UPDATE `%s` SET is_hide = 0 WHERE %s = ?",
-                category.name(), category.getIdColumn());
+                category.getTableName(), category.getIdColumn());
 
             jdbc.update(sql, Integer.valueOf(categoryId));
         }

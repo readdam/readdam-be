@@ -22,6 +22,8 @@ public class KakaoBookResponse {
         private String contents;
         private String isbn;
         private OffsetDateTime datetime;
+        private Double rating;      // 책 한권의 평점
+        private Integer reviewCnt;  // 책 한권의 리뷰 수
     }
 
     @Data

@@ -1,7 +1,5 @@
 package com.kosta.readdam.dto;
 
-
-
 import java.math.BigDecimal;
 
 import com.kosta.readdam.entity.BookList;
@@ -26,19 +24,14 @@ public class BookListDto {
 	private String imageName;
 	private String author;
 	private String publisher;
-	private BookListCategory category;   
-	private int reviewCnt;               
+	private Integer ranking;
+	private BookListCategory category;
+	private int reviewCnt;
 	private BigDecimal rating;
-    
-    public BookList toEntity() {
-        return BookList.builder()
-                .id(this.id)
-                .title(this.title)
-                .isbn(this.isbn)
-                .imageName(this.imageName)
-                .author(this.author)
-                .publisher(this.publisher)
-                .category(this.category)
-                .build();
-    }
+
+	public BookList toEntity() {
+		return BookList.builder().id(this.id).title(this.title).isbn(this.isbn).imageName(this.imageName)
+				.author(this.author).publisher(this.publisher).ranking(this.ranking).category(this.category).build();
+	}
+
 }

@@ -18,12 +18,6 @@ import com.kosta.readdam.repository.BookListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * ▸ 교보 공개 베스트셀러 목록 API로 기본 정보 수집
- * ▸ ISBN이 없으면 cmdtCode 사용
- * ▸ 제목 / 썸네일이 비어 있으면 ISBN 기반 Kakao 검색 API로 보강
- * ▸ 상세 API 호출 X
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,7 +26,6 @@ public class KyoboCrawlerService {
     private final BookListRepository repo;
     private final KakaoBookApiClient kakao;
 
-    /* ───────── API & 공통 ───────── */
     private static final String LIST_API =
         "https://store.kyobobook.co.kr/api/gw/best/best-seller/total"
       + "?period=%s&page=%d&per=20&bsslBksClstCode=A";
@@ -105,37 +98,46 @@ public class KyoboCrawlerService {
     private BookList toEntity(JsonNode n, BookListCategory cat) {
 
         String saleId = n.path("saleCmdtid").asText();
+        String isbn13 = n.path("isbn13").asText(null);
+        if (isbn13 == null || isbn13.isBlank())
+            isbn13 = n.path("cmdtCode").asText(null);
 
-        /* ---------- ISBN ---------- */
-        String isbn = n.path("isbn13").asText(null);
-        if (isbn == null || isbn.isBlank())
-            isbn = n.path("cmdtCode").asText(null);
+        /* ---------- 여기부터 변경 ---------- */
+        String isbn;    // 저장할 값
+        String img = null;
+
+        if (isbn13 != null && !isbn13.isBlank()) {
+            try {
+                isbn = kakao.fetchIsbnString(isbn13);   // ❶ ISBN 문자열(“10␣13”)
+                img  = kakao.fetchThumbnail(isbn13);    // ❷ 썸네일 별도 호출
+            } catch (Exception e) {
+                log.debug("[Kakao] ISBN/썸네일 보강 실패 isbn13={}", isbn13);
+                isbn = isbn13;                          // 실패 시 13자리만
+            }
+        } else {
+            isbn = "";
+        }
 
         /* ---------- 제목 ---------- */
         String title = n.path("cmdtName").asText(null);
-       
 
-        /* ---------- 이미지(썸네일) ---------- */
-        String img = null;
-        if (isbn != null && !isbn.isBlank()) {
-            try {
-                img = kakao.fetchThumbnail(isbn);          
-            } catch (Exception e) {
-                log.debug("[Kakao] 썸네일 보강 실패 isbn={}", isbn);
-            }
-        }
+
+        Integer ranking = n.path("prstRnkn").isInt()
+                ? n.path("prstRnkn").asInt()
+                : null;
 
         return BookList.builder()
                 .id(saleId + "_" + cat.name())
                 .title(title)
-                .isbn(isbn)
-                .imageName(img)            
+                .isbn(isbn)                             // “10␣13” 또는 “13”만
+                .imageName(img)
                 .author(n.path("chrcName").asText(null))
                 .publisher(n.path("pbcmName").asText(null))
+                .ranking(ranking)
                 .category(cat)
                 .build();
     }
-    
+
     public boolean isEmpty(BookListCategory cat) {
         return repo.countByCategory(cat) == 0;
     }
