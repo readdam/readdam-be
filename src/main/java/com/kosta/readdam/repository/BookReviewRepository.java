@@ -1,5 +1,6 @@
 package com.kosta.readdam.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -25,4 +26,10 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Integer>
 		BookReviewStatsDto findStatsByBookIsbn(@Param("bookIsbn") String bookIsbn);
 	
 	List<BookReview> findByUserUsernameOrderByRegTimeDesc(String username);
+	
+	@Query("SELECT COALESCE(AVG(r.rating), 0) FROM BookReview r WHERE r.book.bookIsbn = :bookIsbn")
+	BigDecimal calculateAverageRating(@Param("bookIsbn") String bookIsbn);
+
+	Integer countByBook_BookIsbn(String bookIsbn);
+
 }

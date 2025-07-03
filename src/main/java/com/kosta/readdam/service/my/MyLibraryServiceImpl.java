@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.kosta.readdam.dto.LibraryBookDto;
 import com.kosta.readdam.dto.LibraryDto;
@@ -22,187 +24,169 @@ import com.kosta.readdam.repository.UserRepository;
 @Transactional
 public class MyLibraryServiceImpl implements MyLibraryService {
 
-    @Autowired
-    private LibraryRepository libraryRepository;
+	@Autowired
+	private LibraryRepository libraryRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private LibraryBookRepository libraryBookRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Override
-    public List<LibraryDto> getMyLibraryList(String username) throws Exception {
-        User user = userRepository.findById(username)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+	@Autowired
+	private LibraryBookRepository libraryBookRepository;
 
-        // 1) 현재 저장된 서재 전체 조회
-        List<Library> libraries = libraryRepository.findByUser_Username(username);
+	@Override
+	public List<LibraryDto> getMyLibraryList(String username) throws Exception {
+		User user = userRepository.findById(username)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 2) 기본 서재 이름 목록
-        List<String> defaultNames = List.of("인생 책", "읽은 책");
+		// 1) 현재 저장된 서재 전체 조회
+		List<Library> libraries = libraryRepository.findByUser_Username(username);
 
-        // 3) 기본 서재가 없으면 생성
-        for (String name : defaultNames) {
-            boolean exists = libraries.stream()
-                .anyMatch(lib -> name.equals(lib.getName()));
-            if (!exists) {
-                Library lib = Library.builder()
-                    .user(user)
-                    .name(name)
-                    .isShow(1)
-                    .build();
-                libraryRepository.save(lib);
-                libraries.add(lib);
-            }
-        }
+		// 2) 기본 서재 이름 목록
+		List<String> defaultNames = List.of("인생 책", "읽은 책");
 
-        // 4) DTO 변환: 기본 서재 순서 유지
-        List<LibraryDto> result = new ArrayList<>();
-        for (String name : defaultNames) {
-            Library lib = libraries.stream()
-                .filter(l -> name.equals(l.getName()))
-                .findFirst()
-                .get();
-            List<LibraryBookDto> books = lib.getLibraryBooks().stream()
-                .map(LibraryBook::toDto)
-                .collect(Collectors.toList());
-            result.add(LibraryDto.builder()
-                .libraryId(lib.getLibraryId())
-                .username(username)
-                .name(name)
-                .isShow(lib.getIsShow())
-                .books(books)
-                .build());
-        }
+		// 3) 기본 서재가 없으면 생성
+		for (String name : defaultNames) {
+			boolean exists = libraries.stream().anyMatch(lib -> name.equals(lib.getName()));
+			if (!exists) {
+				Library lib = Library.builder().user(user).name(name).isShow(1).build();
+				libraryRepository.save(lib);
+				libraries.add(lib);
+			}
+		}
 
-        // 5) 커스텀 서재들 추가
-        libraries.stream()
-            .filter(lib -> !defaultNames.contains(lib.getName()))
-            .forEach(lib -> {
-                List<LibraryBookDto> books = lib.getLibraryBooks().stream()
-                    .map(LibraryBook::toDto)
-                    .collect(Collectors.toList());
-                result.add(LibraryDto.builder()
-                    .libraryId(lib.getLibraryId())
-                    .username(username)
-                    .name(lib.getName())
-                    .isShow(lib.getIsShow())
-                    .books(books)
-                    .build());
-            });
+		// 4) DTO 변환: 기본 서재 순서 유지
+		List<LibraryDto> result = new ArrayList<>();
+		for (String name : defaultNames) {
+			Library lib = libraries.stream().filter(l -> name.equals(l.getName())).findFirst().get();
+			List<LibraryBookDto> books = lib.getLibraryBooks().stream().map(LibraryBook::toDto)
+					.collect(Collectors.toList());
+			result.add(LibraryDto.builder().libraryId(lib.getLibraryId()).username(username).name(name)
+					.isShow(lib.getIsShow()).books(books).build());
+		}
 
-        return result;
-    }
+		// 5) 커스텀 서재들 추가
+		libraries.stream().filter(lib -> !defaultNames.contains(lib.getName())).forEach(lib -> {
+			List<LibraryBookDto> books = lib.getLibraryBooks().stream().map(LibraryBook::toDto)
+					.collect(Collectors.toList());
+			result.add(LibraryDto.builder().libraryId(lib.getLibraryId()).username(username).name(lib.getName())
+					.isShow(lib.getIsShow()).books(books).build());
+		});
 
-    @Override
-    public void addLibrary(String username, LibraryDto dto) {
-        User user = userRepository.findById(username)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
+		return result;
+	}
 
-        // 1. 서재 저장
-        Library library = Library.builder()
-            .name(dto.getName())
-            .user(user)
-            .isShow(1)
-            .build();
+	@Override
+	public void addLibrary(String username, LibraryDto dto) {
+		User user = userRepository.findById(username).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자"));
 
-        Library savedLibrary = libraryRepository.save(library);
+		// 1. 서재 저장
+		Library library = Library.builder().name(dto.getName()).user(user).isShow(1).build();
 
-        // 2. 책 목록 저장
-        List<LibraryBook> books = dto.getBooks().stream().map(bookDto -> {
-            return LibraryBook.builder()
-                .library(savedLibrary)
-                .isbn(bookDto.getIsbn())
-                .title(bookDto.getTitle())
-                .authors(String.join(", ", bookDto.getAuthors())) // authors 배열을 문자열로 저장
-                .thumbnail(bookDto.getThumbnail())
-                .publisher(bookDto.getPublisher())
-                .datetime(bookDto.getDatetime())
-                .build();
-        }).collect(Collectors.toList());
+		Library savedLibrary = libraryRepository.save(library);
 
-        libraryBookRepository.saveAll(books);
-    }
+		// 2. 책 목록 저장
+		List<LibraryBook> books = dto.getBooks().stream().map(bookDto -> {
+			return LibraryBook.builder().library(savedLibrary).isbn(bookDto.getIsbn()).title(bookDto.getTitle())
+					.authors(String.join(", ", bookDto.getAuthors())) // authors 배열을 문자열로 저장
+					.thumbnail(bookDto.getThumbnail()).publisher(bookDto.getPublisher()).datetime(bookDto.getDatetime())
+					.build();
+		}).collect(Collectors.toList());
 
+		libraryBookRepository.saveAll(books);
+	}
 
-    @Override
-    @Transactional
-    public LibraryDto updateLibrary(LibraryDto dto) throws Exception {
-        // 1) 사용자 엔티티는 dto에 username이 담겨있다고 가정
-        User user = userRepository.findById(dto.getUsername())
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+	@Override
+	@Transactional
+	public LibraryDto updateLibrary(LibraryDto dto) throws Exception {
+		// 1) 사용자 엔티티는 dto에 username이 담겨있다고 가정
+		User user = userRepository.findById(dto.getUsername())
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        Library library;
-        if (dto.getLibraryId() == null) {
-            // 기본 서재: 이름으로 조회
-            library = libraryRepository.findByUser_UsernameAndName(dto.getUsername(), dto.getName())
-                .orElseGet(() -> {
-                    // 없으면 새로 생성
-                    Library lib = Library.builder()
-                        .user(user)
-                        .name(dto.getName())
-                        .isShow(1)
-                        .build();
-                    return libraryRepository.save(lib);
-                });
-        } else {
-            // 커스텀 서재: ID로 조회
-            library = libraryRepository.findById(dto.getLibraryId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
-            // 기본 서재명 변경 금지
-            if (!List.of("인생 책", "읽은 책").contains(library.getName())) {
-                library.setName(dto.getName());
-            }
-        }
+		Library library;
+		if (dto.getLibraryId() == null) {
+			// 기본 서재: 이름으로 조회
+			library = libraryRepository.findByUser_UsernameAndName(dto.getUsername(), dto.getName()).orElseGet(() -> {
+				// 없으면 새로 생성
+				Library lib = Library.builder().user(user).name(dto.getName()).isShow(1).build();
+				return libraryRepository.save(lib);
+			});
+		} else {
+			// 커스텀 서재: ID로 조회
+			library = libraryRepository.findById(dto.getLibraryId())
+					.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
+			// 기본 서재명 변경 금지
+			if (!List.of("인생 책", "읽은 책").contains(library.getName())) {
+				library.setName(dto.getName());
+			}
+		}
 
-        // 2) 기존 책 삭제
-        libraryBookRepository.deleteAllByLibrary(library);
+		// 2) 기존 책 삭제
+		libraryBookRepository.deleteAllByLibrary(library);
 
-        // 3) 새 책 저장
-        List<LibraryBook> newBooks = dto.getBooks().stream()
-            .map(bookDto -> LibraryBook.builder()
-                .library(library)
-                .isbn(bookDto.getIsbn())
-                .title(bookDto.getTitle())
-                .authors(bookDto.getAuthors() != null
-                         ? String.join(", ", bookDto.getAuthors())
-                         : null)
-                .thumbnail(bookDto.getThumbnail())
-                .publisher(bookDto.getPublisher())
-                .datetime(bookDto.getDatetime())
-                .build())
-            .collect(Collectors.toList());
-        libraryBookRepository.saveAll(newBooks);
+		// 3) 새 책 저장
+		List<LibraryBook> newBooks = dto.getBooks().stream()
+				.map(bookDto -> LibraryBook.builder().library(library).isbn(bookDto.getIsbn()).title(bookDto.getTitle())
+						.authors(bookDto.getAuthors() != null ? String.join(", ", bookDto.getAuthors()) : null)
+						.thumbnail(bookDto.getThumbnail()).publisher(bookDto.getPublisher())
+						.datetime(bookDto.getDatetime()).build())
+				.collect(Collectors.toList());
+		libraryBookRepository.saveAll(newBooks);
 
-        // 4) 반환용 DTO
-        return LibraryDto.builder()
-            .libraryId(library.getLibraryId())
-            .username(library.getUser().getUsername())
-            .name(library.getName())
-            .isShow(library.getIsShow())
-            .books(newBooks.stream().map(LibraryBook::toDto).collect(Collectors.toList()))
-            .build();
-    }
+		// 4) 반환용 DTO
+		return LibraryDto.builder().libraryId(library.getLibraryId()).username(library.getUser().getUsername())
+				.name(library.getName()).isShow(library.getIsShow())
+				.books(newBooks.stream().map(LibraryBook::toDto).collect(Collectors.toList())).build();
+	}
 
+	@Override
+	public void deleteLibrary(Integer libraryId) throws Exception {
+		Library library = libraryRepository.findById(libraryId)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
 
+		if (List.of("인생 책", "읽은 책").contains(library.getName())) {
+			throw new IllegalStateException("기본 서재는 삭제할 수 없습니다.");
+		}
 
-    @Override
-    public void deleteLibrary(Integer libraryId) throws Exception{
-        Library library = libraryRepository.findById(libraryId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
+		libraryRepository.delete(library);
+	}
 
-        if (List.of("인생 책", "읽은 책").contains(library.getName())) {
-            throw new IllegalStateException("기본 서재는 삭제할 수 없습니다.");
-        }
+	@Override
+	public List<LibraryDto> toggleShowAll(String username, Integer isShow) throws Exception {
+		libraryRepository.updateIsShowByUsername(username, isShow);
+		return getMyLibraryList(username);
+	}
 
-        libraryRepository.delete(library);
-    }
-    
-    @Override
-    public List<LibraryDto> toggleShowAll(String username, Integer isShow) throws Exception {
-        libraryRepository.updateIsShowByUsername(username, isShow);
-        return getMyLibraryList(username);
-    }
+	@Override
+	public List<LibraryDto> getMyLibraries(String username) {
+		return libraryRepository.findByUser_Username(username).stream().map(lib -> {
+			List<com.kosta.readdam.dto.LibraryBookDto> bookDtos = lib.getLibraryBooks().stream().map(b -> b.toDto())
+					.collect(Collectors.toList());
+
+			return LibraryDto.builder().libraryId(lib.getLibraryId()).username(lib.getUser().getUsername())
+					.name(lib.getName()).isShow(lib.getIsShow()).books(bookDtos).build();
+		}).collect(Collectors.toList());
+	}
+
+	@Override
+	public void addBookToLibrary(String username, Integer libraryId, LibraryBookDto dto) {
+		// (1) 사용자 검증
+		User user = userRepository.findById(username)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+		// (2) 서재 검증
+		Library lib = libraryRepository.findById(libraryId)
+				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 서재입니다."));
+		if (!lib.getUser().getUsername().equals(username)) {
+			throw new SecurityException("본인 소유의 서재가 아닙니다.");
+		}
+		// (3) 중복 체크
+		if (libraryBookRepository.existsByLibraryAndIsbn(lib, dto.getIsbn())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 추가된 책입니다.");
+		}
+		// (4) 엔티티로 변환 후 저장
+		LibraryBook book = LibraryBook.builder().library(lib).isbn(dto.getIsbn()).title(dto.getTitle())
+				.authors(String.join(", ", dto.getAuthors())).thumbnail(dto.getThumbnail())
+				.publisher(dto.getPublisher()).datetime(dto.getDatetime()).build();
+		libraryBookRepository.save(book);
+	}
 
 }
