@@ -28,17 +28,25 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 		QClassLike cl = QClassLike.classLike;
 		
 		BooleanBuilder builder = new BooleanBuilder();
+		String keyword = condition.getKeyword();
 
-        if (condition.getKeyword() != null && !condition.getKeyword().isBlank()) {
-            builder.and(c.title.containsIgnoreCase(condition.getKeyword()));
+        if (keyword != null && !keyword.isBlank()) {
+            builder.and(
+            		c.title.containsIgnoreCase(keyword)
+            		.or(c.tag1.containsIgnoreCase(keyword))
+            		.or(c.tag2.containsIgnoreCase(keyword))
+            		.or(c.tag3.containsIgnoreCase(keyword))
+            		.or(c.round1PlaceName.containsIgnoreCase(keyword))
+            	);
         }
 
         if (condition.getTag() != null && !condition.getTag().isBlank()) {
-            builder.and
-            (c.tag1.eq(condition.getTag()))
-            .or(c.tag2.eq(condition.getTag()))
-            .or(c.tag3.eq(condition.getTag()));
-        }
+            builder.and(
+            		c.tag1.eq(condition.getTag())
+		            .or(c.tag2.eq(condition.getTag()))
+		            .or(c.tag3.eq(condition.getTag()))
+		            );
+		        }
 
         if (condition.getPlace() != null && !condition.getPlace().isBlank()) {
             builder.and(c.round1PlaceName.eq(condition.getPlace()));
@@ -61,6 +69,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
             ))
             .from(c)
             .leftJoin(cl).on(cl.classId.eq(c))
+            .where(builder)
             .groupBy(c.classId)
 //            .orderBy(getSortOrder(condition.getSort(),c))
             .offset(pageable.getOffset())
