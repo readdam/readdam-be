@@ -14,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.kosta.readdam.dto.ReportDto;
+import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
 
 import lombok.AllArgsConstructor;
@@ -46,17 +48,39 @@ public class Report {
 
     @Column(length = 255)
     private String reason;
+    
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
-    @Column(length = 255)
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private ReportCategory category;
 
     @Column(name = "category_id", length = 255)
     private String categoryId;
 
     @Column(name = "reported_at", nullable = false)
     private LocalDateTime reportedAt;
+    
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReportStatus status;
+    
+    
+    public ReportDto toDto() {
+        return ReportDto.builder()
+            .reportId(this.reportId)
+            .reporterUsername(this.reporter.getUsername())
+            .reportedUsername(this.reported.getUsername())
+            .reason(this.reason)
+            .category(this.category)
+            .categoryId(this.categoryId)
+            .reportedAt(this.reportedAt)
+            .processedAt(this.processedAt)
+            .status(this.status)
+            .content(this.content) 
+            .build();
+    }
 }

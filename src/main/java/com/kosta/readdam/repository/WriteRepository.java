@@ -27,6 +27,4 @@ public interface WriteRepository extends JpaRepository<Write, Integer>, WriteDsl
     @Transactional 
     @Query("UPDATE Write w SET w.commentCnt = w.commentCnt + :countChange WHERE w.writeId = :writeId")
     void updateCommentCnt(@Param("writeId") Integer writeId, @Param("countChange") int countChange);
-    
-    
 }

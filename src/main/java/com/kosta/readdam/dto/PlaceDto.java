@@ -15,7 +15,7 @@ public class PlaceDto {
     private String basicAddress;
     private String detailAddress;
     private Double lat;
-    private Double log;
+    private Double lng;
     private String phone;
     private String introduce;
 
@@ -51,7 +51,7 @@ public class PlaceDto {
                 .basicAddress(basicAddress)
                 .detailAddress(detailAddress)
                 .lat(lat)
-                .log(log)
+                .lng(lng)
                 .phone(phone)
                 .introduce(introduce)
                 .tag1(tag1)

@@ -97,5 +97,23 @@ public class KakaoBookApiClient {
         
         return response.getBody(); // documents + meta 모두 포함됨
     }
+    
+    public String fetchThumbnail(String isbn) {
+
+        String queryIsbn = isbn.contains(" ") ? isbn.split(" ")[1] : isbn;
+        String url = "https://dapi.kakao.com/v3/search/book?target=isbn&query=" + queryIsbn;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + kakaoApiKey);
+        ResponseEntity<KakaoBookResponse> resp =
+                restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), KakaoBookResponse.class);
+
+        KakaoBookResponse body = resp.getBody();
+        if (body == null || body.getDocuments().isEmpty())
+            throw new IllegalArgumentException("카카오 썸네일 조회 실패: isbn=" + isbn);
+
+        return body.getDocuments().get(0).getThumbnail();   // CDN URL
+    }
+
 
 }

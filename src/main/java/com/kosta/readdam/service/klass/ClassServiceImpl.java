@@ -108,5 +108,10 @@ public class ClassServiceImpl implements ClassService {
 		return classRepository.searchClasses(condition,pageable);
 	}
 
-
+	public List<ClassDto> getLatestClasses() throws Exception {
+	    List<ClassEntity> classes = classRepository.findTop4ByOrderByClassIdDesc();
+	    return classes.stream()
+	            .map(ClassEntity::toDto)
+	            .collect(Collectors.toList());
+	}
 }
