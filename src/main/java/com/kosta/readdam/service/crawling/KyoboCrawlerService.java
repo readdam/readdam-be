@@ -14,7 +14,6 @@ import com.kosta.readdam.entity.BookList;
 import com.kosta.readdam.entity.enums.BookListCategory;
 import com.kosta.readdam.external.KakaoBookApiClient;
 import com.kosta.readdam.repository.BookListRepository;
-import com.kosta.readdam.util.IsbnUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

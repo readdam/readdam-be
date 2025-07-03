@@ -48,6 +48,9 @@ public class Inquiry {
 
     @Column(name = "reg_date", nullable = false)
     private LocalDateTime regDate;
+    
+    @Column(name = "answer_date")
+    private LocalDateTime answerDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -70,6 +73,7 @@ public class Inquiry {
                 .content(content)
                 .answer(answer)
                 .regDate(regDate)
+                .answerDate(answerDate)
                 .status(status)
                 .username(user.getUsername())
                 .reason(reason)
