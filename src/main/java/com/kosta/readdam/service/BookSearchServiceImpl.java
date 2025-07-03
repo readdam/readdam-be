@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.kosta.readdam.dto.book.BookSearchResultDto;
 import com.kosta.readdam.dto.kakao.KakaoBookResponse;
 import com.kosta.readdam.external.KakaoBookApiClient;
+import com.kosta.readdam.repository.BookRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,21 +20,36 @@ public class BookSearchServiceImpl implements BookSearchService {
     private String kakaoApiKey;
 
     private final KakaoBookApiClient kakaoBookApiClient;
-    
+    private final BookRepository bookRepository;
+
     @Override
     public BookSearchResultDto searchBooks(String query, String target, String sort, int page, int size) {
-    	 KakaoBookResponse result = kakaoBookApiClient.searchBooks(query, target, sort, page, size);
+        KakaoBookResponse result = kakaoBookApiClient.searchBooks(query, target, sort, page, size);
 
-    	    if (result == null || result.getDocuments() == null) {
-    	        return new BookSearchResultDto(Collections.emptyList(), 0, 0, true);
-    	    }
+        if (result == null || result.getDocuments() == null) {
+            return new BookSearchResultDto(Collections.emptyList(), 0, 0, true);
+        }
 
-    	    return new BookSearchResultDto(
-    	        result.getDocuments(),
-    	        result.getMeta().getTotalCount(),
-    	        result.getMeta().getPageableCount(),
-    	        result.getMeta().isEnd()
-    	    );
+        result.getDocuments().forEach(doc -> {
+            bookRepository.findById(doc.getIsbn())
+                .ifPresentOrElse(
+                    book -> {
+                        doc.setRating(book.getRating() != null ? book.getRating().doubleValue() : 0.0);
+                        doc.setReviewCnt(book.getReviewCnt() != null ? book.getReviewCnt() : 0);
+                    },
+                    () -> {
+                        doc.setRating(0.0);
+                        doc.setReviewCnt(0);
+                    }
+                );
+        });
 
+        return new BookSearchResultDto(
+            result.getDocuments(),
+            result.getMeta().getTotalCount(),
+            result.getMeta().getPageableCount(),
+            result.getMeta().isEnd()
+        );
     }
 }
+
