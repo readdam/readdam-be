@@ -1,5 +1,6 @@
 package com.kosta.readdam.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -10,9 +11,10 @@ import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.QClassEntity;
 import com.kosta.readdam.entity.QClassLike;
-import com.kosta.readdam.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 		QClassEntity c = QClassEntity.classEntity;
 		QClassLike cl = QClassLike.classLike;
 		
+		// 검색: 제목, 태그, 장소명에서 검색어 검색
 		BooleanBuilder builder = new BooleanBuilder();
 		String keyword = condition.getKeyword();
 
@@ -52,6 +55,23 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
             builder.and(c.round1PlaceName.eq(condition.getPlace()));
         }
 
+        // 다중정렬
+//        <OrderSpecifier<?> sortOrder = getSortOrder(condition.getSort(), c, cl);
+        List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
+        
+		if("latest".equals(condition.getSort())) {
+			orderSpecifiers.add(c.createdAt.desc());
+		}else if ("likes".equals(condition.getSort())) {
+			orderSpecifiers.add(Expressions.numberPath(Integer.class, "likeCnt").desc());
+			orderSpecifiers.add(c.createdAt.desc());
+		}else if ("deadline".equals(condition.getSort())) {
+			orderSpecifiers.add(c.round1Date.asc());
+			orderSpecifiers.add(c.createdAt.desc());
+		}else {
+			orderSpecifiers.add(c.createdAt.desc());
+		}
+	
+        
         List<ClassCardDto> results = queryFactory
             .select(Projections.constructor(ClassCardDto.class,
                 c.classId,
@@ -65,13 +85,14 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 c.mainImg,
                 c.round1Date,
                 c.round1PlaceName,
-                cl.count().intValue().as("likeCnt")
+                cl.count().intValue().as("likeCnt")	// likeCnt
+//                Expressions.constant(0) // currentParticipants
             ))
             .from(c)
             .leftJoin(cl).on(cl.classId.eq(c))
             .where(builder)
             .groupBy(c.classId)
-//            .orderBy(getSortOrder(condition.getSort(),c))
+            .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize()+1)	// +1개 더 가져와서 hasNext 확인
             .fetch();
@@ -82,14 +103,19 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
         	results.remove(results.size() - 1);	// 마지막 더 가져온 1개 제거
         }
 
-        // 정렬 처리
-//        if ("latest".equals(condition.getSort())) {
-//            query.orderBy(c.createdDate.desc());
-//        } else if ("popular".equals(condition.getSort())) {
-//            query.orderBy(cl.count().desc());
-//        }
-
         return new SliceImpl<>(results, pageable, hasNext);
     }
+
+//	private OrderSpecifier<?> getSortOrder(String sort, QClassEntity c, QClassLike cl) {
+//		if(sort == null || sort.equals("latest")) {
+//			return c.createdAt.desc();
+//		}else if (sort.equals("likes")) {
+//			return Expressions.numberPath(Integer.class, "likeCnt").desc();
+//		}else if(sort.equals("deadline")) {
+//			return c.round1Date.asc();
+//		}else {
+//			return c.createdAt.desc();	//기본값
+//		}
+//	}
 
 }

@@ -1,12 +1,27 @@
 package com.kosta.readdam.entity;
 
-import lombok.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.springframework.data.annotation.CreatedDate;
 
 import com.kosta.readdam.dto.ClassDto;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "`class`")
@@ -28,6 +43,10 @@ public class ClassEntity {
 
     private String title;
     private String shortIntro;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     private String tag1;
     private String tag2;
@@ -98,6 +117,7 @@ public class ClassEntity {
                 .leaderUsername(leader.getUsername())
                 .title(title)
                 .shortIntro(shortIntro)
+                .createdAt(createdAt)
                 .tag1(tag1)
                 .tag2(tag2)
                 .tag3(tag3)

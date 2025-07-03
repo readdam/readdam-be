@@ -1,6 +1,7 @@
 package com.kosta.readdam.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -26,6 +27,8 @@ public class ClassDto {
     private String title;
     private String shortIntro;
 
+    private LocalDateTime createdAt;
+    
     private String tag1;
     private String tag2;
     private String tag3;
@@ -97,6 +100,7 @@ public class ClassDto {
                 .leader(leader)
                 .title(title)
                 .shortIntro(shortIntro)
+                .createdAt(createdAt)
                 .tag1(tag1)
                 .tag2(tag2)
                 .tag3(tag3)
