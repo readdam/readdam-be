@@ -1,4 +1,4 @@
-package com.kosta.readdam.repository.reservation;
+package com.kosta.readdam.dto.reservation;
 
 import java.util.List;
 
