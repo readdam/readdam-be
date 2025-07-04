@@ -1,6 +1,5 @@
 package com.kosta.readdam.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,23 +18,22 @@ import com.kosta.readdam.jwt.JwtAuthorizationFilter;
 import com.kosta.readdam.oauth.OAuth2SuccessHandler;
 import com.kosta.readdam.oauth.PrincipalOAuth2UserService;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.service.alert.NotificationService;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration // IoC 빈(bean) 등록
 @EnableWebSecurity //필터 체인 관리 시작 어노테이션
+@RequiredArgsConstructor
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
 	
-	@Autowired
-	private CorsFilter corsFilter;
-	
-	@Autowired
-	private PrincipalOAuth2UserService principalOAuth2UserService;
-	
-	@Autowired
-	private OAuth2SuccessHandler oAuth2SuccessHandler;
-	
-	@Autowired
-	private UserRepository userRepository;
+
+	private final CorsFilter corsFilter;
+	private final PrincipalOAuth2UserService principalOAuth2UserService;
+	private final OAuth2SuccessHandler oAuth2SuccessHandler;
+	private final UserRepository userRepository;
+	private final NotificationService notificationService;
 	
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
@@ -54,7 +52,7 @@ public class SecurityConfig {
 		.and()
 		.formLogin().disable()
 		.httpBasic().disable()
-		.addFilterAt(new JwtAuthenticationFilter(authenticationManager, userRepository), UsernamePasswordAuthenticationFilter.class)
+		.addFilterAt(new JwtAuthenticationFilter(authenticationManager, userRepository, notificationService), UsernamePasswordAuthenticationFilter.class)
 		.addFilterBefore(
 			new JwtAuthorizationFilter(authenticationManager, userRepository),
 			UsernamePasswordAuthenticationFilter.class

@@ -2,8 +2,6 @@ package com.kosta.readdam.controller.my;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -12,35 +10,42 @@ import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.AlertDto;
 import com.kosta.readdam.service.my.MyAlertService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/my")
+@RequiredArgsConstructor
 public class MyAlertController {
 
-    @Autowired
-    private MyAlertService myAlertService;
+    private final MyAlertService myAlertService;
 
-    // 알림 전체 조회
     @PostMapping("/myAlertList")
-    public ResponseEntity<List<AlertDto>> getAlertList(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        try {
-            String username = principalDetails.getUsername();
-            List<AlertDto> alerts = myAlertService.getMyAlerts(username);
-            return new ResponseEntity<>(alerts, HttpStatus.OK);
-        } catch(Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<AlertDto>> getAlertList(
+            @AuthenticationPrincipal PrincipalDetails principal) throws Exception {
+
+        List<AlertDto> alerts = myAlertService.getMyAlerts(principal.getUsername());
+        return ResponseEntity.ok(alerts);
     }
 
-    // 알림 클릭 시 isChecked 처리
     @PostMapping("/myAlertCheck")
-    public ResponseEntity<Boolean> checkAlert(@RequestBody AlertDto alertDto) {
-        try {
-            myAlertService.checkAlert(alertDto.getAlertId());
-            return new ResponseEntity<>(true, HttpStatus.OK);
-        } catch(Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Void> checkAlert(@RequestBody AlertDto dto) throws Exception {
+        myAlertService.checkAlert(dto.getAlertId());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread/count")
+    public ResponseEntity<Long> countUnread(
+            @AuthenticationPrincipal PrincipalDetails principal) {
+
+        return ResponseEntity.ok(myAlertService.countUnread(principal.getUsername()));
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<List<AlertDto>> latestAlerts(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestParam(defaultValue = "2") int limit) {
+
+        return ResponseEntity.ok(
+                myAlertService.getLatestAlerts(principal.getUsername(), limit));
     }
 }

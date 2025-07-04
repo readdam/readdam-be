@@ -18,74 +18,87 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.service.alert.NotificationService;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-	private final JwtToken jwtToken = new JwtToken();
-	private String fcmToken;
-	private final UserRepository userRepository;
+    private final JwtToken jwtToken = new JwtToken();
+    private String fcmToken;
 
-	public JwtAuthenticationFilter(AuthenticationManager authenticationManager, UserRepository userRepository) {
-		super(authenticationManager);
-		this.userRepository = userRepository;
-		setFilterProcessesUrl("/loginProc"); // POST 요청 경로 설정
-	}
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-	@Override
-	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			// JSON 파싱
-			ObjectMapper om = new ObjectMapper();
-			Map<String, String> credentials = om.readValue(request.getInputStream(), Map.class);
-			String username = credentials.get("username");
-			String password = credentials.get("password");
-			this.fcmToken = credentials.get("fcmToken");
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
+                                   UserRepository userRepository,
+                                   NotificationService notificationService) {
+        super(authenticationManager);
+        this.userRepository      = userRepository;
+        this.notificationService = notificationService;
+        setFilterProcessesUrl("/loginProc");   // POST 요청 경로
+    }
 
-			// 인증 시도
-			UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
-					password);
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request,
+                                                HttpServletResponse response) {
+        try {
+            ObjectMapper om = new ObjectMapper();
+            Map<String, String> creds = om.readValue(request.getInputStream(), Map.class);
 
-			return this.getAuthenticationManager().authenticate(authenticationToken);
+            String username = creds.get("username");
+            String password = creds.get("password");
+            this.fcmToken   = creds.get("fcmToken");
 
-		} catch (IOException e) {
-			throw new RuntimeException("로그인 요청 JSON 파싱 실패", e);
-		}
-	}
+            UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(username, password);
 
-	@Override
-	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-			Authentication authResult) throws IOException, ServletException {
+            return this.getAuthenticationManager().authenticate(authToken);
 
-		PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-		User user = principalDetails.getUser();
+        } catch (IOException e) {
+            throw new RuntimeException("로그인 요청 JSON 파싱 실패", e);
+        }
+    }
 
-		if (fcmToken != null && !fcmToken.isBlank()) {
-			user.setFcmToken(fcmToken);
-			userRepository.save(user);
-		}
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authResult)
+                                            throws IOException, ServletException {
 
-		String username = user.getUsername();
-		String nickname = user.getNickname();
-		Boolean isAdmin = user.getIsAdmin();
-//		Double lat = user.getLat();
-//		Double lng = user.getLng();
+        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+        User user = principalDetails.getUser();
 
-		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin);
-		String refreshToken = jwtToken.makeRefreshToken(username);
+        // FCM 토큰 저장
+        if (fcmToken != null && !fcmToken.isBlank()) {
+            user.setFcmToken(fcmToken);
+            userRepository.save(user);
+        }
 
-		response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
+        // 로그인 직후 요약 푸시 전송(제목·본문 null ⇒ 규칙 적용)
+        notificationService.sendPush(user.getUsername(), null, null, null);
 
-		Map<String, Object> responseBody = new HashMap<>();
-		responseBody.put("username", username);
-		responseBody.put("nickname", nickname);
-		responseBody.put("isAdmin", isAdmin);
-//		responseBody.put("lat", lat);
-//		responseBody.put("lng", lng);
-		responseBody.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
-		responseBody.put("access_token", JwtProperties.TOKEN_PREFIX + accessToken);
+        String username = user.getUsername();
+        String nickname = user.getNickname();
+        Boolean isAdmin = user.getIsAdmin();
+        // Double lat = user.getLat();
+        // Double lng = user.getLng();
 
-		response.setContentType("application/json; charset=utf-8");
-		ObjectMapper objectMapper = new ObjectMapper();
-		response.getWriter().write(objectMapper.writeValueAsString(responseBody));
-	}
+        String accessToken  = jwtToken.makeAccessToken(username, nickname, isAdmin);
+        String refreshToken = jwtToken.makeRefreshToken(username);
+
+        response.addHeader(JwtProperties.HEADER_STRING,
+                           JwtProperties.TOKEN_PREFIX + accessToken);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("username", username);
+        body.put("nickname", nickname);
+        body.put("isAdmin",  isAdmin);
+        // body.put("lat", lat);
+        // body.put("lng", lng);
+        body.put("refresh_token", JwtProperties.TOKEN_PREFIX + refreshToken);
+        body.put("access_token",  JwtProperties.TOKEN_PREFIX + accessToken);
+
+        response.setContentType("application/json; charset=utf-8");
+        new ObjectMapper().writeValue(response.getWriter(), body);
+    }
 }
