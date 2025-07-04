@@ -27,4 +27,14 @@ public class NoticeDto {
                 .topFix(topFix != null ? topFix : false)
                 .build();
     }
+    
+    public static NoticeDto fromEntity(Notice notice) {
+    	NoticeDto dto = new NoticeDto();
+    	dto.setNoticeId(notice.getNoticeId());
+    	dto.setTitle(notice.getTitle());
+    	dto.setContent(notice.getContent());
+    	dto.setRegDate(notice.getRegDate());
+    	dto.setTopFix(notice.getTopFix());
+    	return dto;
+    }
 }

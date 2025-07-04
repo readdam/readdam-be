@@ -65,7 +65,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 			orderSpecifiers.add(Expressions.numberPath(Integer.class, "likeCnt").desc());
 			orderSpecifiers.add(c.createdAt.desc());
 		}else if ("deadline".equals(condition.getSort())) {
-			orderSpecifiers.add(c.round1Date.asc());
+			orderSpecifiers.add(c.maxPerson.asc());
 			orderSpecifiers.add(c.createdAt.desc());
 		}else {
 			orderSpecifiers.add(c.createdAt.desc());
@@ -106,16 +106,5 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
         return new SliceImpl<>(results, pageable, hasNext);
     }
 
-//	private OrderSpecifier<?> getSortOrder(String sort, QClassEntity c, QClassLike cl) {
-//		if(sort == null || sort.equals("latest")) {
-//			return c.createdAt.desc();
-//		}else if (sort.equals("likes")) {
-//			return Expressions.numberPath(Integer.class, "likeCnt").desc();
-//		}else if(sort.equals("deadline")) {
-//			return c.round1Date.asc();
-//		}else {
-//			return c.createdAt.desc();	//기본값
-//		}
-//	}
 
 }
