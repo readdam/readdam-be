@@ -29,6 +29,8 @@ import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.Place;
 import com.kosta.readdam.entity.PlaceRoom;
 import com.kosta.readdam.entity.PlaceTime;
+import com.kosta.readdam.exception.RoomHasReservationException;
+import com.kosta.readdam.repository.ReservationRepository;
 import com.kosta.readdam.repository.place.PlaceDslRepository;
 import com.kosta.readdam.repository.place.PlaceLikeRepository;
 import com.kosta.readdam.repository.place.PlaceRepository;
@@ -48,6 +50,7 @@ public class PlaceServiceImpl implements PlaceService {
     private final PlaceDslRepository placeDslRepository;
     private final PlaceTimeDslRepository placeTimeDslRepository;
     private final PlaceLikeRepository placeLikeRepository;
+    private final ReservationRepository reservationRepository;
     
     private static final List<String> FULL_DAY_HOURS = Arrays.asList(
     	    "00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00",
@@ -176,7 +179,16 @@ public class PlaceServiceImpl implements PlaceService {
 	    // 3. 삭제된 방 처리
 	    for (PlaceRoom oldRoom : existingRooms) {
 	        if (!incomingRoomIds.contains(oldRoom.getPlaceRoomId())) {
+	            // 1. 예약이 존재하는지 확인
+	            long reservationCount = reservationRepository.countByPlaceRoom_PlaceRoomId(oldRoom.getPlaceRoomId());
+	            if (reservationCount > 0) {
+	                throw new RoomHasReservationException("해당 방에 예약이 있어 삭제할 수 없습니다.");
+	            }
+
+	            // 2. 시간 삭제
 	            placeTimeRepository.deleteByPlaceRoom_PlaceRoomId(oldRoom.getPlaceRoomId());
+
+	            // 3. 방 삭제
 	            placeRoomRepository.delete(oldRoom);
 	        }
 	    }
@@ -185,23 +197,40 @@ public class PlaceServiceImpl implements PlaceService {
 	    for (PlaceRoom room : updatedRooms) {
 	        List<PlaceTime> existingTimes = placeTimeRepository.findByPlaceRoom_PlaceRoomId(room.getPlaceRoomId());
 
-	        // 모든 시간 active = false
-	        for (PlaceTime time : existingTimes) {
-	            time.setActive(false);
-	        }
+	        if (existingTimes.isEmpty()) {
+	            // 신규 방: 24시간 슬롯 생성
+	            for (boolean isWeekend : new boolean[]{false, true}) {
+	                for (String time : FULL_DAY_HOURS) {
+	                    boolean isSelected = timeDtos.stream().anyMatch(dto ->
+	                            dto.getTime().equals(time) && dto.getIsWeekend() == isWeekend);
 
-	        // 선택된 시간 active = true
-	        for (PlaceTime time : existingTimes) {
-	            boolean isSelected = timeDtos.stream().anyMatch(dto ->
-	                    dto.getTime().equals(time.getTime()) &&
-	                    dto.getIsWeekend().equals(time.getIsWeekend())
-	            );
+	                    PlaceTime entity = PlaceTime.builder()
+	                            .placeRoom(room)
+	                            .time(time)
+	                            .isWeekend(isWeekend)
+	                            .active(isSelected)
+	                            .build();
+	                    placeTimeRepository.save(entity);
+	                }
+	            }
+	        } else {
+	            // 기존 방: active 껐다 켜기
+	            for (PlaceTime time : existingTimes) {
+	                time.setActive(false);
+	            }
 
-	            if (isSelected) {
-	                time.setActive(true);
+	            for (PlaceTime time : existingTimes) {
+	                boolean isSelected = timeDtos.stream().anyMatch(dto ->
+	                        dto.getTime().equals(time.getTime()) &&
+	                        dto.getIsWeekend().equals(time.getIsWeekend()));
+	                if (isSelected) {
+	                    time.setActive(true);
+	                }
 	            }
 	        }
 	    }
+
+
 	}
 
 

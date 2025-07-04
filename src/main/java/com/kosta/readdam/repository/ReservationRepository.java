@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.kosta.readdam.entity.Reservation;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
-
+	long countByPlaceRoom_PlaceRoomId(Integer placeRoomId);
 }
