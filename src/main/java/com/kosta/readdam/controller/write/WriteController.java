@@ -183,4 +183,24 @@ public class WriteController {
 	                .body("서버 오류가 발생했습니다.");
 	    }
 	}
+	
+	@PostMapping("/my/writeModify/{id}")
+	public ResponseEntity<WriteDto> modify(
+			@PathVariable("id") Integer writeId,
+			@ModelAttribute WriteDto writeDto,
+			@RequestParam(name = "ifile", required = false) MultipartFile ifile,
+			@AuthenticationPrincipal PrincipalDetails principalDetails) {
+		try {
+			System.out.println(writeDto);
+			writeDto.setWriteId(writeId);
+			User user = principalDetails.getUser(); 
+			writeService.modifyDam(writeDto, ifile, user);
+			WriteDto nWriteDto = writeService.detailWrite(writeDto.getWriteId());
+			return ResponseEntity.ok(nWriteDto);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
 }
