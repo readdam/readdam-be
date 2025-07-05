@@ -56,4 +56,32 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
         return placeReviewRepository.findByPlace_PlaceIdOrderByRegTimeDesc(placeId, pageRequest)
                 .map(PlaceReview::toDto);
     }
+    
+    @Override
+    public void updateReview(Integer reviewId, String username, String content, Integer rating, Boolean isHide) {
+        PlaceReview review = placeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.getUser().getUsername().equals(username)) {
+            throw new IllegalStateException("본인 리뷰만 수정할 수 있습니다.");
+        }
+
+        review.setContent(content);
+        review.setRating(rating);
+        review.setIsHide(isHide);
+        // JPA dirty checking 으로 자동 업데이트
+    }
+    
+    @Override
+    public void deleteReview(Integer reviewId, String username) {
+        PlaceReview review = placeReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.getUser().getUsername().equals(username)) {
+            throw new IllegalStateException("본인 리뷰만 삭제할 수 있습니다.");
+        }
+
+        placeReviewRepository.delete(review);
+    }
+
 }
