@@ -38,7 +38,8 @@ public class WriteDto {
     private String introduce; //상세페이지용 추가
     private Integer likeCnt;
     private Integer commentCnt;
-
+    private boolean isNeedReview;
+    private boolean isReviewDeadlinePassed;
 
     public Write toEntity(User user) {
         return Write.builder()
@@ -74,6 +75,10 @@ public class WriteDto {
             .tag5(write.getTag5())
             .regDate(write.getRegDate())
             .endDate(write.getEndDate())
+            .isNeedReview(write.getEndDate() != null)
+            .isReviewDeadlinePassed(
+                write.getEndDate() != null && write.getEndDate().isBefore(LocalDateTime.now())
+            )
             .content(write.getContent())
             .img(write.getImg())
             .viewCnt(write.getViewCnt())

@@ -1,6 +1,7 @@
 package com.kosta.readdam.service.write;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,6 +20,7 @@ import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
+import com.kosta.readdam.repository.WriteCommentRepository;
 import com.kosta.readdam.repository.WriteLikeRepository;
 import com.kosta.readdam.repository.WriteRepository;
 
@@ -35,6 +37,8 @@ public class WriteServiceImpl implements WriteService {
 	private final WriteRepository writeRepository;
 
 	private final WriteLikeRepository writeLikeRepository;
+	
+	private final WriteCommentRepository writeCommentRepository;
 
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -100,9 +104,24 @@ public class WriteServiceImpl implements WriteService {
 	@Transactional
 	public void modifyDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception {
 		
-		System.out.println("서비스단 writeDto = " + writeDto);
+		// 기존 글 가져오기
 		Write write = writeRepository.findById(writeDto.getWriteId()).orElseThrow(()->new Exception("글번호오류"));
 		
+	    long commentCnt = writeCommentRepository.countByWriteWriteId(write.getWriteId());
+
+	    // 댓글 있으면 비공개 전환 불가
+	    if ("private".equals(writeDto.getVisibility()) && commentCnt > 0) {
+	        throw new IllegalStateException("댓글이 달린 글은 비공개로 전환할 수 없습니다.");
+	    }
+
+	    // 댓글 있으면 첨삭 해제 불가
+	    boolean wasNeedReview = write.getEndDate() != null;
+	    boolean wantsToCancelReview = wasNeedReview && !writeDto.isNeedReview();
+	    
+	    if (wantsToCancelReview && commentCnt > 0) {
+	        throw new IllegalStateException("댓글이 달린 글은 첨삭 여부를 해제할 수 없습니다.");
+	    }
+	    
 		write.setTitle(writeDto.getTitle());
 		write.setContent(writeDto.getContent());
 	    write.setType(writeDto.getType());
@@ -112,13 +131,26 @@ public class WriteServiceImpl implements WriteService {
 	    write.setTag4(writeDto.getTag4());
 	    write.setTag5(writeDto.getTag5());
 	    write.setHide("private".equals(writeDto.getVisibility())); //isHide Lombok이 Hide로 맵핑함 참고
-		
-	    if (writeDto.getEndDate() != null) {
-	        write.setEndDate(writeDto.getEndDate());
+	 
+	 // 첨삭 마감일 처리
+	    if (writeDto.isNeedReview()) {
+	        if (write.getEndDate() != null 
+	                && write.getEndDate().isBefore(LocalDateTime.now())) {
+	            // 마감일이 지났다면 endDate 수정 금지
+	            if (writeDto.getEndDate() != null
+	                    && !writeDto.getEndDate().isEqual(write.getEndDate())) {
+	                throw new IllegalStateException("첨삭 마감일이 이미 지난 글은 마감일을 수정할 수 없습니다.");
+	            }
+	        } else {
+	            // 마감일 안 지났으면 자유롭게 수정 가능
+	            write.setEndDate(writeDto.getEndDate());
+	        }
 	    } else {
+	    	// 첨삭을 원하지 않는다면 endDate를 null로
 	        write.setEndDate(null);
 	    }
 	    
+	    // 이미지 업로드 처리
 		if (ifile != null && !ifile.isEmpty()) {
 		    String originalName = ifile.getOriginalFilename();
 
@@ -134,7 +166,7 @@ public class WriteServiceImpl implements WriteService {
 		        namePart = originalName.substring(0, dotIndex);
 		        extension = originalName.substring(dotIndex);
 		    }
-
+		    // 동일 파일명 존재 시 번호 증가
 		    while (upFile.exists()) {
 		        saveName = namePart + "_" + count + extension;
 		        upFile = new File(iuploadPath, saveName);
