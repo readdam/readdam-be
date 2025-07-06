@@ -28,7 +28,7 @@ import com.kosta.readdam.service.otherPlace.OtherPlaceService;
 
 import lombok.RequiredArgsConstructor;
 
-@RestController
+@RestController("adminOtherPlaceController")
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 public class OtherPlaceController {
