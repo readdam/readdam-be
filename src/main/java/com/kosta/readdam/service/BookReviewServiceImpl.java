@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.BookReviewDto;
 import com.kosta.readdam.dto.book.BookReviewRequestDto;
-import com.kosta.readdam.dto.book.BookReviewStatsDto;
 import com.kosta.readdam.entity.Book;
 import com.kosta.readdam.entity.BookReview;
 import com.kosta.readdam.entity.User;
@@ -42,7 +41,7 @@ public class BookReviewServiceImpl implements BookReviewService {
 
 	@Override
 	@Transactional
-    public void writeReview(BookReviewRequestDto dto, String username) {
+    public BookReviewDto writeReview(BookReviewRequestDto dto, String username) {
 	 	User user = userRepository.findById(username)
 	 			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 	 	
@@ -52,24 +51,25 @@ public class BookReviewServiceImpl implements BookReviewService {
 	    });
 
 	 	// 1. 리뷰 저장
-        BookReview review = new BookReview();
-        review.setBook(book);
-        review.setUser(user);
-        review.setComment(dto.getComment());
-        review.setIsHide(dto.getIsHide());
-        review.setRating(dto.getRating());
-        review.setRegTime(LocalDateTime.now());
+	 	BookReview review = BookReview.builder()
+	            .book(book)
+	            .user(user)
+	            .comment(dto.getComment())
+	            .isHide(dto.getIsHide() != null ? dto.getIsHide() : false)
+	            .rating(dto.getRating())
+	            .regTime(LocalDateTime.now())
+	            .build();
 
+	    BookReview saved = bookReviewRepository.save(review);
+	    
         bookReviewRepository.save(review);
         
         // 2. 리뷰 집계
         updateBookReviewStats(dto.getBookIsbn());
+        
+        return BookReviewDto.fromEntity(saved);
     }
 	 
-	 @Override
-	 public BookReviewStatsDto getReviewStats(String bookIsbn) {
-	        return bookReviewRepository.findStatsByBookIsbn(bookIsbn);
-	 }
 	 
 	 public void updateBookReviewStats(String bookIsbn) {
 		    // 평점 평균과 개수 구하기
@@ -80,4 +80,41 @@ public class BookReviewServiceImpl implements BookReviewService {
 		    // Book 업데이트
 		    bookRepository.updateRatingAndCount(bookIsbn, avgRating, reviewCount);
 	}
+	 
+	 @Override
+	 @Transactional
+	 public void updateReview(Integer reviewId, String username, String comment, Number rating, Boolean isHide) {
+	     BookReview review = bookReviewRepository.findById(reviewId)
+	             .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+	     if (!review.getUser().getUsername().equals(username)) {
+	         throw new IllegalArgumentException("본인이 작성한 리뷰만 수정할 수 있습니다.");
+	     }
+
+	     review.setComment(comment);
+	     review.setRating(rating instanceof BigDecimal ? (BigDecimal) rating : BigDecimal.valueOf(rating.doubleValue()));
+	     review.setIsHide(isHide != null ? isHide : false);
+
+	     // 평점 집계 업데이트
+	     updateBookReviewStats(review.getBook().getBookIsbn());
+	 }
+
+	 @Override
+	 @Transactional
+	 public void deleteReview(Integer reviewId, String username) {
+	     BookReview review = bookReviewRepository.findById(reviewId)
+	             .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+	     if (!review.getUser().getUsername().equals(username)) {
+	         throw new IllegalArgumentException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
+	     }
+
+	     String bookIsbn = review.getBook().getBookIsbn();
+
+	     bookReviewRepository.delete(review);
+
+	     // 평점 집계 업데이트
+	     updateBookReviewStats(bookIsbn);
+	 }
+
 }

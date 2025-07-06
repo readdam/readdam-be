@@ -46,6 +46,7 @@ public class BookReview {
                 .bookReviewId(bookReviewId)
                 .bookIsbn(book.getBookIsbn())
                 .username(user.getUsername())
+                .nickname(user.getNickname())
                 .rating(rating)
                 .comment(comment)
                 .regTime(regTime)

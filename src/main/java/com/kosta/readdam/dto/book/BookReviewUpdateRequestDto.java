@@ -1,15 +1,12 @@
 package com.kosta.readdam.dto.book;
 
-import java.math.BigDecimal;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class BookReviewRequestDto {
+public class BookReviewUpdateRequestDto {
     private String comment;
+    private Integer rating;
     private Boolean isHide;
-    private BigDecimal rating;
-    private String bookIsbn;
 }
