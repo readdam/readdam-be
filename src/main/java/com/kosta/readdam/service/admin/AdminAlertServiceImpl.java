@@ -53,6 +53,7 @@ public class AdminAlertServiceImpl implements AdminAlertService {
                 .sender(sender)
                 .receiver(receiver)
                 .type(type)
+                .title(title)
                 .content(content)
                 .linkUrl(linkUrl)
                 .imageUrl(imageName)

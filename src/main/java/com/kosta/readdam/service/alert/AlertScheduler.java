@@ -46,5 +46,13 @@ public class AlertScheduler {
 		}
 		// @Transactional 이므로 변경된 scheduledTime 값이 커밋 시점에 자동 저장됩니다.
 	}
+	
+	@Scheduled(cron = "0 0 2 * * *")
+    @Transactional
+    public void deleteExpiredAlerts() {
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(30);
+        int deleted = alertRepository.deleteByCreatedAtBefore(cutoff);
+        log.info("[AlertScheduler] 30일 지난 알림 삭제: {}건", deleted);
+    }
 
 }
