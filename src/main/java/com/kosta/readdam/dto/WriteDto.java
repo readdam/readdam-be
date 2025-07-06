@@ -40,6 +40,7 @@ public class WriteDto {
     private Integer commentCnt;
     private boolean isNeedReview;
     private boolean isReviewDeadlinePassed;
+    private String thumbnailUrl; //북커버 이미지용
 
     public Write toEntity(User user) {
         return Write.builder()

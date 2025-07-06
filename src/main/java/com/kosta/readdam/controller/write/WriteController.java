@@ -41,10 +41,10 @@ public class WriteController {
 
 	private final WriteService writeService;
 	private final WriteCommentService writeCommentService;
-	private final WriteLikeRepository writeLikeRepository;
-
+	
 	@PostMapping("/my/write")
-	public ResponseEntity<WriteDto> wirte(@ModelAttribute WriteDto writeDto,
+	public ResponseEntity<WriteDto> wirte(
+			@ModelAttribute WriteDto writeDto,
 			@RequestParam(name = "ifile", required = false) MultipartFile ifile,
 			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		try {
@@ -101,12 +101,6 @@ public class WriteController {
 
 	@PostMapping("/writeList")
 	public ResponseEntity<Map<String, Object>> getWriteList(@RequestBody WriteSearchRequestDto requestDto) {
-//	    log.info("✅ 수신된 WriteSearchRequestDto: {}", requestDto);
-//	    log.info(" - sort: {}", requestDto.getSort());
-//	    log.info(" - type: {}", requestDto.getType());
-//	    log.info(" - status: {}", requestDto.getStatus());
-//	    log.info(" - keyword: {}", requestDto.getKeyword());
-//	    log.info(" - page: {}", requestDto.getPage());
 		int size = 10;
 		Pageable pageable = PageRequest.of(requestDto.getPage() - 1, size);
 
@@ -191,7 +185,6 @@ public class WriteController {
 			@RequestParam(name = "ifile", required = false) MultipartFile ifile,
 			@AuthenticationPrincipal PrincipalDetails principalDetails) {
 		try {
-			System.out.println(writeDto);
 			writeDto.setWriteId(writeId);
 			User user = principalDetails.getUser(); 
 			writeService.modifyDam(writeDto, ifile, user);

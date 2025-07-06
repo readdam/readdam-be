@@ -47,11 +47,47 @@ public class WriteServiceImpl implements WriteService {
 	@Transactional
 	public Integer writeDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception {
 		if (ifile != null && !ifile.isEmpty()) {
-			writeDto.setImg(ifile.getOriginalFilename());
-			File upFile = new File(iuploadPath, writeDto.getImg());
-			ifile.transferTo(upFile);
-		}
+	        String originalName = ifile.getOriginalFilename();
 
+	        // 처음에는 원래 파일명으로 저장하려 시도
+	        String saveName = originalName;
+	        File upFile = new File(iuploadPath, saveName);
+
+	        int count = 1;
+	        String namePart = originalName;
+	        String extension = "";
+
+	        // 파일명과 확장자 분리 (ex. book.jpg → book / .jpg)
+	        int dotIndex = originalName.lastIndexOf(".");
+	        if (dotIndex != -1) {
+	            namePart = originalName.substring(0, dotIndex);
+	            extension = originalName.substring(dotIndex);
+	        }
+
+	        // 동일한 파일명이 존재하면 _숫자 붙여서 저장
+	        while (upFile.exists()) {
+	            saveName = namePart + "_" + count + extension;
+	            upFile = new File(iuploadPath, saveName);
+	            count++;
+	        }
+
+	        // 실제 파일을 디스크에 복사
+	        ifile.transferTo(upFile);
+
+	        // DB에 저장할 파일명 세팅
+	        writeDto.setImg(saveName);
+
+	    } 
+	    // 업로드 파일이 없고, 북커버 URL이 넘어온 경우
+	    else if (writeDto.getThumbnailUrl() != null && !writeDto.getThumbnailUrl().isBlank()) {
+	        // 북커버 URL을 그대로 img 컬럼에 저장
+	        writeDto.setImg(writeDto.getThumbnailUrl());
+	    } 
+	    // 아무 이미지도 없는 경우
+	    else {
+	        writeDto.setImg(null);
+	    }
+		
 		Write write = writeDto.toEntity(user);
 		writeRepository.save(write);
 		Integer writeId = write.getWriteId();
@@ -131,27 +167,33 @@ public class WriteServiceImpl implements WriteService {
 	    write.setTag4(writeDto.getTag4());
 	    write.setTag5(writeDto.getTag5());
 	    write.setHide("private".equals(writeDto.getVisibility())); //isHide Lombok이 Hide로 맵핑함 참고
-	 
-	 // 첨삭 마감일 처리
-	    if (writeDto.isNeedReview()) {
-	        if (write.getEndDate() != null 
-	                && write.getEndDate().isBefore(LocalDateTime.now())) {
-	            // 마감일이 지났다면 endDate 수정 금지
-	            if (writeDto.getEndDate() != null
-	                    && !writeDto.getEndDate().isEqual(write.getEndDate())) {
-	                throw new IllegalStateException("첨삭 마감일이 이미 지난 글은 마감일을 수정할 수 없습니다.");
-	            }
-	        } else {
-	            // 마감일 안 지났으면 자유롭게 수정 가능
-	            write.setEndDate(writeDto.getEndDate());
-	        }
-	    } else {
-	    	// 첨삭을 원하지 않는다면 endDate를 null로
-	        write.setEndDate(null);
-	    }
+	    
+//	    // 빈 문자열은 null 처리
+//	    if (writeDto.getEndDate() != null && writeDto.getEndDate().toString().isBlank()) {
+//	        writeDto.setEndDate(null);
+//	    }
+//	 
+//	    // 첨삭 마감일 처리
+//	    if (writeDto.isNeedReview()) {
+//	        if (write.getEndDate() != null
+//	                && write.getEndDate().isBefore(LocalDateTime.now())) {
+//	            if (writeDto.getEndDate() != null
+//	                    && !writeDto.getEndDate().isEqual(write.getEndDate())) {
+//	                throw new IllegalStateException("첨삭 마감일이 이미 지난 글은 마감일을 수정할 수 없습니다.");
+//	            }
+//	        } else {
+//	            // 마감일 안 지났으면 자유롭게 수정 가능
+//	        	write.setEndDate(writeDto.getEndDate());
+//	        }
+//	    } else {
+//	    	// 첨삭을 원하지 않는다면 endDate를 null로
+//	        write.setEndDate(null);
+//	    }
 	    
 	    // 이미지 업로드 처리
-		if (ifile != null && !ifile.isEmpty()) {
+		if (writeDto.getThumbnailUrl() != null && !writeDto.getThumbnailUrl().isBlank()) {
+		    write.setImg(writeDto.getThumbnailUrl());
+		} else if (ifile != null && !ifile.isEmpty()) {
 		    String originalName = ifile.getOriginalFilename();
 
 		    String saveName = originalName;
