@@ -89,4 +89,15 @@ public class WriteDto {
             
             .build();
     }
+
+	@Override
+	public String toString() {
+		return "WriteDto [writeId=" + writeId + ", title=" + title + ", type=" + type + ", tag1=" + tag1 + ", tag2="
+				+ tag2 + ", tag3=" + tag3 + ", tag4=" + tag4 + ", tag5=" + tag5 + ", regDate=" + regDate + ", endDate="
+				+ endDate + ", content=" + content + ", img=" + img + ", username=" + username + ", viewCnt=" + viewCnt
+				+ ", isHide=" + isHide + ", visibility=" + visibility + ", nickname=" + nickname + ", profileImg="
+				+ profileImg + ", introduce=" + introduce + ", likeCnt=" + likeCnt + ", commentCnt=" + commentCnt + "]";
+	}
+    
+    
 }

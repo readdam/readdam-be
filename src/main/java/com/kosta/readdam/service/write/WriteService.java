@@ -19,5 +19,5 @@ public interface WriteService {
 	boolean isLiked(String username, Integer writeId) throws Exception;
 	int getLikeCount(Integer writeId) throws Exception; // 좋아요 수는 null 없어서 int로 함
 	void increaseViewCount(Integer writeId) throws Exception;
-
+	void modifyDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception;
 }
