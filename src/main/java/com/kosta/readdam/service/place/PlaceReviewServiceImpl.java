@@ -3,7 +3,6 @@ package com.kosta.readdam.service.place;
 import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +13,7 @@ import com.kosta.readdam.entity.PlaceReview;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.place.PlaceRepository;
+import com.kosta.readdam.repository.place.PlaceReviewDslRepository;
 import com.kosta.readdam.repository.place.PlaceReviewRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,7 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
 	private final PlaceReviewRepository placeReviewRepository;
     private final UserRepository userRepository;
     private final PlaceRepository placeRepository;
+    private final PlaceReviewDslRepository placeReviewDslRepository;
 
     @Override
     public PlaceReviewDto writeReview(String username, PlaceReviewRequest request) {
@@ -52,9 +53,7 @@ public class PlaceReviewServiceImpl implements PlaceReviewService {
     @Override
     @Transactional(readOnly = true)
     public Page<PlaceReviewDto> getReviews(Integer placeId, String username, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
-        return placeReviewRepository.findByPlace_PlaceIdOrderByRegTimeDesc(placeId, pageRequest)
-                .map(PlaceReview::toDto);
+        return placeReviewDslRepository.findVisibleReviews(placeId, username, page, size);
     }
     
     @Override

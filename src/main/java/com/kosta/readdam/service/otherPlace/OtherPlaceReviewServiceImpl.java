@@ -3,7 +3,6 @@ package com.kosta.readdam.service.otherPlace;
 import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +13,7 @@ import com.kosta.readdam.entity.OtherPlaceReview;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.otherPlace.OtherPlaceRepository;
+import com.kosta.readdam.repository.otherPlace.OtherPlaceReviewDslRepository;
 import com.kosta.readdam.repository.otherPlace.OtherPlaceReviewRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ public class OtherPlaceReviewServiceImpl implements OtherPlaceReviewService {
 	private final OtherPlaceReviewRepository otherPlaceReviewRepository;
     private final OtherPlaceRepository otherPlaceRepository;
     private final UserRepository userRepository;
+    private final OtherPlaceReviewDslRepository otherPlaceReviewDslRepository;
 
     @Override
     @Transactional
@@ -50,10 +51,7 @@ public class OtherPlaceReviewServiceImpl implements OtherPlaceReviewService {
 
     @Override
     public Page<OtherPlaceReviewDto> getReviews(Integer otherPlaceId, String username, int page, int size) {
-        Page<OtherPlaceReview> reviews = otherPlaceReviewRepository.findByOtherPlace_OtherPlaceIdOrderByRegTimeDesc(
-                otherPlaceId, PageRequest.of(page, size)
-        );
-        return reviews.map(OtherPlaceReview::toDto);
+    	return otherPlaceReviewDslRepository.findVisibleReviews(otherPlaceId, username, page, size);
     }
 
     @Override
