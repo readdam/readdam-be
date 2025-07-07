@@ -11,6 +11,7 @@ import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.QClassEntity;
 import com.kosta.readdam.entity.QClassLike;
+import com.kosta.readdam.entity.QClassUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -28,6 +29,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 	public Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable) {
 		QClassEntity c = QClassEntity.classEntity;
 		QClassLike cl = QClassLike.classLike;
+		QClassUser cu = QClassUser.classUser;
 		
 		// 검색: 제목, 태그, 장소명에서 검색어 검색
 		BooleanBuilder builder = new BooleanBuilder();
@@ -85,11 +87,12 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 c.mainImg,
                 c.round1Date,
                 c.round1PlaceName,
-                cl.count().intValue().as("likeCnt")	// likeCnt
-//                Expressions.constant(0) // currentParticipants
+                cl.count().intValue().as("likeCnt"),	// likeCnt
+                cu.count().intValue().as("currentParticipants")	// currentParticipants
             ))
             .from(c)
             .leftJoin(cl).on(cl.classId.eq(c))
+            .leftJoin(cu).on(cu.classEntity.eq(c))
             .where(builder)
             .groupBy(c.classId)
             .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
