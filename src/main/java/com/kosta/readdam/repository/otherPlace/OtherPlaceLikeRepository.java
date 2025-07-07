@@ -1,5 +1,6 @@
 package com.kosta.readdam.repository.otherPlace;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,5 @@ public interface OtherPlaceLikeRepository extends JpaRepository<OtherPlaceLike, 
 	Optional<OtherPlaceLike> findByUserAndOtherPlace(User user, OtherPlace otherPlace);
     boolean existsByUserAndOtherPlace(User user, OtherPlace otherPlace);
     Integer countByOtherPlace(OtherPlace otherPlace);
+    List<OtherPlaceLike> findByUser(User user);
 }

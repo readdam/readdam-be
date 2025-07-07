@@ -31,6 +31,7 @@ public class UnifiedPlaceDto {
     private Double lat;
     private Double lng;
     private Double distanceKm; // ✅ 거리 (km)
+    private Boolean liked;
     
     public UnifiedPlaceDto(
     		Integer id,
