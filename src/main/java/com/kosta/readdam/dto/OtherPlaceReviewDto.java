@@ -18,6 +18,7 @@ public class OtherPlaceReviewDto {
     private String content;
     private Integer rating;
     private String username;
+    private String nickname;
     private LocalDateTime regTime;
     private Integer otherPlaceId;
     private Boolean isHide;

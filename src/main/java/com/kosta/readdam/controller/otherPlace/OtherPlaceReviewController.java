@@ -1,4 +1,4 @@
-package com.kosta.readdam.controller;
+package com.kosta.readdam.controller.otherPlace;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -14,72 +14,79 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
-import com.kosta.readdam.dto.BookReviewDto;
-import com.kosta.readdam.dto.book.BookReviewPageResponse;
-import com.kosta.readdam.dto.book.BookReviewRequestDto;
-import com.kosta.readdam.dto.book.BookReviewUpdateRequestDto;
-import com.kosta.readdam.service.BookReviewService;
+import com.kosta.readdam.dto.OtherPlaceReviewDto;
+import com.kosta.readdam.dto.otherPlace.OtherPlaceReviewPageResponse;
+import com.kosta.readdam.dto.place.PlaceReviewRequest;
+import com.kosta.readdam.dto.place.PlaceReviewUpdateRequest;
+import com.kosta.readdam.service.otherPlace.OtherPlaceReviewService;
 import com.kosta.readdam.util.PageInfo2;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequestMapping("/otherplace/reviews")
 @RequiredArgsConstructor
-@RequestMapping("/book/reviews")
-public class BookReviewController {
-	private final BookReviewService bookReviewService;
+public class OtherPlaceReviewController {
+	private final OtherPlaceReviewService otherPlaceReviewService;
 
-	// 리뷰 작성
+    /**
+     * 외부 장소 리뷰 작성
+     */
     @PostMapping
-    public ResponseEntity<BookReviewDto> writeReview(
-            @RequestBody BookReviewRequestDto dto,
+    public ResponseEntity<OtherPlaceReviewDto> writeReview(
+            @RequestBody PlaceReviewRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         String username = principal.getUsername();
-        BookReviewDto saved = bookReviewService.writeReview(dto, username);
-        return ResponseEntity.ok(saved);
+        OtherPlaceReviewDto dto = otherPlaceReviewService.writeReview(username, request);
+        return ResponseEntity.ok(dto);
     }
 
-    // 리뷰 조회
+    /**
+     * 외부 장소 리뷰 조회 (페이징)
+     */
     @GetMapping
-    public ResponseEntity<BookReviewPageResponse> getReviews(
-            @RequestParam String bookIsbn,
+    public ResponseEntity<OtherPlaceReviewPageResponse> getReviews(
+            @RequestParam Integer otherPlaceId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         String username = principal != null ? principal.getUsername() : null;
-        Page<BookReviewDto> reviewPage = bookReviewService.getReviews(bookIsbn, username, page, size);
+        Page<OtherPlaceReviewDto> reviewsPage = otherPlaceReviewService.getReviews(otherPlaceId, username, page, size);
 
-        BookReviewPageResponse response = BookReviewPageResponse.builder()
-                .content(reviewPage.getContent())
-                .pageInfo(PageInfo2.from(reviewPage))
+        OtherPlaceReviewPageResponse response = OtherPlaceReviewPageResponse.builder()
+                .content(reviewsPage.getContent())
+                .pageInfo(PageInfo2.from(reviewsPage))
                 .build();
 
         return ResponseEntity.ok(response);
-    }
+    }	
 
-    // 리뷰 수정
+    /**
+     * 외부 장소 리뷰 수정
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateReview(
             @PathVariable Integer id,
-            @RequestBody BookReviewUpdateRequestDto dto,
+            @RequestBody PlaceReviewUpdateRequest request,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         String username = principal.getUsername();
-        bookReviewService.updateReview(id, username, dto.getComment(), dto.getRating(), dto.getIsHide());
-        return ResponseEntity.ok().body("리뷰가 수정되었습니다.");
+        otherPlaceReviewService.updateReview(id, username, request.getContent(), request.getRating(), request.getIsHide());
+        return ResponseEntity.ok("리뷰가 수정되었습니다.");
     }
 
-    // 리뷰 삭제
+    /**
+     * 외부 장소 리뷰 삭제
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteReview(
             @PathVariable Integer id,
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
         String username = principal.getUsername();
-        bookReviewService.deleteReview(id, username);
-        return ResponseEntity.ok().body("리뷰가 삭제되었습니다.");
+        otherPlaceReviewService.deleteReview(id, username);
+        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
     }
-
 }

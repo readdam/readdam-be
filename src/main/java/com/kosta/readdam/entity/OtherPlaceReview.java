@@ -47,6 +47,7 @@ public class OtherPlaceReview {
                 .content(content)
                 .rating(rating)
                 .username(user.getUsername())
+                .nickname(this.user.getNickname())
                 .regTime(regTime)
                 .otherPlaceId(otherPlace.getOtherPlaceId())
                 .isHide(isHide)
