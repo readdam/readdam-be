@@ -13,20 +13,28 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
-import com.kosta.readdam.jwt.JwtProperties;
 import com.kosta.readdam.jwt.JwtToken;
+import com.kosta.readdam.service.alert.NotificationService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
 	@Value("${oauth2.redirect.uri:http://localhost:5173/}")
 	private String redirectUri;
 
 	private final JwtToken jwtToken = new JwtToken();
+	private final NotificationService notificationService;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
+		
+		log.info("[OAuth2SuccessHandler] 진입: {}", authentication.getName());
 
 		PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 
@@ -38,6 +46,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin);
 		String refreshToken = jwtToken.makeRefreshToken(username);
+		
+		notificationService.sendPush(username, null, null, null);
 
 		// access_token도 쿠키로 내려줌 (HttpOnly 아님!)
 		Cookie accessCookie = new Cookie("access_token", accessToken);
