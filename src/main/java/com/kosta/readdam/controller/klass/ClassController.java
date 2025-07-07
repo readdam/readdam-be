@@ -86,8 +86,11 @@ public class ClassController {
 	}
 	
 	@GetMapping("/api/classList")
-	public Slice<ClassCardDto> getClassList(ClassSearchConditionDto condition,
+	public Slice<ClassCardDto> getClassList(@ModelAttribute ClassSearchConditionDto condition,
 			@PageableDefault(size=8) Pageable pageable){
+		System.out.println("keyword: "+condition.getKeyword());
+		System.out.println("place: "+condition.getPlace());
+		System.out.println("tag: "+condition.getTag());
 		return classService.searchClasses(condition,pageable);
 	}
 	

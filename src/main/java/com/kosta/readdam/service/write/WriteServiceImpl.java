@@ -96,4 +96,57 @@ public class WriteServiceImpl implements WriteService {
 
 	}
 
+	@Override
+	@Transactional
+	public void modifyDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception {
+		
+		System.out.println("서비스단 writeDto = " + writeDto);
+		Write write = writeRepository.findById(writeDto.getWriteId()).orElseThrow(()->new Exception("글번호오류"));
+		
+		write.setTitle(writeDto.getTitle());
+		write.setContent(writeDto.getContent());
+	    write.setType(writeDto.getType());
+	    write.setTag1(writeDto.getTag1());
+	    write.setTag2(writeDto.getTag2());
+	    write.setTag3(writeDto.getTag3());
+	    write.setTag4(writeDto.getTag4());
+	    write.setTag5(writeDto.getTag5());
+	    write.setHide("private".equals(writeDto.getVisibility())); //isHide Lombok이 Hide로 맵핑함 참고
+		
+	    if (writeDto.getEndDate() != null) {
+	        write.setEndDate(writeDto.getEndDate());
+	    } else {
+	        write.setEndDate(null);
+	    }
+	    
+		if (ifile != null && !ifile.isEmpty()) {
+		    String originalName = ifile.getOriginalFilename();
+
+		    String saveName = originalName;
+		    File upFile = new File(iuploadPath, saveName);
+
+		    int count = 1;
+		    String namePart = originalName;
+		    String extension = "";
+
+		    int dotIndex = originalName.lastIndexOf(".");
+		    if (dotIndex != -1) {
+		        namePart = originalName.substring(0, dotIndex);
+		        extension = originalName.substring(dotIndex);
+		    }
+
+		    while (upFile.exists()) {
+		        saveName = namePart + "_" + count + extension;
+		        upFile = new File(iuploadPath, saveName);
+		        count++;
+		    }
+
+		    ifile.transferTo(upFile);
+
+		    writeDto.setImg(saveName);
+		    write.setImg(saveName);
+		}
+
+		writeRepository.save(write);
+	}
 }

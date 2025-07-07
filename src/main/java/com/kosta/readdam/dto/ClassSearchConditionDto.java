@@ -13,6 +13,6 @@ public class ClassSearchConditionDto {
 	private String keyword;
 	private String tag;
 	private String place;
-	private String sort;
+	private String sort;	// "Latest", "likes", "deadLine"
 
 }
