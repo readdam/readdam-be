@@ -168,27 +168,27 @@ public class WriteServiceImpl implements WriteService {
 	    write.setTag5(writeDto.getTag5());
 	    write.setHide("private".equals(writeDto.getVisibility())); //isHide Lombok이 Hide로 맵핑함 참고
 	    
-//	    // 빈 문자열은 null 처리
-//	    if (writeDto.getEndDate() != null && writeDto.getEndDate().toString().isBlank()) {
-//	        writeDto.setEndDate(null);
-//	    }
-//	 
-//	    // 첨삭 마감일 처리
-//	    if (writeDto.isNeedReview()) {
-//	        if (write.getEndDate() != null
-//	                && write.getEndDate().isBefore(LocalDateTime.now())) {
-//	            if (writeDto.getEndDate() != null
-//	                    && !writeDto.getEndDate().isEqual(write.getEndDate())) {
-//	                throw new IllegalStateException("첨삭 마감일이 이미 지난 글은 마감일을 수정할 수 없습니다.");
-//	            }
-//	        } else {
-//	            // 마감일 안 지났으면 자유롭게 수정 가능
-//	        	write.setEndDate(writeDto.getEndDate());
-//	        }
-//	    } else {
-//	    	// 첨삭을 원하지 않는다면 endDate를 null로
-//	        write.setEndDate(null);
-//	    }
+	    // 빈 문자열은 null 처리
+	    if (writeDto.getEndDate() != null && writeDto.getEndDate().toString().isBlank()) {
+	        writeDto.setEndDate(null);
+	    }
+	 
+	    // 첨삭 마감일 처리
+	    if (writeDto.isNeedReview()) {
+	        if (write.getEndDate() != null
+	                && write.getEndDate().isBefore(LocalDateTime.now())) {
+	            if (writeDto.getEndDate() != null
+	                    && !writeDto.getEndDate().isEqual(write.getEndDate())) {
+	                throw new IllegalStateException("첨삭 마감일이 이미 지난 글은 마감일을 수정할 수 없습니다.");
+	            }
+	        } else {
+	            // 마감일 안 지났으면 자유롭게 수정 가능
+	        	write.setEndDate(writeDto.getEndDate());
+	        }
+	    } else {
+	    	// 첨삭을 원하지 않는다면 endDate를 null로
+	        write.setEndDate(null);
+	    }
 	    
 	    // 이미지 업로드 처리
 		if (writeDto.getThumbnailUrl() != null && !writeDto.getThumbnailUrl().isBlank()) {
