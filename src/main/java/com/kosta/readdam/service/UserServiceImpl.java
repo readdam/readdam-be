@@ -1,7 +1,9 @@
 package com.kosta.readdam.service;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,10 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.UserDto;
+import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.repository.AlertRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.service.alert.NotificationService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
 	@Autowired
@@ -26,6 +34,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	
+	private final AlertRepository alertRepository;           
+    private final NotificationService notificationService;
 
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -39,6 +50,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	@Transactional
 	public void join(UserDto userDto, MultipartFile file) throws Exception {
 		// 1. 중복 체크
 		Optional<User> omember = userRepository.findById(userDto.getUsername());
@@ -63,6 +75,36 @@ public class UserServiceImpl implements UserService {
 		// 5. 저장
 		User user = userDto.toEntity();
 		userRepository.save(user);
+		
+		User system = userRepository.findByUsername("system")
+		        .orElseThrow(() -> new IllegalStateException("시스템 사용자(system)가 없습니다."));
+
+		    // 6-2) 알림 메시지 정의
+		    String title   = "환영합니다!";
+		    String body    = user.getUsername() + "님, 회원가입을 축하드립니다 🎉";
+		    String type = "welcome";
+
+		    // 6-3) Alert 엔티티에 sender 필드 포함해서 생성
+		    Alert alert = Alert.builder()
+		        .sender(system)       // ★ 반드시 채워야 함
+		        .receiver(user)
+		        .title(title)
+		        .content(body)
+		        .type(type)
+		        .build();
+		    alertRepository.save(alert);
+
+		    // 6-4) FCM 푸시
+		    Map<String, String> data = new HashMap<>();
+		    data.put("type", type);
+		    notificationService.sendPush(
+		        user.getUsername(),
+		        title,
+		        body,
+		        data
+		    );
+		
+		
 	}
 
 	@Override

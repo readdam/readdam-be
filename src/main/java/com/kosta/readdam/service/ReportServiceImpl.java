@@ -3,7 +3,9 @@ package com.kosta.readdam.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kosta.readdam.dto.CreateReportRequest;
 import com.kosta.readdam.dto.ReportDto;
 import com.kosta.readdam.dto.WriteCommentDto;
+import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.entity.Report;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.enums.ReportCategory;
 import com.kosta.readdam.entity.enums.ReportStatus;
+import com.kosta.readdam.repository.AlertRepository;
 import com.kosta.readdam.repository.BookReviewRepository;
 import com.kosta.readdam.repository.ClassQnaRepository;
 import com.kosta.readdam.repository.ClassReviewRepository;
@@ -31,9 +35,12 @@ import com.kosta.readdam.repository.WriteShortRepository;
 import com.kosta.readdam.repository.otherPlace.OtherPlaceReviewRepository;
 import com.kosta.readdam.repository.place.PlaceReviewRepository;
 import com.kosta.readdam.repository.spec.ReportSpecification;
+import com.kosta.readdam.service.alert.NotificationService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
@@ -50,6 +57,8 @@ public class ReportServiceImpl implements ReportService {
 	private final PlaceReviewRepository placeReviewRepo;
 	private final OtherPlaceReviewRepository otherPlaceReviewRepo;
 	private final UserRepository userRepository;
+	private final AlertRepository alertRepository;           
+    private final NotificationService notificationService;
 
 	@Override
 	public List<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
@@ -80,9 +89,9 @@ public class ReportServiceImpl implements ReportService {
 
 		String cat = r.getCategory() != null ? r.getCategory().name() : null;
 		String catId = r.getCategoryId();
-		
+
 		if (cat == null) {
-		    return dto;
+			return dto;
 		}
 
 		switch (cat) {
@@ -142,6 +151,43 @@ public class ReportServiceImpl implements ReportService {
 		ReportDto dto = processReport(reportId, ReportStatus.RESOLVED.name());
 		// 2) is_hide = 1
 		updateHideFlag(reportId, 1);
+		
+		Report report = reportRepository.findById(reportId)
+		        .orElseThrow(() -> new IllegalArgumentException("Invalid report id"));
+		    User reported = report.getReported();
+
+		    String type  = "report";
+		    String title = String.format("신고 #%d 처리 완료", reportId);
+		    String body  = "귀하의 게시물이 신고 처리되어 숨김 처리되었습니다.";
+
+		    // 중복 체크: 같은 수신자·type·title 이 없을 때만
+		    if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(
+		            reported.getUsername(), type, title)) {
+
+		        // 시스템 발신자 조회
+		        User system = userRepository.findByUsername("system")
+		            .orElseThrow(() -> new IllegalStateException("system 계정이 없습니다."));
+
+		        // Alert 생성·저장
+		        Alert alert = Alert.builder()
+		            .sender(system)
+		            .receiver(reported)
+		            .type(type)
+		            .title(title)
+		            .content(body)
+		            .build();
+		        alertRepository.save(alert);
+
+		        // FCM 푸시
+		        Map<String,String> data = Map.of("type", type);
+		        notificationService.sendPush(
+		            reported.getUsername(),
+		            title,
+		            body,
+		            data
+		        );
+		    }
+		    
 		return dto;
 	}
 
@@ -159,66 +205,128 @@ public class ReportServiceImpl implements ReportService {
 	private void updateHideFlag(Integer reportId, int hideFlag) {
 		Report r = reportRepository.getById(reportId);
 		String table = r.getCategory().getTableName();
-	    String pkColumn = r.getCategory().getIdColumn();
+		String pkColumn = r.getCategory().getIdColumn();
 		String pk = r.getCategoryId();
 
 		String sql = String.format("UPDATE `%s` SET is_hide = ? WHERE %s = ?", table, pkColumn);
 		jdbc.update(sql, hideFlag, Integer.valueOf(pk));
 	}
-	
+
 	@Transactional
 	@Override
 	public void saveReport(String reporterUsername, CreateReportRequest req) {
 
-	    User reporter = userRepository.findByUsername(reporterUsername)
-	        .orElseThrow(() -> new UsernameNotFoundException("신고자 없음: " + reporterUsername));
+		User reporter = userRepository.findByUsername(reporterUsername)
+				.orElseThrow(() -> new UsernameNotFoundException("신고자 없음: " + reporterUsername));
 
+		User reported = userRepository.findById(req.getReportedUsername())
+				.orElseThrow(() -> new IllegalArgumentException("신고 대상 없음: " + req.getReportedUsername()));
 
-	    User reported = userRepository.findById(req.getReportedUsername())
-	        .orElseThrow(() -> new IllegalArgumentException("신고 대상 없음: " + req.getReportedUsername()));
+		Report r = Report.builder().reporter(reporter).reported(reported).reason(req.getReason())
+				.content(req.getContent()).category(req.getCategory()).categoryId(req.getCategoryId())
+				.reportedAt(LocalDateTime.now()).status(ReportStatus.PENDING).build();
 
-
-	    Report r = Report.builder()
-	        .reporter(reporter)
-	        .reported(reported)
-	        .reason(req.getReason())
-	        .content(req.getContent())
-	        .category(req.getCategory())
-	        .categoryId(req.getCategoryId())
-	        .reportedAt(LocalDateTime.now())
-	        .status(ReportStatus.PENDING)
-	        .build();
-
-	    reportRepository.save(r);
+		reportRepository.save(r);
 	}
-	
-	
+
 	@Transactional
 	@Override
 	public void bulkHideAndResolve(ReportCategory category, String categoryId) {
-	    
-	    reportRepository.updateStatusByContent(
-	        category, categoryId, ReportStatus.RESOLVED, LocalDateTime.now()
-	    );
 
-	    String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?",
-	                               category.getTableName(), category.getIdColumn());
-	    jdbc.update(sql, Integer.valueOf(categoryId));
+		reportRepository.updateStatusByContent(category, categoryId, ReportStatus.RESOLVED, LocalDateTime.now());
+
+		String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?", category.getTableName(),
+				category.getIdColumn());
+		jdbc.update(sql, Integer.valueOf(categoryId));
+		
+		List<Report> list = reportRepository.findByCategoryAndCategoryId(category, categoryId);
+	    if (list.isEmpty()) return;
+	    User reported = list.get(0).getReported();
+
+	    // 4) 중복 체크용 메시지 (reportId 대신 categoryId 사용)
+	    String type  = "report";
+	    String title = String.format("신고 #%s 처리 완료", categoryId);
+	    String body  = "귀하의 게시물이 신고 처리되어 숨김 처리되었습니다.";
+
+	   
+	    Map<String, String> data = new HashMap<>();
+	    data.put("type", type);
+	    data.put("linkUrl", "");   // 빈 문자열로 넣어서 null 방지
+	    
+	    if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(
+	            reported.getUsername(), type, title)) {
+
+	        // 시스템 발신자 조회
+	        User system = userRepository.findByUsername("system")
+	            .orElseThrow(() -> new IllegalStateException("system 계정이 없습니다."));
+
+	        // 6) Alert 저장
+	        Alert alert  = Alert.builder()
+	            .sender(system)
+	            .receiver(reported)
+	            .type(type)
+	            .title(title)
+	            .content(body)
+	            .build();
+	        alertRepository.save(alert);
+
+	        notificationService.sendPush(
+	            reported.getUsername(),
+	            title,
+	            body,
+	            data
+	        );
+	    }
 	}
-	
+
 	@Transactional
 	@Override
-    public void bulkRejectAndUnhide(ReportCategory category, String categoryId) {
-        // 상태 일괄 REJECTED
-        reportRepository.updateStatusByContent(
-            category, categoryId, ReportStatus.REJECTED, LocalDateTime.now()
-        );
-        // 본문 unhide
-        String sql = String.format(
-                "UPDATE `%s` SET is_hide = 0 WHERE %s = ?",
-                category.getTableName(), category.getIdColumn());
+	public void bulkRejectAndUnhide(ReportCategory category, String categoryId) {
+		// 상태 일괄 REJECTED
+		log.info("bulkRejectAndUnhide 호출 → category={} / categoryId={}", category, categoryId);
 
-            jdbc.update(sql, Integer.valueOf(categoryId));
-        }
+		reportRepository.updateStatusByContent(category, categoryId, ReportStatus.REJECTED, LocalDateTime.now());
+		// 본문 unhide
+		String sql = String.format("UPDATE `%s` SET is_hide = 0 WHERE %s = ?", category.getTableName(),
+				category.getIdColumn());
 
+		jdbc.update(sql, Integer.valueOf(categoryId));
+
+		Report any = reportRepository.findFirstByCategoryAndCategoryId(category, categoryId)
+		        .orElseThrow();
+		    User reported = any.getReported();
+
+		    // 4) type 고정, title에 신고 ID 포함
+		    String type  = "report";
+		    String title = String.format("신고 #%s 반려 및 복구 완료", categoryId);
+		    String body  = "귀하의 게시물이 신고가 반려되어 다시 보이게 되었습니다.";
+
+		    // 5) 같은 title이면 이미 보낸 것 — 중복 체크
+		    if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(
+		            reported.getUsername(), type, title)) {
+
+		        // 시스템 발신자
+		        User system = userRepository.findByUsername("system")
+		            .orElseThrow();
+
+		        // 6) Alert 저장
+		        Alert alert = Alert.builder()
+		            .sender(system)
+		            .receiver(reported)
+		            .type(type)
+		            .title(title)
+		            .content(body)
+		            .build();
+		        alertRepository.save(alert);
+
+		        // 7) FCM 푸시
+		        Map<String,String> data = Map.of("type", type);
+		        notificationService.sendPush(
+		            reported.getUsername(),
+		            title,
+		            body,
+		            data
+		        );
+	}
+	}
 }

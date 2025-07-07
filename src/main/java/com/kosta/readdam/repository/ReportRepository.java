@@ -1,6 +1,8 @@
 package com.kosta.readdam.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -22,4 +24,8 @@ public interface ReportRepository extends JpaRepository<Report, Integer>, JpaSpe
                               @Param("categoryId") String categoryId,
                               @Param("status")     ReportStatus status,
                               @Param("now")        LocalDateTime now);
+
+	Optional<Report> findFirstByCategoryAndCategoryId(ReportCategory category, String categoryId);
+
+	List<Report> findByCategoryAndCategoryId(ReportCategory category, String categoryId);
 }
