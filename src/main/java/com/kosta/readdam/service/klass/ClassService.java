@@ -21,4 +21,5 @@ public interface ClassService {
 	ClassDto detailClass(Integer classId) throws Exception;
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
 	List<ClassDto> getLatestClasses() throws Exception; // homeClass 조회용
+	List<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
 }

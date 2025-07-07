@@ -329,4 +329,10 @@ public class PlaceServiceImpl implements PlaceService {
 	         .liked(liked)
 	         .build();
 	 }
+
+
+	@Override
+	public List<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+		return placeDslRepository.searchForAll(keyword, sort, limit);
+	}
 }

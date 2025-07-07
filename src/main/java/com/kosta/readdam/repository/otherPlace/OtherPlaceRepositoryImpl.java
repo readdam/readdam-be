@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QOtherPlace;
@@ -155,5 +157,37 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
         return new BooleanBuilder()
             .or(p.name.containsIgnoreCase(keyword))
             .or(p.basicAddress.containsIgnoreCase(keyword));
+    }
+
+	@Override
+	public List<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+		QOtherPlace q = QOtherPlace.otherPlace;
+		BooleanBuilder builder = new BooleanBuilder();
+        builder.and(
+                q.name.contains(keyword)
+                .or(q.basicAddress.contains(keyword))
+                .or(q.detailAddress.contains(keyword))
+        );
+
+        return queryFactory
+                .select(Projections.constructor(
+                		PlaceDto.class,
+                        q.otherPlaceId,         // otherPlaceId로 매핑
+                        q.name,
+                        q.basicAddress,
+                        q.detailAddress,
+                        q.img1,
+                        q.tag1,
+                        q.tag2,
+                        q.tag3,
+                        q.tag4,
+                        q.tag5,
+                        Expressions.constant("OTHER")  // type 필드 : 통합검색용으로 추가
+                ))
+                .from(q)
+                .where(builder)
+                .orderBy(q.otherPlaceId.desc())   // 최신순
+                .limit(limit)
+                .fetch();
     }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 
@@ -20,4 +21,5 @@ public interface PlaceDslRepository {
 	        int limit,
 	        String sortBy
 	    );
+	List<PlaceDto> searchForAll(String keyword, String sort, int limit);
 }

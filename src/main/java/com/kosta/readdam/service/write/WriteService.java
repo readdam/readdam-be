@@ -20,4 +20,5 @@ public interface WriteService {
 	int getLikeCount(Integer writeId) throws Exception; // 좋아요 수는 null 없어서 int로 함
 	void increaseViewCount(Integer writeId) throws Exception;
 	void modifyDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception;
+	List<WriteDto> searchForAll(String keyword, String sort, int limit) throws Exception;
 }

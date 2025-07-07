@@ -21,5 +21,6 @@ public interface PlaceService {
 	List<UnifiedPlaceDto> getUnifiedList();
 	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset, int limit, String sortBy);
 	PlaceDetailResponseDto getPlaceDetail(Integer placeId);
+	List<PlaceDto> searchForAll(String keyword, String sort, int limit); //통합검색용
 }
 

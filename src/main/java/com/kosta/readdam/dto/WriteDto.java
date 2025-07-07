@@ -17,7 +17,8 @@ public class WriteDto {
 
     private Integer writeId;
     private String title;
-    private String type;
+    //private String type; 타입 중복으로 글과 검색용 분기
+    private String writeType; // 글 종류
     private String tag1;
     private String tag2;
     private String tag3;
@@ -41,12 +42,44 @@ public class WriteDto {
     private boolean isNeedReview;
     private boolean isReviewDeadlinePassed;
     private String thumbnailUrl; //북커버 이미지용
+    private String searchType; // 통합검색 구분용 (WRITE, PLACE, etc.)
+    private String image; // 통합검색 공통 필드 추가
 
+    
+    // 통합검색 전용 생성자
+    public WriteDto(
+            Integer writeId,
+            String title,
+            String img,
+            String tag1,
+            String tag2,
+            String tag3,
+            String tag4,
+            String tag5,
+            String nickname,
+            LocalDateTime regDate,
+            String searchType,
+            String image
+    ) {
+        this.writeId = writeId;
+        this.title = title;
+        this.img = img;
+        this.tag1 = tag1;
+        this.tag2 = tag2;
+        this.tag3 = tag3;
+        this.tag4 = tag4;
+        this.tag5 = tag5;
+        this.nickname = nickname;
+        this.regDate = regDate;
+        this.searchType = searchType;
+        this.image = image;
+    }
+    
     public Write toEntity(User user) {
         return Write.builder()
                 .writeId(writeId)
                 .title(title)
-                .type(type)
+                .type(writeType)
                 .tag1(tag1)
                 .tag2(tag2)
                 .tag3(tag3)
@@ -68,7 +101,7 @@ public class WriteDto {
         return WriteDto.builder()
             .writeId(write.getWriteId())
             .title(write.getTitle())
-            .type(write.getType())
+            .writeType(write.getType())
             .tag1(write.getTag1())
             .tag2(write.getTag2())
             .tag3(write.getTag3())
@@ -98,7 +131,7 @@ public class WriteDto {
 
 	@Override
 	public String toString() {
-		return "WriteDto [writeId=" + writeId + ", title=" + title + ", type=" + type + ", tag1=" + tag1 + ", tag2="
+		return "WriteDto [writeId=" + writeId + ", title=" + title + ", writeType=" + writeType + ", tag1=" + tag1 + ", tag2="
 				+ tag2 + ", tag3=" + tag3 + ", tag4=" + tag4 + ", tag5=" + tag5 + ", regDate=" + regDate + ", endDate="
 				+ endDate + ", content=" + content + ", img=" + img + ", username=" + username + ", viewCnt=" + viewCnt
 				+ ", isHide=" + isHide + ", visibility=" + visibility + ", nickname=" + nickname + ", profileImg="

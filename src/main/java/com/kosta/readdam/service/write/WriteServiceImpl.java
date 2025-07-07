@@ -21,6 +21,7 @@ import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.repository.WriteCommentRepository;
+import com.kosta.readdam.repository.WriteDslRepository;
 import com.kosta.readdam.repository.WriteLikeRepository;
 import com.kosta.readdam.repository.WriteRepository;
 
@@ -39,6 +40,8 @@ public class WriteServiceImpl implements WriteService {
 	private final WriteLikeRepository writeLikeRepository;
 	
 	private final WriteCommentRepository writeCommentRepository;
+	
+	private final WriteDslRepository writeDslRepository;
 
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -160,7 +163,7 @@ public class WriteServiceImpl implements WriteService {
 	    
 		write.setTitle(writeDto.getTitle());
 		write.setContent(writeDto.getContent());
-	    write.setType(writeDto.getType());
+	    write.setType(writeDto.getWriteType());
 	    write.setTag1(writeDto.getTag1());
 	    write.setTag2(writeDto.getTag2());
 	    write.setTag3(writeDto.getTag3());
@@ -222,5 +225,10 @@ public class WriteServiceImpl implements WriteService {
 		}
 
 		writeRepository.save(write);
+	}
+
+	@Override
+	public List<WriteDto> searchForAll(String keyword, String sort, int limit) throws Exception {
+		return writeDslRepository.searchForAll(keyword, sort, limit);
 	}
 }

@@ -27,6 +27,7 @@ import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.ClassQnaRepository;
 import com.kosta.readdam.repository.ClassRepository;
+import com.kosta.readdam.repository.ClassRepositoryCustom;
 import com.kosta.readdam.repository.UserRepository;
 
 @Service
@@ -43,6 +44,9 @@ public class ClassServiceImpl implements ClassService {
 	
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	ClassRepositoryCustom classRepositoryCustom;
 	
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -113,5 +117,10 @@ public class ClassServiceImpl implements ClassService {
 	    return classes.stream()
 	            .map(ClassEntity::toDto)
 	            .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception {
+		return classRepositoryCustom.searchForAll(keyword, sort, limit);
 	}
 }

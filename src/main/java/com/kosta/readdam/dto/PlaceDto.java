@@ -43,6 +43,35 @@ public class PlaceDto {
     
     private long likeCount;
     private boolean liked;
+    
+    private String type; // 통합검색 시 장소 구분용. "OTHER" = OtherPlace, "PLACE" = Place
+    
+    // 통합검색용 : QueryDSL에서 PlaceDto로 바로 Projection 하기 위해 생성자 추가
+    public PlaceDto(
+            Integer placeId,
+            String name,
+            String basicAddress,
+            String detailAddress,
+            String img1,
+            String tag1,
+            String tag2,
+            String tag3,
+            String tag4,
+            String tag5,
+            String type
+    ) {
+        this.placeId = placeId;
+        this.name = name;
+        this.basicAddress = basicAddress;
+        this.detailAddress = detailAddress;
+        this.img1 = img1;
+        this.tag1 = tag1;
+        this.tag2 = tag2;
+        this.tag3 = tag3;
+        this.tag4 = tag4;
+        this.tag5 = tag5;
+        this.type = type;
+    }
 
     public Place toEntity() {
         return Place.builder()
