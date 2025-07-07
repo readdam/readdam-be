@@ -1,62 +1,72 @@
 package com.kosta.readdam.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import java.time.LocalDateTime;
+import javax.persistence.*;
 
 import com.kosta.readdam.dto.AlertDto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "alert")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor @Builder
 public class Alert {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "alert_id", updatable = false, nullable = false)
-	private Integer alertId;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "alert_id", updatable = false, nullable = false)
+    private Integer alertId;
 
-	@Column(columnDefinition = "TEXT")
-	private String content;
+    @Column(length = 100, nullable = false)
+    private String title;
+    
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String content;
 
-	@Column(name = "is_checked", nullable = false)
-	private boolean isChecked;
+    @Column(name = "is_checked", nullable = false)
+    private boolean isChecked;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "sender_username", nullable = false)
-	private User sender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_username", nullable = false)
+    private User sender;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "receiver_username", nullable = false)
-	private User receiver;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_username", nullable = false)
+    private User receiver;
 
-	@Column(name = "type", length = 50)
-	private String type;
+    @Column(length = 50)
+    private String type;
 
-	public AlertDto toDto() {
-		return AlertDto.builder()
-				.alertId(alertId)
-				.content(content)
-				.isChecked(isChecked)
-				.senderUsername(sender.getUsername())
-				.senderNickname(sender.getNickname())
-				.type(type)
-				.build();
-	}
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    @Column(name = "link_url", length = 500)
+    private String linkUrl;
+
+    /** 예약 발송 시각. null 이면 즉시 발송용 */
+    @Column(name = "scheduled_time")
+    private LocalDateTime scheduledTime;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public AlertDto toDto() {
+        return AlertDto.builder()
+            .alertId(alertId)
+            .title(title)
+            .content(content)
+            .isChecked(isChecked)
+            .senderUsername(sender.getUsername())
+            .senderNickname(sender.getNickname())
+            .type(type)
+            .imageUrl(imageUrl)
+            .linkUrl(linkUrl)
+            .createdAt(createdAt)
+            .build();
+    }
 }
