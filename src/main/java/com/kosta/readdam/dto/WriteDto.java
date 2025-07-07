@@ -48,7 +48,7 @@ public class WriteDto {
     
     // 통합검색 전용 생성자
     public WriteDto(
-            Integer writeId,
+    		Integer writeId,
             String title,
             String img,
             String tag1,
@@ -56,12 +56,17 @@ public class WriteDto {
             String tag3,
             String tag4,
             String tag5,
+            String type,
+            LocalDateTime endDate,
+            Integer likeCnt,
+            Integer commentCnt,
+            Integer viewCnt,
             String nickname,
             LocalDateTime regDate,
             String searchType,
             String image
     ) {
-        this.writeId = writeId;
+    	this.writeId = writeId;
         this.title = title;
         this.img = img;
         this.tag1 = tag1;
@@ -69,6 +74,11 @@ public class WriteDto {
         this.tag3 = tag3;
         this.tag4 = tag4;
         this.tag5 = tag5;
+        this.writeType = type;
+        this.endDate = endDate;
+        this.likeCnt = likeCnt;
+        this.commentCnt = commentCnt;
+        this.viewCnt = viewCnt;
         this.nickname = nickname;
         this.regDate = regDate;
         this.searchType = searchType;

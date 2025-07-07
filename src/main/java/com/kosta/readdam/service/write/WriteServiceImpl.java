@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
@@ -120,7 +121,7 @@ public class WriteServiceImpl implements WriteService {
 
 	@Override
 	public Page<Write> searchWrites(WriteSearchRequestDto requestDto, Pageable pageable) {
-		return writeRepository.searchWrites(requestDto, pageable);
+		return writeDslRepository.searchWrites(requestDto, pageable);
 	}
 
 	@Override
@@ -228,7 +229,7 @@ public class WriteServiceImpl implements WriteService {
 	}
 
 	@Override
-	public List<WriteDto> searchForAll(String keyword, String sort, int limit) throws Exception {
+	public SearchResultDto<WriteDto> searchForAll(String keyword, String sort, int limit) throws Exception {
 		return writeDslRepository.searchForAll(keyword, sort, limit);
 	}
 }

@@ -227,7 +227,10 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		                        p.img1,
 		                        p.tag1,
 		                        p.tag2,
-		                        p.tag3
+		                        p.tag3,
+		                        p.tag4,
+		                        p.tag5,
+		                        Expressions.constant("PLACE")
 		                ))
 		                .from(p)
 		                .where(builder)

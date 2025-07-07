@@ -13,7 +13,7 @@ import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.entity.ClassEntity;
 
 
-public interface ClassRepository extends JpaRepository<ClassEntity, Integer>, ClassRepositoryCustom  {
+public interface ClassRepository extends JpaRepository<ClassEntity, Integer>  {
 
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
 	List<ClassEntity> findTop4ByOrderByClassIdDesc(); // home 최신순 내림차순 + limit 4개 조회용 

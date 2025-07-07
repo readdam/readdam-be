@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.entity.Write;
 
-public interface WriteRepository extends JpaRepository<Write, Integer>, WriteDslRepository {
+public interface WriteRepository extends JpaRepository<Write, Integer> {
 	// Write 엔티티에서 최신순(regDate 기준)으로 데이터를 조회하는 쿼리 메서드
 	@Query("SELECT w FROM Write w WHERE w.isHide = false ORDER BY w.regDate DESC")
 	List<Write> findLatest(Pageable pageable);
