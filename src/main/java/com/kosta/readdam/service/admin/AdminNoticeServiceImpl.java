@@ -46,4 +46,23 @@ public class AdminNoticeServiceImpl implements AdminNoticeService {
 				.orElseThrow(()-> new Exception("NoticeId "+ noticeId + "번 공지사항 없음"));
 	}
 
+	@Override
+	public void deleteNoticeById(Integer noticeId) throws Exception {
+		if (!noticeRepository.existsById(noticeId)) {
+	        throw new Exception("해당 ID의 공지사항이 없습니다.");
+	    }
+	    noticeRepository.deleteById(noticeId);
+	}
+
+	@Override
+	public Notice updateNotice(Integer noticeId, NoticeDto dto) throws Exception {
+		Notice notice = noticeRepository.findById(noticeId)
+				.orElseThrow(()->new Exception("해당 공지사항 없음"));
+		notice.setTitle(dto.getTitle());
+		notice.setContent(dto.getContent());
+		notice.setTopFix(dto.getTopFix());
+		
+		return noticeRepository.save(notice);
+	}
+
 }
