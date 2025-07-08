@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import com.kosta.readdam.dto.PlaceDto;
 import com.kosta.readdam.dto.PlaceRoomDto;
 import com.kosta.readdam.dto.PlaceTimeDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.place.PlaceDetailResponseDto;
 import com.kosta.readdam.dto.place.PlaceEditResponseDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
@@ -21,6 +22,6 @@ public interface PlaceService {
 	List<UnifiedPlaceDto> getUnifiedList();
 	List<UnifiedPlaceDto> searchPlaces(String tag, String keyword, Double lat, Double lng, Double radiusKm, int offset, int limit, String sortBy);
 	PlaceDetailResponseDto getPlaceDetail(Integer placeId);
-	List<PlaceDto> searchForAll(String keyword, String sort, int limit); //통합검색용
+	SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit); //통합검색용
 }
 

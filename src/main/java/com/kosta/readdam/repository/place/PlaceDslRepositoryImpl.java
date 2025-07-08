@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.kosta.readdam.dto.PlaceDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QPlace;
@@ -208,7 +209,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 	    }
 
 		@Override
-		public List<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+		public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
 			QPlace p = QPlace.place;
 		        BooleanBuilder builder = new BooleanBuilder();
 		        builder.and(
@@ -217,9 +218,17 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		                .or(p.detailAddress.contains(keyword))
 		        );
 
-		        return query
+		        long count = query
+		                .select(p.count())
+		                .from(p)
+		                .where(builder)
+		                .fetchOne();
+
+		        List<PlaceDto> result = query
 		                .select(Projections.constructor(
 		                        PlaceDto.class,
+		                        Expressions.stringTemplate("'place-' || {0}", p.placeId),
+		                        //Expressions.numberTemplate(Integer.class, "place_id"),
 		                        p.placeId,
 		                        p.name,
 		                        p.basicAddress,
@@ -237,5 +246,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		                .orderBy(p.placeId.desc())
 		                .limit(limit)
 		                .fetch();
-		    }
+		        
+		        return new SearchResultDto<>(result, (int) count);    
+		}
 }

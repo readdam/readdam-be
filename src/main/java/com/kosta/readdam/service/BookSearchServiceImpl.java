@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.kosta.readdam.dto.BookDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.book.BookSearchResultDto;
 import com.kosta.readdam.dto.kakao.KakaoBookResponse;
 import com.kosta.readdam.external.KakaoBookApiClient;
@@ -58,16 +59,20 @@ public class BookSearchServiceImpl implements BookSearchService {
     }
 
 	@Override
-	public List<BookDto> searchForAll(String keyword, String sort, int limit) {
+	public SearchResultDto<BookDto> searchForAll(String keyword, String sort, int limit) {
 		KakaoBookResponse result = kakaoBookApiClient.searchBooks(keyword, null, sort, 1, limit);
 	    
 		if (result == null || result.getDocuments() == null) {
-	        return Collections.emptyList();
+			 return new SearchResultDto<>(Collections.emptyList(), 0);
 	    }
 		
-	    return result.getDocuments().stream()
+		List<BookDto> books = result.getDocuments().stream()
 	            .map(BookDto::fromKakao)
 	            .collect(Collectors.toList());
+	    
+	    int totalCount = result.getMeta().getTotalCount();
+
+	    return new SearchResultDto<>(books, totalCount);
 	}
 }
 

@@ -2,6 +2,8 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -170,4 +172,11 @@ public class ClassEntity {
                 
                 .build();
 	}
+	
+	public LocalDate getEndDate() {
+        return Stream.of(round1Date, round2Date, round3Date, round4Date)
+                     .filter(Objects::nonNull)
+                     .max(LocalDate::compareTo)
+                     .orElse(null);
+    }
 }
