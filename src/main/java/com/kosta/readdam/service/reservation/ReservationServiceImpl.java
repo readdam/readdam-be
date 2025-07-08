@@ -6,9 +6,12 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kosta.readdam.dto.reservation.ReservationCreateRequest;
+import com.kosta.readdam.dto.reservation.ReservationDetailListDto;
 import com.kosta.readdam.dto.reservation.ReservationTimeRange;
 import com.kosta.readdam.dto.reservation.ReservationTimeResponse;
 import com.kosta.readdam.entity.PlaceRoom;
@@ -22,6 +25,7 @@ import com.kosta.readdam.repository.ReservationRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeRepository;
+import com.kosta.readdam.repository.reservation.ReservationDslRepositoryImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final PlaceRoomRepository placeRoomRepository;
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
+    private final ReservationDslRepositoryImpl reservationDslRepository;
 
     public ReservationTimeResponse getAvailableTimes(Integer placeRoomId, LocalDate date) {
         // 요일 체크
@@ -103,4 +108,10 @@ public class ReservationServiceImpl implements ReservationService {
             }
         }
     }
+    
+    @Override
+    public Page<ReservationDetailListDto> getReservationPage(Pageable pageable, String date, String status, String keyword) {
+        return reservationDslRepository.findReservations(pageable, date, status, keyword);
+    }
+
 }
