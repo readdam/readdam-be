@@ -45,9 +45,11 @@ public class PlaceDto {
     private boolean liked;
     
     private String type; // 통합검색 시 장소 구분용. "OTHER" = OtherPlace, "PLACE" = Place
+    private String id; 
     
     // 통합검색용 : QueryDSL에서 PlaceDto로 바로 Projection 하기 위해 생성자 추가
     public PlaceDto(
+    		String id,
             Integer placeId,
             String name,
             String basicAddress,
@@ -60,6 +62,7 @@ public class PlaceDto {
             String tag5,
             String type
     ) {
+    	this.id = id;
         this.placeId = placeId;
         this.name = name;
         this.basicAddress = basicAddress;

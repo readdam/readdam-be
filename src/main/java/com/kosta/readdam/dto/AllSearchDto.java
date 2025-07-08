@@ -10,9 +10,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AllSearchDto {
-    private List<PlaceDto> places;
-    private List<ClassDto> classes;
-    private List<WriteDto> writes;
-    private List<BookDto> books;
+    private SearchResultDto<PlaceDto> places;
+    private SearchResultDto<ClassDto> classes;
+    private SearchResultDto<WriteDto> writes;
+    private SearchResultDto<BookDto> books;
 
 }

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.User;
 
 
@@ -21,5 +22,5 @@ public interface ClassService {
 	ClassDto detailClass(Integer classId) throws Exception;
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
 	List<ClassDto> getLatestClasses() throws Exception; // homeClass 조회용
-	List<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
+	SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
 }

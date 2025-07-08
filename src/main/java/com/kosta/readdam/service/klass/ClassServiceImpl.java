@@ -22,6 +22,7 @@ import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassQnaDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
@@ -120,7 +121,7 @@ public class ClassServiceImpl implements ClassService {
 	}
 
 	@Override
-	public List<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception {
+	public SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception {
 		return classRepositoryCustom.searchForAll(keyword, sort, limit);
 	}
 }

@@ -60,7 +60,7 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 	            builder.and(
 	                write.title.containsIgnoreCase(keyword)
 	                .or(write.content.containsIgnoreCase(keyword))
-	                .or(write.user.username.contains(keyword))
+	                .or(write.user.nickname.contains(keyword))
 	                .or(write.tag1.containsIgnoreCase(keyword))
 	                .or(write.tag2.containsIgnoreCase(keyword))
 	                .or(write.tag3.containsIgnoreCase(keyword))
@@ -107,6 +107,7 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 		    builder.and(
 		            w.title.containsIgnoreCase(keyword)
 		            .or(w.content.contains(keyword))
+		            .or(w.user.nickname.contains(keyword))
 		            .or(w.tag1.containsIgnoreCase(keyword))
 		            .or(w.tag2.containsIgnoreCase(keyword))
 		            .or(w.tag3.containsIgnoreCase(keyword))

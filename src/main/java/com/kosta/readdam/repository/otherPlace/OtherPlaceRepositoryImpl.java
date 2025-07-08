@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.kosta.readdam.dto.OtherPlaceDto;
 import com.kosta.readdam.dto.PlaceDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QOtherPlace;
@@ -160,7 +161,7 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
     }
 
 	@Override
-	public List<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+	public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
 		QOtherPlace q = QOtherPlace.otherPlace;
 		BooleanBuilder builder = new BooleanBuilder();
         builder.and(
@@ -169,9 +170,10 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
                 .or(q.detailAddress.contains(keyword))
         );
 
-        return queryFactory
+        List<PlaceDto> content = queryFactory
                 .select(Projections.constructor(
                 		PlaceDto.class,
+                		Expressions.stringTemplate("'other-' || {0}", q.otherPlaceId), // ← id 생성
                         q.otherPlaceId,         // otherPlaceId로 매핑
                         q.name,
                         q.basicAddress,
@@ -189,5 +191,13 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
                 .orderBy(q.otherPlaceId.desc())   // 최신순
                 .limit(limit)
                 .fetch();
+        
+        long total = queryFactory
+                .select(q.count())
+                .from(q)
+                .where(builder)
+                .fetchOne();
+
+        return new SearchResultDto<>(content, (int) total);
     }
 }

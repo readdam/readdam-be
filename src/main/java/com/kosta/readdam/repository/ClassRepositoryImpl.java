@@ -10,6 +10,7 @@ import org.springframework.data.domain.SliceImpl;
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.QClassEntity;
 import com.kosta.readdam.entity.QClassLike;
 import com.kosta.readdam.entity.QClassUser;
@@ -111,7 +112,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
     }
 
 	@Override
-	public List<ClassDto> searchForAll(String keyword, String sort, int limit) {
+	public SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) {
 	    QClassEntity c = QClassEntity.classEntity;
 
 	    BooleanBuilder builder = new BooleanBuilder();
@@ -120,13 +121,19 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 .or(c.shortIntro.contains(keyword))
 	    );
 
-        return queryFactory
+	    long count = queryFactory
+	            .select(c.count())
+	            .from(c)
+	            .where(builder)
+	            .fetchOne();
+	    
+	    List<ClassDto> result = queryFactory
                 .select(Projections.constructor(
                         ClassDto.class,
                         c.classId,
                         c.title,
                         c.mainImg,
-                        c.mainImg,            // image 필드 매핑
+                        c.mainImg, // image 필드 매핑
                         c.tag1,
                         c.tag2,
                         c.tag3,
@@ -139,5 +146,7 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 .orderBy(c.createdAt.desc())
                 .limit(limit)
                 .fetch();
+	    
+	    return new SearchResultDto<>(result, (int) count);
     }
 }
