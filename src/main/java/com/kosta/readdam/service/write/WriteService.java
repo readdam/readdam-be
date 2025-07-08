@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
@@ -20,4 +21,5 @@ public interface WriteService {
 	int getLikeCount(Integer writeId) throws Exception; // 좋아요 수는 null 없어서 int로 함
 	void increaseViewCount(Integer writeId) throws Exception;
 	void modifyDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception;
+	SearchResultDto<WriteDto> searchForAll(String keyword, String sort, int limit) throws Exception;
 }

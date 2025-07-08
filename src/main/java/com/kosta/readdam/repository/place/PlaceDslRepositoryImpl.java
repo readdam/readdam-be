@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.kosta.readdam.dto.PlaceDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.place.PlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.QPlace;
@@ -205,4 +207,46 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 	            .or(p.name.containsIgnoreCase(keyword))
 	            .or(p.basicAddress.containsIgnoreCase(keyword));
 	    }
+
+		@Override
+		public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+			QPlace p = QPlace.place;
+		        BooleanBuilder builder = new BooleanBuilder();
+		        builder.and(
+		                p.name.contains(keyword)
+		                .or(p.basicAddress.contains(keyword))
+		                .or(p.detailAddress.contains(keyword))
+		        );
+
+		        long count = query
+		                .select(p.count())
+		                .from(p)
+		                .where(builder)
+		                .fetchOne();
+
+		        List<PlaceDto> result = query
+		                .select(Projections.constructor(
+		                        PlaceDto.class,
+		                        Expressions.stringTemplate("'place-' || {0}", p.placeId),
+		                        //Expressions.numberTemplate(Integer.class, "place_id"),
+		                        p.placeId,
+		                        p.name,
+		                        p.basicAddress,
+		                        p.detailAddress,
+		                        p.img1,
+		                        p.tag1,
+		                        p.tag2,
+		                        p.tag3,
+		                        p.tag4,
+		                        p.tag5,
+		                        Expressions.constant("PLACE")
+		                ))
+		                .from(p)
+		                .where(builder)
+		                .orderBy(p.placeId.desc())
+		                .limit(limit)
+		                .fetch();
+		        
+		        return new SearchResultDto<>(result, (int) count);    
+		}
 }

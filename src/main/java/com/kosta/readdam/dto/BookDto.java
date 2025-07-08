@@ -29,6 +29,31 @@ public class BookDto {
     private BigDecimal rating;
     private String bookImg;
     private String bookIntro;
+    
+    // 통합검색용 필드 추가    
+    private String cover;      // 카카오 썸네일 URL
+    private String authors;    // 카카오 authors
+    private String searchType;  // 통합검색 타입 구분 (BOOK)
+    private String image; // 통합검색용
+    
+    // 통합검색 전용 생성자   
+    public BookDto(
+            String bookIsbn,
+            String title,
+            String cover,
+            String authors,
+            String publisher,
+            String searchType,
+            String image
+    ) {
+        this.bookIsbn = bookIsbn;
+        this.title = title;
+        this.cover = cover;
+        this.authors = authors;
+        this.publisher = publisher;
+        this.searchType = searchType;
+        this.image = image;
+    }
 
     public Book toEntity() {
         return Book.builder()
@@ -43,6 +68,19 @@ public class BookDto {
                 .rating(rating)
                 .bookImg(bookImg)
                 .bookIntro(bookIntro)
+                .build();
+    }
+    
+    // 카카오 API → BookDto 변환 메서드
+    public static BookDto fromKakao(com.kosta.readdam.dto.kakao.KakaoBookResponse.Document doc) {
+        return BookDto.builder()
+                .bookIsbn(doc.getIsbn())
+                .title(doc.getTitle())
+                .cover(doc.getThumbnail())
+                .authors(String.join(", ", doc.getAuthors()))
+                .publisher(doc.getPublisher())
+                .searchType("BOOK")
+                .image(doc.getThumbnail())
                 .build();
     }
 }

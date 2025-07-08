@@ -1,13 +1,18 @@
 package com.kosta.readdam.service;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.kosta.readdam.dto.BookDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.book.BookSearchResultDto;
 import com.kosta.readdam.dto.kakao.KakaoBookResponse;
 import com.kosta.readdam.external.KakaoBookApiClient;
+import com.kosta.readdam.repository.BookListDslRepository;
 import com.kosta.readdam.repository.BookRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +26,7 @@ public class BookSearchServiceImpl implements BookSearchService {
 
     private final KakaoBookApiClient kakaoBookApiClient;
     private final BookRepository bookRepository;
+    private final BookListDslRepository bookListDslRepository;
 
     @Override
     public BookSearchResultDto searchBooks(String query, String target, String sort, int page, int size) {
@@ -51,5 +57,22 @@ public class BookSearchServiceImpl implements BookSearchService {
             result.getMeta().isEnd()
         );
     }
+
+	@Override
+	public SearchResultDto<BookDto> searchForAll(String keyword, String sort, int limit) {
+		KakaoBookResponse result = kakaoBookApiClient.searchBooks(keyword, null, sort, 1, limit);
+	    
+		if (result == null || result.getDocuments() == null) {
+			 return new SearchResultDto<>(Collections.emptyList(), 0);
+	    }
+		
+		List<BookDto> books = result.getDocuments().stream()
+	            .map(BookDto::fromKakao)
+	            .collect(Collectors.toList());
+	    
+	    int totalCount = result.getMeta().getTotalCount();
+
+	    return new SearchResultDto<>(books, totalCount);
+	}
 }
 

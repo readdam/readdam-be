@@ -11,11 +11,16 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import com.kosta.readdam.dto.SearchResultDto;
+import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
+import com.kosta.readdam.entity.QUser;
 import com.kosta.readdam.entity.QWrite;
 import com.kosta.readdam.entity.Write;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 @Repository
@@ -55,7 +60,7 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 	            builder.and(
 	                write.title.containsIgnoreCase(keyword)
 	                .or(write.content.containsIgnoreCase(keyword))
-	                .or(write.user.username.contains(keyword))
+	                .or(write.user.nickname.contains(keyword))
 	                .or(write.tag1.containsIgnoreCase(keyword))
 	                .or(write.tag2.containsIgnoreCase(keyword))
 	                .or(write.tag3.containsIgnoreCase(keyword))
@@ -93,4 +98,62 @@ public class WriteDslRepositoryImpl implements WriteDslRepository {
 
 	        return new PageImpl<>(result, pageable, count);
 	    }
+
+	@Override
+	public SearchResultDto<WriteDto> searchForAll(String keyword, String sort, int limit) {
+		QWrite w = QWrite.write;
+		QUser u = QUser.user;
+		  BooleanBuilder builder = new BooleanBuilder();
+		    builder.and(
+		            w.title.containsIgnoreCase(keyword)
+		            .or(w.content.contains(keyword))
+		            .or(w.user.nickname.contains(keyword))
+		            .or(w.tag1.containsIgnoreCase(keyword))
+		            .or(w.tag2.containsIgnoreCase(keyword))
+		            .or(w.tag3.containsIgnoreCase(keyword))
+		            .or(w.tag4.containsIgnoreCase(keyword))
+		            .or(w.tag5.containsIgnoreCase(keyword))
+		    );
+		    
+		    builder.and(w.isHide.eq(false));
+		    
+		    // 실제 데이터 리스트
+		    List<WriteDto> resultList = queryFactory
+		            .select(Projections.constructor(
+		                    WriteDto.class,
+		                    w.writeId,
+		                    w.title,
+		                    w.img,
+		                    w.tag1,
+		                    w.tag2,
+		                    w.tag3,
+		                    w.tag4,
+		                    w.tag5,
+		                    w.type,   
+		                    w.endDate,
+		                    w.likeCnt,
+		                    w.commentCnt,
+		                    w.viewCnt,
+		                    u.nickname,
+		                    w.regDate,
+		                    Expressions.constant("WRITE"),
+		                    w.img    // image 필드로 매핑
+		            ))
+		            .from(w)
+		            .leftJoin(u).on(w.user.eq(u))
+		            .where(builder)
+		            .orderBy(w.regDate.desc())
+		            .limit(limit)
+		            .fetch();
+		    // 전체 건수
+		    Long totalCount = queryFactory
+		            .select(w.count())
+		            .from(w)
+		            .where(builder)
+		            .fetchOne();
+
+		    int total = totalCount != null ? totalCount.intValue() : 0;
+
+		    return new SearchResultDto<>(resultList, total);
+	}
 }

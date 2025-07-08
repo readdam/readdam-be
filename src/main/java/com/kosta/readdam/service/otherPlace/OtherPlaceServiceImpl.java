@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.OtherPlaceDto;
+import com.kosta.readdam.dto.PlaceDto;
+import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.dto.otherPlace.OtherPlaceSummaryDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
 import com.kosta.readdam.entity.OtherPlace;
@@ -157,4 +159,9 @@ public class OtherPlaceServiceImpl implements OtherPlaceService {
             tag, keyword, lat, lng, radiusKm, offset, limit, sortBy
         );
     }
+
+	@Override
+	public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
+		return otherPlaceRepository.searchForAll(keyword, sort, limit);
+	}
 }
