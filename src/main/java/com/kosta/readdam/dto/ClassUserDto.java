@@ -20,4 +20,18 @@ public class ClassUserDto {
     private String username;
     private LocalDateTime joinDate;
     private LocalDateTime leftDate;
+    
+    private ClassDto classDto;
+    
+    public ClassUserDto(ClassDto classDto, LocalDateTime joinDate) {
+        this.classDto = classDto;
+        this.joinDate = joinDate;
+    }
+    
+    public ClassUserDto(ClassDto classDto, LocalDateTime joinDate, LocalDateTime leftDate) {
+        this.classDto = classDto;
+        this.joinDate = joinDate;
+        this.leftDate = leftDate;
+    }
+    
 }

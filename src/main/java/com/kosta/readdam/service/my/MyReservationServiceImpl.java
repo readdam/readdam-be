@@ -96,6 +96,7 @@ public class MyReservationServiceImpl implements MyReservationService {
         if (sameDay) {
             throw new IllegalStateException("당일 예약은 취소할 수 없습니다.");
         }
+        detailRepo.deleteAllByReservation_ReservationId(reservationId);
         r.setStatus(ReservationStatus.CANCELLED);
         reservationRepo.save(r);
     }

@@ -21,4 +21,6 @@ public interface ReservationDetailRepository extends JpaRepository<ReservationDe
                 @Param("placeRoomId") Integer placeRoomId,
                 @Param("date") LocalDate date
         );
+    
+    void deleteAllByReservation_ReservationId(Integer reservationId);
 }

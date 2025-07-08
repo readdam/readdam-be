@@ -18,4 +18,5 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Integer>, Cl
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
 	List<ClassEntity> findTop4ByOrderByClassIdDesc(); // home 최신순 내림차순 + limit 4개 조회용 
 
+	List<ClassEntity> findByLeader_Username(String username);
 }
