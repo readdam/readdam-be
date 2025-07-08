@@ -83,4 +83,13 @@ public class BookLikeServiceImpl implements BookLikeService {
         	    .map(doc -> doc.getIsbn().trim())
         	    .collect(Collectors.toList());
     }
+	
+	@Override
+	public boolean isBookLiked(String username, String isbn) {
+	    if (isbn == null || isbn.trim().isEmpty()) {
+	        return false;
+	    }
+	    return bookLikeRepository.existsByUserUsernameAndBookBookIsbn(username, isbn.trim());
+	}
+
 }
