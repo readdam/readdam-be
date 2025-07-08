@@ -3,8 +3,11 @@ package com.kosta.readdam.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.entity.ClassLike;
 
 public interface ClassLikeRepository extends JpaRepository<ClassLike, Integer> {
@@ -16,4 +19,6 @@ public interface ClassLikeRepository extends JpaRepository<ClassLike, Integer> {
 	List<ClassLike> findAllByUserUsername(String username);
 
 	Integer countByClassIdClassId(Integer classId);
+
+	Page<ClassDto> findAllByUserUsername(String username, Pageable pageable);
 }

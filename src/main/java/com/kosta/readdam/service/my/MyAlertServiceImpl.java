@@ -3,13 +3,16 @@ package com.kosta.readdam.service.my;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.AlertDto;
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.repository.AlertRepository;
+import com.kosta.readdam.util.PageInfo2;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,15 +23,28 @@ public class MyAlertServiceImpl implements MyAlertService {
 
     private final AlertRepository alertRepository;
 
-    /* 전체 목록 (페이징 없이) */
     @Override
-    public List<AlertDto> getMyAlerts(String receiverUsername) {
-        return alertRepository
-                .findByReceiverUsernameOrderByAlertIdDesc(receiverUsername)
-                .stream()
-                .map(Alert::toDto)
-                .collect(Collectors.toList());
+    public PagedResponse<AlertDto> getMyAlerts(String receiverUsername, int page, int size) {
+        // 1) JPA 페이징 조회
+        Page<Alert> alertPage = alertRepository
+            .findByReceiverUsernameOrderByAlertIdDesc(
+                receiverUsername,
+                PageRequest.of(page, size)
+            );
+
+        // 2) DTO 변환
+        List<AlertDto> dtos = alertPage.getContent().stream()
+            .map(Alert::toDto)
+            .collect(Collectors.toList());
+
+        // 3) PageInfo2 생성 (static factory 사용)
+        PageInfo2 pageInfo = PageInfo2.from(alertPage);
+
+        // 4) PagedResponse 반환
+        return new PagedResponse<>(dtos, pageInfo);
     }
+
+
 
     /* 알림 읽음 처리 */
     @Override

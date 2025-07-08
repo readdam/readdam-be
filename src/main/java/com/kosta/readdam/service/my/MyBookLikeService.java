@@ -1,11 +1,11 @@
 package com.kosta.readdam.service.my;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import com.kosta.readdam.dto.BookDto;
 
 public interface MyBookLikeService {
 
-	List<BookDto> getLikedBooksByUsername(String username) throws Exception;
+	Page<BookDto> getLikedBooksByUsername(String username, int page, int size);
 	
 }

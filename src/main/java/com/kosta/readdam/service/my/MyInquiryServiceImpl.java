@@ -4,15 +4,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.InquiryDto;
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.entity.Inquiry;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.enums.InquiryStatus;
 import com.kosta.readdam.repository.InquiryRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.util.PageInfo2;
 
 @Service
 public class MyInquiryServiceImpl implements MyInquiryService{
@@ -23,12 +29,23 @@ public class MyInquiryServiceImpl implements MyInquiryService{
 	@Autowired
 	private UserRepository userRepository;
 	
-	 @Override
-	    public List<InquiryDto> getMyInquiryList(String username) throws Exception {
-	        List<Inquiry> list = inquiryRepository.findByUser_UsernameOrderByRegDateDesc(username);
-	        System.out.println("조회된 문의 수: " + list.size());
-	        return list.stream().map(Inquiry::toDto).collect(Collectors.toList());
-	    }
+	@Override
+    public PagedResponse<InquiryDto> getMyInquiryList(String username, int page, int size) throws Exception {
+        // 0-based page index, regDate 내림차순
+        Pageable pageable = PageRequest.of(page, size, Sort.by("regDate").descending());
+        Page<Inquiry> inquiryPage = inquiryRepository.findByUser_Username(username, pageable);
+
+        List<InquiryDto> dtoList = inquiryPage.getContent()
+                                             .stream()
+                                             .map(Inquiry::toDto)
+                                             .collect(Collectors.toList());
+
+        // PageInfo2 생성
+        PageInfo2 pageInfo = PageInfo2.from(inquiryPage);
+
+        // 래핑해서 반환
+        return new PagedResponse<>(dtoList, pageInfo);
+    }
 	 
 	 @Override
 	 public InquiryDto writeInquiry(String username, InquiryDto dto) throws Exception {

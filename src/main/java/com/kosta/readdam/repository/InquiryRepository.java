@@ -3,6 +3,8 @@ package com.kosta.readdam.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,4 +23,6 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Integer>, JpaS
 			+ "       i.answerDate = :now " + " WHERE i.inquiryId  = :inquiryId")
 	int updateAnswerAndStatus(@Param("inquiryId") Integer inquiryId, @Param("answer") String answer,
 			@Param("status") InquiryStatus status, @Param("now") LocalDateTime now);
+	
+	Page<Inquiry> findByUser_Username(String username, Pageable pageable);
 }

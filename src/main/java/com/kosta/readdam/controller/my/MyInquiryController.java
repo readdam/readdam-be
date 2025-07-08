@@ -1,20 +1,21 @@
 package com.kosta.readdam.controller.my;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.InquiryDto;
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.service.my.MyInquiryService;
 
 @RestController
@@ -25,16 +26,13 @@ public class MyInquiryController {
 	private MyInquiryService myInquiryService;
 
 	@GetMapping("/myInquiryList")
-	public ResponseEntity<?> getMyInquiries(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-	    try {
-	        String username = principalDetails.getUsername();
-	        List<InquiryDto> list = myInquiryService.getMyInquiryList(username);
-	        return ResponseEntity.ok(list);
-	    } catch (Exception e) {
-	        e.printStackTrace(); // 로그 출력
-	        return ResponseEntity.status(500).body("문의 목록 조회 중 오류가 발생했습니다.");
-	    }
-	}
+    public PagedResponse<InquiryDto> getMyInquiryList(
+            @AuthenticationPrincipal UserDetails user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws Exception {
+        return myInquiryService.getMyInquiryList(user.getUsername(), page, size);
+    }
 	
 	@PostMapping("/myInquiryWrite")
 	public ResponseEntity<?> writeInquiry(

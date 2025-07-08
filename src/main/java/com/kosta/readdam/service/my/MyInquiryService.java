@@ -1,12 +1,11 @@
 package com.kosta.readdam.service.my;
 
-import java.util.List;
-
 import com.kosta.readdam.dto.InquiryDto;
+import com.kosta.readdam.dto.PagedResponse;
 
 public interface MyInquiryService {
 	
-	List<InquiryDto> getMyInquiryList(String username) throws Exception;
+	PagedResponse<InquiryDto> getMyInquiryList(String username, int page, int size) throws Exception;
 
 	InquiryDto writeInquiry(String username, InquiryDto dto) throws Exception;
 

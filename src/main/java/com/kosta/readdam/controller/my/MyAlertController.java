@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.AlertDto;
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.service.my.MyAlertService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,13 @@ public class MyAlertController {
     private final MyAlertService myAlertService;
 
     @PostMapping("/myAlertList")
-    public ResponseEntity<List<AlertDto>> getAlertList(
-            @AuthenticationPrincipal PrincipalDetails principal) throws Exception {
-
-        List<AlertDto> alerts = myAlertService.getMyAlerts(principal.getUsername());
-        return ResponseEntity.ok(alerts);
+    public ResponseEntity<PagedResponse<AlertDto>> getAlertList(
+            @AuthenticationPrincipal PrincipalDetails principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        PagedResponse<AlertDto> result = myAlertService.getMyAlerts(principal.getUsername(), page, size);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/myAlertCheck")

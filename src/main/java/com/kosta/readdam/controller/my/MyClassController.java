@@ -1,58 +1,57 @@
 package com.kosta.readdam.controller.my;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassUserDto;
+import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.service.my.MyClassUserService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/my/classes")
+@RequiredArgsConstructor
 public class MyClassController {
-	
-	private final MyClassUserService classUserService;
 
-    @Autowired
-    public MyClassController(MyClassUserService classUserService) {
-        this.classUserService = classUserService;
-    }
+    private final MyClassUserService myClassUserService;
 
-    /**
-     * 진행 중인(참여 중) 모임 조회
-     */
     @GetMapping("/ongoing")
-    public List<ClassUserDto> getOngoingClasses(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        return classUserService.getOngoingClasses(username);
+    public ResponseEntity<PagedResponse<ClassUserDto>> ongoing(
+        @AuthenticationPrincipal UserDetails user,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(
+            myClassUserService.getOngoingClasses(user.getUsername(), page, size)
+        );
     }
 
-    /**
-     * 과거에 참여했던(종료된) 모임 조회
-     */
     @GetMapping("/past")
-    public List<ClassUserDto> getPastClasses(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        return classUserService.getPastClasses(username);
+    public ResponseEntity<PagedResponse<ClassUserDto>> past(
+        @AuthenticationPrincipal UserDetails user,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(
+            myClassUserService.getPastClasses(user.getUsername(), page, size)
+        );
     }
 
-    /**
-     * 내가 만든 모든 모임 조회
-     */
     @GetMapping("/created")
-    public List<ClassDto> getCreatedClasses(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        return classUserService.getCreatedClasses(username);
+    public ResponseEntity<PagedResponse<ClassDto>> created(
+        @AuthenticationPrincipal UserDetails user,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(
+            myClassUserService.getCreatedClasses(user.getUsername(), page, size)
+        );
     }
-    
-
 }
