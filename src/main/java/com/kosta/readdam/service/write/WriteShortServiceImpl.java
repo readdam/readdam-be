@@ -40,10 +40,22 @@ public class WriteShortServiceImpl implements WriteShortService {
 	@Autowired
 	private UserRepository userRepository;
 
+	private Object currentEvent;
+
 	@Override
 	public WriteShortDto writePostcard(WriteShortDto writeShortDto, User user) {
 		// 존재하는 Event인지 확인
 		Event event = eventService.findCurrentEventEntity(LocalDateTime.now());
+	    if (event == null) {
+	        throw new RuntimeException("진행중인 이벤트가 없습니다.");
+	    }
+	    boolean exists = writeShortRepository
+	            .findByEvent_EventIdAndUser_Username(event.getEventId(), user.getUsername())
+	            .isPresent();
+
+	    if (exists) {
+	        throw new RuntimeException("이미 작성한 글이 존재합니다.");
+	    }
 		// DTO의 toEntity() 메서드로 엔티티 생성 후 저장
 		WriteShort saved = writeShortRepository.save(writeShortDto.toEntity(user, event));
 		// 저장된 엔티티를 DTO로 변환하여 반환
@@ -54,6 +66,9 @@ public class WriteShortServiceImpl implements WriteShortService {
 	public Map<String, Object> getWriteShortListByCurrentEvent(int page, int size, String username) {
 		// 1. 현재 이벤트 조회
 		Event event = eventService.findCurrentEventEntity(LocalDateTime.now());
+	    if (event == null) {
+	        throw new RuntimeException("진행중인 이벤트가 없습니다.");
+	    }
 		// 2. 페이징 설정
 		Pageable pageable = PageRequest.of(page - 1, size, Sort.by("regDate").descending());
 		// 3. 해당 이벤트의 공개된 글 목록 조회
@@ -140,5 +155,26 @@ public class WriteShortServiceImpl implements WriteShortService {
 	                return WriteShortDto.from(writeShort, isLiked, likes);
 	            })
 	            .collect(Collectors.toList());
+	}
+
+	@Override
+	public WriteShortDto updatePostcard(WriteShortDto writeShortDto, User user) {
+        // 현재 진행 중인 이벤트 가져오기
+	    Event event = eventService.findCurrentEventEntity(LocalDateTime.now());
+
+        // 현재 이벤트 + 사용자 기준으로 기존 글 존재 여부 확인
+        WriteShort writeShort = writeShortRepository
+                .findByEvent_EventIdAndUser_Username(event.getEventId(), user.getUsername())
+                .orElseThrow(() -> new RuntimeException("수정할 글이 존재하지 않습니다."));
+
+        // 내용 업데이트
+        writeShort.setContent(writeShortDto.getContent());
+        writeShort.setColor(writeShortDto.getColor());
+ 
+        // 저장
+        WriteShort updated = writeShortRepository.save(writeShort);
+
+        // 엔티티 → DTO 변환
+        return WriteShortDto.from(updated);
 	}
 }

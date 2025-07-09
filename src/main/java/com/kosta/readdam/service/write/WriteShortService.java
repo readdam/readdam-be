@@ -12,4 +12,5 @@ public interface WriteShortService {
     Map<String, Object> getWriteShortListByCurrentEvent(int page, int size, String username);
     boolean toggleLike(String username, Integer writeshortId);
     List<WriteShortDto> findLatest(int limit, String username) throws Exception; 
+    WriteShortDto updatePostcard(WriteShortDto writeShortDto, User user); // 수정
 }
