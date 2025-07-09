@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.jwt.JwtToken;
@@ -66,7 +67,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		response.addCookie(refreshCookie);
 
 		// redirect (JSON 응답은 제거)
-		response.sendRedirect("http://localhost:5173/oauth-redirect?access_token=" + accessToken);
+		String redirect = UriComponentsBuilder
+			    .fromUriString(redirectUri)               // e.g. http://localhost:5173/oauth-redirect
+			    .queryParam("access_token",  accessToken)
+			    .queryParam("refresh_token", refreshToken)  // ← 여기에 추가
+			    .build().toUriString();
+			response.sendRedirect(redirect);
 
 
 	}

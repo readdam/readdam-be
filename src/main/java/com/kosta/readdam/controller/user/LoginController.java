@@ -1,8 +1,6 @@
 package com.kosta.readdam.controller.user;
 
-import java.io.File;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +18,7 @@ import com.kosta.readdam.dto.UserDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.service.UserService;
+import com.kosta.readdam.util.TokenService;
 
 @RestController
 public class LoginController {
@@ -32,6 +31,9 @@ public class LoginController {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private TokenService tokenService;
 	
 	@PostMapping("/user")
 	public ResponseEntity<UserDto> user(
@@ -71,5 +73,10 @@ public class LoginController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
+	@PostMapping("/refresh")
+    public Map<String,String> refresh(@RequestBody Map<String,String> body) {
+        String newAccess = tokenService.refreshAccessToken(body.get("refreshToken"));
+        return Map.of("accessToken", newAccess);
+    }
 }
