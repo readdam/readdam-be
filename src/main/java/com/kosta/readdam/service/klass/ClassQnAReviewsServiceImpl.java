@@ -96,8 +96,15 @@ public class ClassQnAReviewsServiceImpl implements ClassQnAReviewsService {
 				.orElseThrow(()->new Exception("질문이 존재하지 않습니다."));
 		
 		//모임장 여부 확인
-		if (!qna.getClassEntity().getLeader().getUsername().equals(username)) {
-			throw new Exception("모임장만 답변할 수 있습니다.");
+		Boolean isLeader = qna.getClassEntity().getLeader().getUsername().equals(username);
+		
+		// 관리자 여부 확인(UserEntity)
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new Exception("사용자 정보가 존재하지 않습니다."));
+		boolean isAdmin = Boolean.TRUE.equals(user.getIsAdmin());
+
+		if(!isLeader && !isAdmin) {
+			throw new Exception("모임장 또는 관리자만 답변할 수 있습니다.");
 		}
 		
 		qna.setAnswer(answer);
