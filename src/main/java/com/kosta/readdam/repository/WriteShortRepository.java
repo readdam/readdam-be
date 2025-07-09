@@ -2,6 +2,7 @@ package com.kosta.readdam.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,5 +33,7 @@ public interface WriteShortRepository extends JpaRepository<WriteShort, Integer>
 	
 	Page<WriteShort> findByRegDateBetweenAndIsHideFalse(
 		    LocalDateTime start, LocalDateTime end, Pageable page);
+	
+	Optional<WriteShort> findByEvent_EventIdAndUser_Username(Integer eventId, String username);
 
 }
