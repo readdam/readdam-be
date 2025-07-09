@@ -66,4 +66,21 @@ public class BookLikeController {
         return ResponseEntity.ok(likedIsbns);
     }
 
+    @GetMapping("/book-like/check")
+    public ResponseEntity<?> checkBookLike(@RequestParam String bookIsbn,
+                                           @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        if (principalDetails == null) {
+            return new ResponseEntity<>("로그인 필요", HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            String username = principalDetails.getUsername();
+            boolean liked = bookLikeService.isBookLiked(username, bookIsbn);
+            return ResponseEntity.ok(liked);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>("처리 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
