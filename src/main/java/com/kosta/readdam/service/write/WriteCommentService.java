@@ -2,6 +2,7 @@ package com.kosta.readdam.service.write;
 
 import java.util.List;
 
+import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.WriteCommentDto;
 
 public interface WriteCommentService {
@@ -13,4 +14,8 @@ public interface WriteCommentService {
 	boolean existsByWrite_WriteIdAndAdoptedTrue(Integer writeId) throws Exception;
 	//실제 채택 처리
 	void adoptComment(Integer writeCommentId) throws Exception;
+	//댓글 수정
+	void updateComment(WriteCommentDto dto, PrincipalDetails principal) throws Exception;
+	//댓글 삭제(숨김) 처리
+	void hideComment(Integer writeCommentId, PrincipalDetails principal) throws Exception ;
 }

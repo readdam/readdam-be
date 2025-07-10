@@ -43,43 +43,45 @@ public class WriteServiceImpl implements WriteService {
 	private final WriteCommentRepository writeCommentRepository;
 	
 	private final WriteDslRepository writeDslRepository;
+	
 
 	@Value("${iupload.path}")
 	private String iuploadPath;
+	
+	private String getUniqueFileName(String originalName) {
+	    String saveName = originalName;
+	    File upFile = new File(iuploadPath, saveName);
+
+	    int count = 1;
+	    String namePart = originalName;
+	    String extension = "";
+
+	    int dotIndex = originalName.lastIndexOf(".");
+	    if (dotIndex != -1) {
+	        namePart = originalName.substring(0, dotIndex);
+	        extension = originalName.substring(dotIndex);
+	    }
+
+	    while (upFile.exists()) {
+	        saveName = namePart + "_" + count + extension;
+	        upFile = new File(iuploadPath, saveName);
+	        count++;
+	    }
+
+	    return saveName;
+	}
 
 	@Override
 	@Transactional
 	public Integer writeDam(WriteDto writeDto, MultipartFile ifile, User user) throws Exception {
 		if (ifile != null && !ifile.isEmpty()) {
-	        String originalName = ifile.getOriginalFilename();
+			
+			String originalName = ifile.getOriginalFilename();
+			String saveName = getUniqueFileName(originalName);
+			File upFile = new File(iuploadPath, saveName);
+			ifile.transferTo(upFile);
 
-	        // 처음에는 원래 파일명으로 저장하려 시도
-	        String saveName = originalName;
-	        File upFile = new File(iuploadPath, saveName);
-
-	        int count = 1;
-	        String namePart = originalName;
-	        String extension = "";
-
-	        // 파일명과 확장자 분리 (ex. book.jpg → book / .jpg)
-	        int dotIndex = originalName.lastIndexOf(".");
-	        if (dotIndex != -1) {
-	            namePart = originalName.substring(0, dotIndex);
-	            extension = originalName.substring(dotIndex);
-	        }
-
-	        // 동일한 파일명이 존재하면 _숫자 붙여서 저장
-	        while (upFile.exists()) {
-	            saveName = namePart + "_" + count + extension;
-	            upFile = new File(iuploadPath, saveName);
-	            count++;
-	        }
-
-	        // 실제 파일을 디스크에 복사
-	        ifile.transferTo(upFile);
-
-	        // DB에 저장할 파일명 세팅
-	        writeDto.setImg(saveName);
+			writeDto.setImg(saveName);
 
 	    } 
 	    // 업로드 파일이 없고, 북커버 URL이 넘어온 경우
@@ -103,7 +105,8 @@ public class WriteServiceImpl implements WriteService {
 	public WriteDto detailWrite(Integer writeId) throws Exception {
 		System.out.println(writeId);
 		Write write = writeRepository.findById(writeId).orElseThrow(() -> new Exception("글번호 오류"));
-		return write.toDto();
+		WriteDto dto = write.toDto();
+		return dto;
 	}
 
 	@Override
@@ -114,9 +117,13 @@ public class WriteServiceImpl implements WriteService {
 		// 2. 최신순 정렬된 글 데이터를 Repository에서 조회
 		List<Write> writes = writeRepository.findLatest(pageable);
 
+		
 		// 3. Write 엔티티 리스트를 WriteDto 리스트로 변환 (스트림 map 사용)
-		return writes.stream().map(WriteDto::from) // 각 Write → WriteDto 변환
-				.collect(Collectors.toList()); // 변환 결과 리스트로 수집
+	    return writes.stream().map(write -> {
+	        WriteDto dto = write.toDto();
+	        dto.setCommentCnt(write.getCommentCnt());
+	        return dto;
+	    }).collect(Collectors.toList());
 	}
 
 	@Override
@@ -147,7 +154,7 @@ public class WriteServiceImpl implements WriteService {
 		// 기존 글 가져오기
 		Write write = writeRepository.findById(writeDto.getWriteId()).orElseThrow(()->new Exception("글번호오류"));
 		
-	    long commentCnt = writeCommentRepository.countByWriteWriteId(write.getWriteId());
+	    long commentCnt = writeCommentRepository.countByWrite_WriteIdAndIsHideFalse(write.getWriteId());
 
 	    // 댓글 있으면 비공개 전환 불가
 	    if ("private".equals(writeDto.getVisibility()) && commentCnt > 0) {
@@ -198,31 +205,13 @@ public class WriteServiceImpl implements WriteService {
 		if (writeDto.getThumbnailUrl() != null && !writeDto.getThumbnailUrl().isBlank()) {
 		    write.setImg(writeDto.getThumbnailUrl());
 		} else if (ifile != null && !ifile.isEmpty()) {
-		    String originalName = ifile.getOriginalFilename();
+			String originalName = ifile.getOriginalFilename();
+			String saveName = getUniqueFileName(originalName);
+			File upFile = new File(iuploadPath, saveName);
+			ifile.transferTo(upFile);
 
-		    String saveName = originalName;
-		    File upFile = new File(iuploadPath, saveName);
-
-		    int count = 1;
-		    String namePart = originalName;
-		    String extension = "";
-
-		    int dotIndex = originalName.lastIndexOf(".");
-		    if (dotIndex != -1) {
-		        namePart = originalName.substring(0, dotIndex);
-		        extension = originalName.substring(dotIndex);
-		    }
-		    // 동일 파일명 존재 시 번호 증가
-		    while (upFile.exists()) {
-		        saveName = namePart + "_" + count + extension;
-		        upFile = new File(iuploadPath, saveName);
-		        count++;
-		    }
-
-		    ifile.transferTo(upFile);
-
-		    writeDto.setImg(saveName);
-		    write.setImg(saveName);
+			writeDto.setImg(saveName);
+			write.setImg(saveName);
 		}
 
 		writeRepository.save(write);
@@ -233,3 +222,6 @@ public class WriteServiceImpl implements WriteService {
 		return writeDslRepository.searchForAll(keyword, sort, limit);
 	}
 }
+
+
+
