@@ -175,7 +175,7 @@ public class WriteController {
 	        writeCommentService.adoptComment(writeCommentId);
 	        return ResponseEntity.ok().build();
 	    } catch (IllegalStateException e) {
-	        log.error("중복 채택 오류", e);
+	        log.error("포인트 부족 오류", e);
 	        return ResponseEntity
 	                .status(HttpStatus.CONFLICT)
 	                .body(e.getMessage());
