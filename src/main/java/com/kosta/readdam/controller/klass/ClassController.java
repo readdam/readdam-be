@@ -2,6 +2,7 @@ package com.kosta.readdam.controller.klass;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -23,6 +25,7 @@ import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.service.klass.ClassService;
 
@@ -93,6 +96,18 @@ public class ClassController {
 		System.out.println("tag: "+condition.getTag());
 		return classService.searchClasses(condition,pageable);
 	}
+	
+//	@GetMapping("/my/reservations")
+//	public ResponseEntity<?> getPlaceReservationInfo(@AuthenticationPrincipal UserDetails userDetails) throws Exception{
+//		String username = userDetails.getUsername();
+//		
+//		Optional<PlaceReservInfoDto> reservDto = classService.getPlaceReservInfo(username);
+//		
+//		if(reservDto.isEmpty()) {
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("예약 정보가 없습니다.");
+//		}
+//		return ResponseEntity.ok(reservDto.get());
+//	}
 	
 
 

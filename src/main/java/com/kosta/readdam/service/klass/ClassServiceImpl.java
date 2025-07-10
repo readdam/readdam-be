@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassQnaDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassQna;
@@ -123,5 +125,11 @@ public class ClassServiceImpl implements ClassService {
 	@Override
 	public SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception {
 		return classRepositoryCustom.searchForAll(keyword, sort, limit);
+	}
+
+	@Override
+	public Optional<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
