@@ -42,6 +42,8 @@ public class ClassDto {
 
     private String leaderImg;
     private String leaderIntro;
+    
+    private Boolean isReaddam;	// 장소 '읽담' / '외부' 구분 필드 추가
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate round1Date;
@@ -136,6 +138,7 @@ public class ClassDto {
                 .classIntro(classIntro)
                 .leaderImg(leaderImg)
                 .leaderIntro(leaderIntro)
+                .isReaddam(isReaddam)
                 .round1Date(round1Date)
                 .round1PlaceName(round1PlaceName)
                 .round1PlaceLoc(round1PlaceLoc)
