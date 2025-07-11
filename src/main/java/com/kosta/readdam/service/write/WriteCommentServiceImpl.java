@@ -8,9 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.WriteCommentDto;
+import com.kosta.readdam.entity.Point;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.entity.WriteComment;
+import com.kosta.readdam.repository.PointRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.WriteCommentRepository;
 import com.kosta.readdam.repository.WriteRepository;
@@ -26,6 +28,9 @@ public class WriteCommentServiceImpl implements WriteCommentService {
 	private final WriteCommentRepository writeCommentRepository;
 	private final UserRepository userRepository;
 	private final WriteRepository writeRepository;
+	private final PointRepository pointRepository;
+	
+	private static final int ADOPT_REWARD = 100;
 	
 	@Override
 	public List<WriteCommentDto> findByWriteId(Integer writeId) throws Exception {
@@ -76,15 +81,47 @@ public class WriteCommentServiceImpl implements WriteCommentService {
 	    WriteComment comment = writeCommentRepository.findById(writeCommentId)
 	            .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-	    Integer writeId = comment.getWrite().getWriteId();
-
-	    boolean alreadyAdopted = writeCommentRepository.existsByWrite_WriteIdAndAdoptedTrue(writeId);
-	    if (alreadyAdopted) {
-	        throw new IllegalStateException("이미 채택된 댓글이 존재합니다.");
-	    }
+//	    Integer writeId = comment.getWrite().getWriteId();
+//
+//	    boolean alreadyAdopted = writeCommentRepository.existsByWrite_WriteIdAndAdoptedTrue(writeId);
+//	    if (alreadyAdopted) {
+//	        throw new IllegalStateException("이미 채택된 댓글이 존재합니다.");
+//	    }
+	    
+	    Write write = comment.getWrite();
+        User postAuthor = write.getUser();           
+        User commentAuthor = comment.getUser();
+        
+        if (postAuthor.getTotalPoint() == null || postAuthor.getTotalPoint() < ADOPT_REWARD) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
 
 	    comment.setAdopted(true);
 	    writeCommentRepository.save(comment);
+	    
+	    postAuthor.setTotalPoint(postAuthor.getTotalPoint() - ADOPT_REWARD);
+        // 기록 생성
+        Point deduction = Point.builder()
+            .user(postAuthor)
+            .point(-ADOPT_REWARD)
+            .reason("댓글 채택 보상 지급")
+            .build();
+        pointRepository.save(deduction);
+
+        // 3-2) 댓글 작성자 포인트 지급
+        commentAuthor.setTotalPoint(
+            (commentAuthor.getTotalPoint() != null ? commentAuthor.getTotalPoint() : 0) + ADOPT_REWARD
+        );
+        Point reward = Point.builder()
+            .user(commentAuthor)
+            .point(ADOPT_REWARD)
+            .reason("채택된 첨삭 보상")
+            .build();
+        pointRepository.save(reward);
+
+        // 4) 변경된 사용자 정보 저장
+        userRepository.save(postAuthor);
+        userRepository.save(commentAuthor);
 		
 	}
 
