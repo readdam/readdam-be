@@ -22,13 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
+import com.kosta.readdam.dto.SpellCheckRequest;
+import com.kosta.readdam.dto.SpellCheckResponse;
 import com.kosta.readdam.dto.WriteCommentDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteSearchRequestDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.repository.WriteCommentRepository;
-import com.kosta.readdam.repository.WriteLikeRepository;
+import com.kosta.readdam.service.write.SpellCheckService;
 import com.kosta.readdam.service.write.WriteCommentService;
 import com.kosta.readdam.service.write.WriteService;
 import com.kosta.readdam.util.PageInfo2;
@@ -44,6 +46,7 @@ public class WriteController {
 	private final WriteService writeService;
 	private final WriteCommentService writeCommentService;
 	private final WriteCommentRepository writeCommentRepository;
+	private final SpellCheckService spellCheckService;
 	
 	@PostMapping("/my/write")
 	public ResponseEntity<WriteDto> wirte(
@@ -252,6 +255,23 @@ public class WriteController {
 	        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	    }
 	}
+	
+    @PostMapping("/write-spellcheck")
+    public ResponseEntity<SpellCheckResponse> checkSpelling(@RequestBody SpellCheckRequest request) {
+        
+    	log.info("맞춤법 검사 요청 text = {}", request.getText());
+
+        SpellCheckResponse response = new SpellCheckResponse();
+
+        try {
+            response = spellCheckService.checkSpelling(request);
+        } catch (Exception e) {
+            log.error("맞춤법 검사 Controller 처리 중 오류", e);
+            response.setErrorMessage("맞춤법 검사 중 오류가 발생했습니다.");
+        }
+
+        return ResponseEntity.ok(response);
+    }
 
 	
 }
