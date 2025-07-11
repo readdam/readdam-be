@@ -3,7 +3,10 @@ package com.kosta.readdam.service.reservation;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -80,22 +83,32 @@ public class ReservationServiceImpl implements ReservationService {
             PlaceRoom placeRoom = placeRoomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid roomId: " + request.getRoomId()));
 
-            // Reservation Entity 생성
-            Reservation reservation = new Reservation();
-            reservation.setPlaceRoom(placeRoom);
-            reservation.setUser(user);
-            reservation.setParticipantCount(request.getParticipantCount());
-            reservation.setRequestMessage(request.getRequestMessage());
-            reservation.setReserverName(request.getReserverName());
-            reservation.setReserverPhone(request.getReserverPhone());
-            reservation.setStatus(ReservationStatus.PENDING);
-
-            reservationRepository.save(reservation);
-
-            // ReservationDetail Entity 생성
+            // 날짜별로 그룹핑
+            Map<String, List<String>> dateToTimesMap = new LinkedHashMap<>();
             for (ReservationTimeRange range : request.getRanges()) {
-                LocalDate date = LocalDate.parse(range.getDate());
-                for (String timeStr : range.getTimes()) {
+                dateToTimesMap.computeIfAbsent(range.getDate(), k -> new ArrayList<>()).addAll(range.getTimes());
+            }
+
+            // 날짜마다 개별 Reservation 생성
+            for (Map.Entry<String, List<String>> entry : dateToTimesMap.entrySet()) {
+                String dateStr = entry.getKey();
+                List<String> timeStrs = entry.getValue();
+
+                // Reservation Entity 생성
+                Reservation reservation = new Reservation();
+                reservation.setPlaceRoom(placeRoom);
+                reservation.setUser(user);
+                reservation.setParticipantCount(request.getParticipantCount());
+                reservation.setRequestMessage(request.getRequestMessage());
+                reservation.setReserverName(request.getReserverName());
+                reservation.setReserverPhone(request.getReserverPhone());
+                reservation.setStatus(ReservationStatus.PENDING);
+
+                reservationRepository.save(reservation);
+
+                // ReservationDetail 생성
+                LocalDate date = LocalDate.parse(dateStr);
+                for (String timeStr : timeStrs) {
                     LocalTime time = LocalTime.parse(timeStr);
 
                     ReservationDetail detail = new ReservationDetail();
