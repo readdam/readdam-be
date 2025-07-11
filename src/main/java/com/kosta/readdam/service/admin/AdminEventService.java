@@ -1,4 +1,4 @@
-package com.kosta.readdam.service.event;
+package com.kosta.readdam.service.admin;
 
 import java.util.List;
 

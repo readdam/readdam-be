@@ -74,8 +74,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             userRepository.save(user);
         }
 
-        // 로그인 직후 요약 푸시 전송(제목·본문 null ⇒ 규칙 적용)
-        notificationService.sendPush(user.getUsername(), null, null, null);
+        //if (Boolean.TRUE.equals(user.getIsAdmin())) {
+            //notificationService.sendAdminLoginNotifications(user.getUsername());
+        //}else {
+        	notificationService.sendPush(user.getUsername(), null, null, null);
+        //}
 
         String username = user.getUsername();
         String nickname = user.getNickname();

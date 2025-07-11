@@ -13,9 +13,6 @@ import com.kosta.readdam.entity.enums.ReportCategory;
 
 public interface ReportService {
 
-	List<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
-			LocalDate startDate, LocalDate endDate);
-
 	Page<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
 			LocalDate startDate, LocalDate endDate, Pageable pageable);
 	

@@ -60,16 +60,14 @@ public class ReportServiceImpl implements ReportService {
 	private final UserRepository userRepository;
 	private final AlertRepository alertRepository;
 	private final NotificationService notificationService;
-
-	@Override
-	public List<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
-			LocalDate startDate, LocalDate endDate) {
-		Specification<Report> spec = Specification.where(ReportSpecification.hasKeyword(filterType, keyword))
-				.and(ReportSpecification.hasCategory(category)).and(ReportSpecification.hasStatus(status))
-				.and(ReportSpecification.betweenDates(dateType, startDate, endDate));
-
-		return reportRepository.findAll(spec);
-	}
+	
+	 private static final Map<ReportCategory, String> CATEGORY_PATHS = Map.of(
+		        ReportCategory.write,         "myWrite",
+		        ReportCategory.write_short,   "myWriteShort",
+		        ReportCategory.write_comment, "myWriteComment",
+		        ReportCategory.book_review,   "myReviewBook",
+		        ReportCategory.class_review,  "myReviewClass"
+		    );
 
 	@Override
 	public Page<Report> getReports(String keyword, String filterType, String category, String status, String dateType,
@@ -238,99 +236,111 @@ public class ReportServiceImpl implements ReportService {
 		reportRepository.save(r);
 	}
 
-	@Transactional
-	@Override
-	public void bulkHideAndResolve(ReportCategory category, String categoryId) {
+	  @Transactional
+	    @Override
+	    public void bulkHideAndResolve(ReportCategory category, String categoryId) {
+	        // 1) 상태 일괄 RESOLVED
+	        reportRepository.updateStatusByContent(category, categoryId, ReportStatus.RESOLVED, LocalDateTime.now());
 
-		reportRepository.updateStatusByContent(category, categoryId, ReportStatus.RESOLVED, LocalDateTime.now());
+	        // 2) 숨김 처리
+	        if (category == ReportCategory.write_comment) {
+	            Integer commentId = Integer.valueOf(categoryId);
+	            WriteComment comment = commentRepo.findById(commentId)
+	                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
+	            if (!Boolean.TRUE.equals(comment.getIsHide())) {
+	                comment.setIsHide(true);
+	                commentRepo.save(comment);
+	                postRepo.updateCommentCnt(comment.getWrite().getWriteId(), -1);
+	            }
+	        } else {
+	            String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?", 
+	                category.getTableName(), category.getIdColumn());
+	            jdbc.update(sql, Integer.valueOf(categoryId));
+	        }
 
-		if (category == ReportCategory.write_comment) {
-			Integer commentId = Integer.valueOf(categoryId);
-			WriteComment comment = commentRepo.findById(commentId)
-					.orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
+	        // 3) 알림용 Report 조회
+	        List<Report> list = reportRepository.findByCategoryAndCategoryId(category, categoryId);
+	        if (list.isEmpty()) return;
+	        User reported = list.get(0).getReported();
 
-			if (!Boolean.TRUE.equals(comment.getIsHide())) {
-				comment.setIsHide(true);
-				commentRepo.save(comment);
+	        String type  = "report";
+	        String title = String.format("신고 #%s 처리 완료", categoryId);
+	        String body  = "귀하의 게시물이 신고 처리되어 숨김 처리되었습니다.";
 
-				// ✅ 댓글 수 -1
-				Integer writeId = comment.getWrite().getWriteId();
-				postRepo.updateCommentCnt(writeId, -1);
-			}
+	        // 4) 중복 체크 후 Alert 저장 & FCM 푸시
+	        if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(reported.getUsername(), type, title)) {
+	            User system = userRepository.findByUsername("system")
+	                .orElseThrow(() -> new IllegalStateException("system 계정이 없습니다."));
 
-		} else {
+	            Alert.AlertBuilder builder = Alert.builder()
+	                .sender(system)
+	                .receiver(reported)
+	                .type(type)
+	                .title(title)
+	                .content(body);
 
-			String sql = String.format("UPDATE `%s` SET is_hide = 1 WHERE %s = ?", category.getTableName(),
-					category.getIdColumn());
+	            String path = CATEGORY_PATHS.get(category);
+	            if (path != null) {
+	                builder.linkUrl(path);
+	            }
 
-			jdbc.update(sql, Integer.valueOf(categoryId));
+	            Alert alert = builder.build();
+	            alertRepository.save(alert);
 
-		}
+	            Map<String, String> data = new HashMap<>();
+	            data.put("type", type);
+	            if (path != null) {
+	                data.put("linkUrl", path);
+	            }
+	            notificationService.sendPush(reported.getUsername(), title, body, data);
+	        }
+	    }
 
-		List<Report> list = reportRepository.findByCategoryAndCategoryId(category, categoryId);
-		if (list.isEmpty())
-			return;
-		User reported = list.get(0).getReported();
+	    @Transactional
+	    @Override
+	    public void bulkRejectAndUnhide(ReportCategory category, String categoryId) {
+	        // 1) 상태 일괄 REJECTED
+	        log.info("bulkRejectAndUnhide 호출 → category={} / categoryId={}", category, categoryId);
+	        reportRepository.updateStatusByContent(category, categoryId, ReportStatus.REJECTED, LocalDateTime.now());
 
-		// 4) 중복 체크용 메시지 (reportId 대신 categoryId 사용)
-		String type = "report";
-		String title = String.format("신고 #%s 처리 완료", categoryId);
-		String body = "귀하의 게시물이 신고 처리되어 숨김 처리되었습니다.";
+	        // 2) 본문 unhide
+	        String sql = String.format("UPDATE `%s` SET is_hide = 0 WHERE %s = ?", 
+	            category.getTableName(), category.getIdColumn());
+	        jdbc.update(sql, Integer.valueOf(categoryId));
 
-		Map<String, String> data = new HashMap<>();
-		data.put("type", type);
-		data.put("linkUrl", ""); // 빈 문자열로 넣어서 null 방지
+	        // 3) 알림용 Report 조회
+	        Report any = reportRepository.findFirstByCategoryAndCategoryId(category, categoryId).orElseThrow();
+	        User reported = any.getReported();
 
-		if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(reported.getUsername(), type, title)) {
+	        String type  = "report";
+	        String title = String.format("신고 #%s 반려 및 복구 완료", categoryId);
+	        String body  = "귀하의 게시물이 신고가 반려되어 다시 보이게 되었습니다.";
 
-			// 시스템 발신자 조회
-			User system = userRepository.findByUsername("system")
-					.orElseThrow(() -> new IllegalStateException("system 계정이 없습니다."));
+	        // 4) 중복 체크 후 Alert 저장 & FCM 푸시
+	        if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(reported.getUsername(), type, title)) {
+	            User system = userRepository.findByUsername("system").orElseThrow();
 
-			// 6) Alert 저장
-			Alert alert = Alert.builder().sender(system).receiver(reported).type(type).title(title).content(body)
-					.build();
-			alertRepository.save(alert);
+	            Alert.AlertBuilder builder = Alert.builder()
+	                .sender(system)
+	                .receiver(reported)
+	                .type(type)
+	                .title(title)
+	                .content(body);
 
-			notificationService.sendPush(reported.getUsername(), title, body, data);
-		}
-	}
+	            String path = CATEGORY_PATHS.get(category);
+	            if (path != null) {
+	                builder.linkUrl(path);
+	            }
 
-	@Transactional
-	@Override
-	public void bulkRejectAndUnhide(ReportCategory category, String categoryId) {
-		// 상태 일괄 REJECTED
-		log.info("bulkRejectAndUnhide 호출 → category={} / categoryId={}", category, categoryId);
+	            Alert alert = builder.build();
+	            alertRepository.save(alert);
 
-		reportRepository.updateStatusByContent(category, categoryId, ReportStatus.REJECTED, LocalDateTime.now());
-		// 본문 unhide
-		String sql = String.format("UPDATE `%s` SET is_hide = 0 WHERE %s = ?", category.getTableName(),
-				category.getIdColumn());
-
-		jdbc.update(sql, Integer.valueOf(categoryId));
-
-		Report any = reportRepository.findFirstByCategoryAndCategoryId(category, categoryId).orElseThrow();
-		User reported = any.getReported();
-
-		// 4) type 고정, title에 신고 ID 포함
-		String type = "report";
-		String title = String.format("신고 #%s 반려 및 복구 완료", categoryId);
-		String body = "귀하의 게시물이 신고가 반려되어 다시 보이게 되었습니다.";
-
-		// 5) 같은 title이면 이미 보낸 것 — 중복 체크
-		if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(reported.getUsername(), type, title)) {
-
-			// 시스템 발신자
-			User system = userRepository.findByUsername("system").orElseThrow();
-
-			// 6) Alert 저장
-			Alert alert = Alert.builder().sender(system).receiver(reported).type(type).title(title).content(body)
-					.build();
-			alertRepository.save(alert);
-
-			// 7) FCM 푸시
-			Map<String, String> data = Map.of("type", type);
-			notificationService.sendPush(reported.getUsername(), title, body, data);
-		}
-	}
+	            Map<String, String> data = new HashMap<>();
+	            data.put("type", type);
+	            if (path != null) {
+	                data.put("linkUrl", path);
+	            }
+	            notificationService.sendPush(reported.getUsername(), title, body, data);
+	        }
+	    }
 }

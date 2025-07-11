@@ -28,4 +28,5 @@ public interface ReportRepository extends JpaRepository<Report, Integer>, JpaSpe
 	Optional<Report> findFirstByCategoryAndCategoryId(ReportCategory category, String categoryId);
 
 	List<Report> findByCategoryAndCategoryId(ReportCategory category, String categoryId);
+	
 }
