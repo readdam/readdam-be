@@ -13,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
 import com.kosta.readdam.dto.ClassDto;
@@ -62,6 +63,10 @@ public class ClassEntity {
     private String leaderImg;
     @Column(columnDefinition = "TEXT")
     private String leaderIntro;
+    
+    @Column(name = "is_readdam")
+	@ColumnDefault("0") // 기본값설정 추가
+    private Boolean isReaddam; 
 
     private LocalDate round1Date;
     private String round1PlaceName;
@@ -127,6 +132,7 @@ public class ClassEntity {
                 .classIntro(classIntro)
                 .leaderImg(leaderImg)
                 .leaderIntro(leaderIntro)
+                .isReaddam(isReaddam)
                 .round1Date(round1Date)
                 .round1PlaceName(round1PlaceName)
                 .round1PlaceLoc(round1PlaceLoc)

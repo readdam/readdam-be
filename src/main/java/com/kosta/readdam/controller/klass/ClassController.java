@@ -1,6 +1,7 @@
 package com.kosta.readdam.controller.klass;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
+import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.service.klass.ClassService;
 
@@ -92,6 +94,29 @@ public class ClassController {
 		System.out.println("place: "+condition.getPlace());
 		System.out.println("tag: "+condition.getTag());
 		return classService.searchClasses(condition,pageable);
+	}
+	
+	@GetMapping("/my/placeReservationInfo")
+	public ResponseEntity<?> getPlaceReservationInfo(@AuthenticationPrincipal PrincipalDetails user) {
+		try {
+
+			if (user == null || user.getUser() == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+	        }
+
+			String username = user.getUsername();
+			List<PlaceReservInfoDto> prDto = classService.getPlaceReservInfo(username); 
+			
+			if(prDto.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("예약정보가 없습니다");
+			}
+			return ResponseEntity.ok(prDto);
+					
+		}catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("예약 정보를 불러오는 중 오류가 발생했습니다.");
+		}
 	}
 	
 

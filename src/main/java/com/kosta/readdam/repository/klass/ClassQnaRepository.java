@@ -1,4 +1,4 @@
-package com.kosta.readdam.repository;
+package com.kosta.readdam.repository.klass;
 
 import java.util.List;
 
