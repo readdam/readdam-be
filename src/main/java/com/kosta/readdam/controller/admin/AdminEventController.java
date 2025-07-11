@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kosta.readdam.dto.EventDto;
 import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.dto.WriteShortDto;
-import com.kosta.readdam.service.event.AdminEventService;
+import com.kosta.readdam.service.admin.AdminEventService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,6 +1,8 @@
 package com.kosta.readdam.service.write;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -8,14 +10,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.WriteCommentDto;
+import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.entity.Point;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.Write;
 import com.kosta.readdam.entity.WriteComment;
+import com.kosta.readdam.repository.AlertRepository;
 import com.kosta.readdam.repository.PointRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.WriteCommentRepository;
 import com.kosta.readdam.repository.WriteRepository;
+import com.kosta.readdam.service.alert.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,8 @@ public class WriteCommentServiceImpl implements WriteCommentService {
 	private final UserRepository userRepository;
 	private final WriteRepository writeRepository;
 	private final PointRepository pointRepository;
+	private final AlertRepository alertRepository;
+	private final NotificationService notificationService;
 	
 	private static final int ADOPT_REWARD = 100;
 	
@@ -122,6 +129,37 @@ public class WriteCommentServiceImpl implements WriteCommentService {
         // 4) 변경된 사용자 정보 저장
         userRepository.save(postAuthor);
         userRepository.save(commentAuthor);
+        String linkUrl = "writeDetail/" + write.getWriteId();
+        
+        User system = userRepository.findByUsername("system")
+                .orElseThrow(() -> new IllegalStateException("시스템 사용자(system)가 없습니다."));
+
+            // Alert 엔티티 생성
+            String title   = "첨삭이 채택되었습니다!";
+            String content = String.format(
+                "[%s] 게시글의 첨삭이 채택되었습니다.", write.getTitle()
+            );
+
+            Alert alert = Alert.builder()
+                .sender(system)                  // 발신자: system 또는 postAuthor
+                .receiver(commentAuthor)         // 수신자: 첨삭 작성자
+                .title(title)
+                .content(content)
+                .type("adopt")
+                .linkUrl(linkUrl)
+                .build();
+            alertRepository.save(alert);
+
+            // FCM 푸시
+            Map<String, String> data = new HashMap<>();
+            data.put("type", "adopt");
+            data.put("link_url", linkUrl);
+            notificationService.sendPush(
+                commentAuthor.getUsername(),
+                title,
+                content,
+                data
+            );
 		
 	}
 

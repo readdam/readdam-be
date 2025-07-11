@@ -1,11 +1,13 @@
-package com.kosta.readdam.service.event;
+package com.kosta.readdam.service.admin;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -15,16 +17,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.EventDto;
+import com.kosta.readdam.dto.NoticeDto;
 import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.dto.WriteShortDto;
+import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.entity.Event;
 import com.kosta.readdam.entity.Point;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.WriteShort;
+import com.kosta.readdam.repository.AlertRepository;
 import com.kosta.readdam.repository.EventRepository;
 import com.kosta.readdam.repository.PointRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.WriteShortRepository;
+import com.kosta.readdam.service.NoticeService;
+import com.kosta.readdam.service.alert.NotificationService;
 import com.kosta.readdam.util.PageInfo2;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +45,9 @@ public class AdminEventServiceImpl implements AdminEventService {
 	private final WriteShortRepository writeShortRepository;
 	private final PointRepository pointRepository;
 	private final UserRepository userRepository;
+	private final AlertRepository alertRepository;
+	private final NotificationService notificationService;
+	private final AdminNoticeService noticeService;
 
 	@Override
 	@Transactional
@@ -111,29 +121,91 @@ public class AdminEventServiceImpl implements AdminEventService {
 	@Override
 	@Transactional
 	public void distributePoints(Integer eventId) {
-		Event event = eventRepository.findById(eventId)
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트 ID: " + eventId));
+	    Event event = eventRepository.findById(eventId)
+	        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트 ID: " + eventId));
 
-		if (Boolean.TRUE.equals(event.getPointsDistributed())) {
-			throw new IllegalStateException("이미 포인트를 지급한 이벤트입니다: " + eventId);
-		}
-		event.setPointsDistributed(true);
-		eventRepository.save(event);
+	    if (Boolean.TRUE.equals(event.getPointsDistributed())) {
+	        throw new IllegalStateException("이미 포인트를 지급한 이벤트입니다: " + eventId);
+	    }
 
-		String month = event.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-		List<WriteShort> top3Entities = writeShortRepository
-				.findTop3ByEvent_EventIdAndIsHideFalseOrderByLikesDesc(eventId);
+	    User system = userRepository.findByUsername("system")
+	        .orElseThrow(() -> new IllegalStateException("시스템 사용자(system)가 없습니다."));
 
-		for (WriteShort ws : top3Entities) {
-			User user = ws.getUser();
-			Point point = Point.builder().user(user).point(1000).reason(month + " 읽담 한줄 TOP3").build();
-			pointRepository.save(point);
+	    // 지급 플래그 세팅
+	    event.setPointsDistributed(true);
+	    eventRepository.save(event);
 
-			int updated = (user.getTotalPoint() == null ? 0 : user.getTotalPoint()) + 1000;
-			user.setTotalPoint(updated);
-			userRepository.save(user);
-		}
+	    // TOP3 글과 수상자 목록
+	    List<WriteShort> top3 = writeShortRepository
+	        .findTop3ByEvent_EventIdAndIsHideFalseOrderByLikesDesc(eventId);
+	    List<String> winnerNames = top3.stream()
+	        .map(ws -> ws.getUser().getNickname())
+	        .collect(Collectors.toList());
+
+	    String month = event.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
+	    // 1) 포인트 지급, 알림 생성 및 FCM 푸시
+	    for (WriteShort ws : top3) {
+	        User user = ws.getUser();
+
+	        // 포인트 적립
+	        Point p = Point.builder()
+	            .user(user)
+	            .point(1000)
+	            .reason(month + " 읽담 한줄 TOP3")
+	            .build();
+	        pointRepository.save(p);
+
+	        user.setTotalPoint((user.getTotalPoint() == null ? 0 : user.getTotalPoint()) + 1000);
+	        userRepository.save(user);
+
+	        // Alert & FCM
+	        String alertTitle   = month + " 읽담 한줄 TOP3 축하드립니다!";
+	        String alertContent = "1000포인트가 지급되었습니다.";
+	        String linkUrl      = "/myPointList";
+
+	        Alert alert = Alert.builder()
+	            .sender(system)
+	            .receiver(user)
+	            .title(alertTitle)
+	            .content(alertContent)
+	            .type("point")
+	            .linkUrl(linkUrl)
+	            .build();
+	        alertRepository.save(alert);
+
+	        Map<String, String> data = new HashMap<>();
+	        data.put("type", "point");
+	        data.put("link_url", linkUrl);
+	        notificationService.sendPush(
+	            user.getUsername(),
+	            alertTitle,
+	            alertContent,
+	            data
+	        );
+	    }
+
+	    // 2) 공지사항 등록 (수상자 전원 대상 한 번만)
+	    String noticeTitle = month + " 읽담 한줄 TOP3 발표 및 축하";
+	    String noticeContent = winnerNames.stream()
+	        .map(name -> name + "님")
+	        .collect(Collectors.joining(", "))
+	        + " 축하드립니다! 각 1000포인트가 지급되었습니다.";
+
+	    NoticeDto noticeDto = NoticeDto.builder()
+	        .title(noticeTitle)
+	        .content(noticeContent)
+	        .topFix(false)
+	        .build();
+
+	    try {
+	        noticeService.createNotice(noticeDto);
+	    } catch (Exception e) {
+	        // 공지 생성 실패 시 롤백을 원하면 RuntimeException으로 감싸 던집니다.
+	        throw new RuntimeException("공지사항 생성에 실패했습니다.", e);
+	    }
 	}
+
 
 	@Override
 	@Transactional
