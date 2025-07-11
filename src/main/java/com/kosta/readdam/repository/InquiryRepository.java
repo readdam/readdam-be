@@ -25,4 +25,5 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Integer>, JpaS
 			@Param("status") InquiryStatus status, @Param("now") LocalDateTime now);
 	
 	Page<Inquiry> findByUser_Username(String username, Pageable pageable);
+	
 }

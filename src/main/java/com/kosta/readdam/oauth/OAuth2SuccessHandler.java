@@ -42,13 +42,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		String username = principalDetails.getUsername();
 		String nickname = principalDetails.getUser().getNickname();
 		Boolean isAdmin = principalDetails.getUser().getIsAdmin();
-		Double lat = principalDetails.getUser().getLat();
-		Double lng = principalDetails.getUser().getLng();
 
 		String accessToken = jwtToken.makeAccessToken(username, nickname, isAdmin);
 		String refreshToken = jwtToken.makeRefreshToken(username);
 		
-		notificationService.sendPush(username, null, null, null);
+		//if (Boolean.TRUE.equals(isAdmin)) {
+		    
+		    //notificationService.sendAdminLoginNotifications(username);
+		//} else {
+		   
+		    notificationService.sendPush(username, null, null, null);
+		//}
 
 		// access_token도 쿠키로 내려줌 (HttpOnly 아님!)
 		Cookie accessCookie = new Cookie("access_token", accessToken);
