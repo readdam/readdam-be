@@ -2,10 +2,8 @@ package com.kosta.readdam.service.klass;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -21,17 +19,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
-import com.kosta.readdam.dto.ClassQnaDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.ClassEntity;
-import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.User;
-import com.kosta.readdam.repository.ClassQnaRepository;
-import com.kosta.readdam.repository.ClassRepository;
-import com.kosta.readdam.repository.ClassRepositoryCustom;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassQnaRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
+import com.kosta.readdam.repository.klass.ClassRepositoryCustom;
+import com.kosta.readdam.repository.reservation.ReservationDslRepositoryCustom;
 
 @Service
 public class ClassServiceImpl implements ClassService {
@@ -50,6 +47,9 @@ public class ClassServiceImpl implements ClassService {
 	
 	@Autowired
 	ClassRepositoryCustom classRepositoryCustom;
+	
+	@Autowired
+	ReservationDslRepositoryCustom rdRepositoryCustom;
 	
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -128,8 +128,9 @@ public class ClassServiceImpl implements ClassService {
 	}
 
 	@Override
-	public Optional<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception {
+		return rdRepositoryCustom.findAllPlaceReservations(username);
 	}
+
+	
 }

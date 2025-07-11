@@ -1,8 +1,8 @@
 package com.kosta.readdam.controller.klass;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +11,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -97,17 +96,28 @@ public class ClassController {
 		return classService.searchClasses(condition,pageable);
 	}
 	
-//	@GetMapping("/my/reservations")
-//	public ResponseEntity<?> getPlaceReservationInfo(@AuthenticationPrincipal UserDetails userDetails) throws Exception{
-//		String username = userDetails.getUsername();
-//		
-//		Optional<PlaceReservInfoDto> reservDto = classService.getPlaceReservInfo(username);
-//		
-//		if(reservDto.isEmpty()) {
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("예약 정보가 없습니다.");
-//		}
-//		return ResponseEntity.ok(reservDto.get());
-//	}
+	@GetMapping("/my/placeReservationInfo")
+	public ResponseEntity<?> getPlaceReservationInfo(@AuthenticationPrincipal PrincipalDetails user) {
+		try {
+
+			if (user == null || user.getUser() == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+	        }
+
+			String username = user.getUsername();
+			List<PlaceReservInfoDto> prDto = classService.getPlaceReservInfo(username); 
+			
+			if(prDto.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("예약정보가 없습니다");
+			}
+			return ResponseEntity.ok(prDto);
+					
+		}catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("예약 정보를 불러오는 중 오류가 발생했습니다.");
+		}
+	}
 	
 
 

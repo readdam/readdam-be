@@ -1,6 +1,4 @@
-package com.kosta.readdam.repository;
-
-import java.util.List;
+package com.kosta.readdam.repository.klass;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

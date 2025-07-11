@@ -20,10 +20,10 @@ import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassQna;
 import com.kosta.readdam.entity.ClassReview;
 import com.kosta.readdam.entity.User;
-import com.kosta.readdam.repository.ClassQnaRepository;
-import com.kosta.readdam.repository.ClassRepository;
-import com.kosta.readdam.repository.ClassReviewRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassQnaRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
+import com.kosta.readdam.repository.klass.ClassReviewRepository;
 
 @Service
 public class ClassQnAReviewsServiceImpl implements ClassQnAReviewsService {

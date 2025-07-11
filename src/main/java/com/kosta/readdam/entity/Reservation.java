@@ -1,5 +1,6 @@
 package com.kosta.readdam.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.kosta.readdam.dto.ReservationDto;
 import com.kosta.readdam.entity.enums.ReservationStatus;
@@ -63,6 +66,11 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReservationStatus status;
+    
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+    
 
     // ↓ ReservationDetail 과의 매핑 추가 ↓
     @OneToMany(
@@ -83,6 +91,7 @@ public class Reservation {
                 .reserverPhone(reserverPhone)
                 .requestMessage(requestMessage)
                 .status(status)
+                .createdAt(getCreatedAt())
                 .build();
     }
 }

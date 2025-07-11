@@ -15,8 +15,8 @@ import com.kosta.readdam.dto.ClassUserDto;
 import com.kosta.readdam.dto.PagedResponse;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassUser;
-import com.kosta.readdam.repository.ClassRepository;
-import com.kosta.readdam.repository.ClassUserRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
+import com.kosta.readdam.repository.klass.ClassUserRepository;
 import com.kosta.readdam.util.PageInfo2;
 
 @Service

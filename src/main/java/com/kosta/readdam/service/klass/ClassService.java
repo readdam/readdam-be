@@ -25,5 +25,5 @@ public interface ClassService {
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
 	List<ClassDto> getLatestClasses() throws Exception; // homeClass 조회용
 	SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
-	Optional<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception;
+	List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception;
 }

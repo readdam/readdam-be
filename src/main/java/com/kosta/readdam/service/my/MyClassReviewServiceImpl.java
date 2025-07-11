@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.ClassReviewDto;
 import com.kosta.readdam.entity.ClassReview;
-import com.kosta.readdam.repository.ClassReviewRepository;
+import com.kosta.readdam.repository.klass.ClassReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
