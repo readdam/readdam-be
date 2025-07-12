@@ -29,6 +29,8 @@ public class BookClassRepositoryImpl implements BookClassRepository {
 
         return queryFactory.selectFrom(c)
                 .where(builder)
+                .orderBy(c.classId.desc())  // class_id 내림차순
+                .limit(3)                   // 상위 3개
                 .fetch();
     }
 	
