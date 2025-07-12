@@ -14,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassLike;
 import com.kosta.readdam.entity.User;
-import com.kosta.readdam.repository.ClassLikeRepository;
-import com.kosta.readdam.repository.ClassRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassLikeRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
 
 @Service
 public class ClassLikeServiceImpl implements ClassLikeService {

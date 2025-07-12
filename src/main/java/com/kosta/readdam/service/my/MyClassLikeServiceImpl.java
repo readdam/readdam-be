@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.entity.ClassLike;
-import com.kosta.readdam.repository.ClassLikeRepository;
-import com.kosta.readdam.repository.ClassRepository;
-import com.kosta.readdam.repository.ClassUserRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassLikeRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
+import com.kosta.readdam.repository.klass.ClassUserRepository;
 
 import lombok.RequiredArgsConstructor;
 
