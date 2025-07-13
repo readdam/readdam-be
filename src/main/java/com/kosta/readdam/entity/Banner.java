@@ -3,6 +3,8 @@ package com.kosta.readdam.entity;
 import com.kosta.readdam.dto.BannerDto;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.*;
 
 @Entity
@@ -20,13 +22,10 @@ public class Banner {
     private Integer bannerId;
 
     private String title;
-    private String style;
     private String img;
 
     @Column(name = "is_show")
     private Boolean isShow;
-
-    private Integer seq;
 
     @Column(name = "title_text")
     private String titleText;
@@ -40,9 +39,6 @@ public class Banner {
     @Column(name = "btn1_link")
     private String btn1Link;
 
-    @Column(name = "btn1_color")
-    private String btn1Color;
-
     @Column(name = "btn1_is_show")
     private Boolean btn1IsShow;
 
@@ -52,38 +48,44 @@ public class Banner {
     @Column(name = "btn2_link")
     private String btn2Link;
 
-    @Column(name = "btn2_color")
-    private String btn2Color;
-
     @Column(name = "btn2_is_show")
     private Boolean btn2IsShow;
+    
+    @Column(name = "reg_date", updatable = false)
+    private LocalDateTime regDate;
 
-    @Column(name = "back_color")
-    private String backColor;
+    @Column(name = "upd_date")
+    private LocalDateTime updDate;
 
-    @Column(name = "text_color")
-    private String textColor;
+    @PrePersist
+    public void onCreate() {
+        this.regDate = LocalDateTime.now();
+        this.updDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updDate = LocalDateTime.now();
+    }
 
     public BannerDto toDto() {
         return BannerDto.builder()
                 .bannerId(bannerId)
                 .title(title)
-                .style(style)
                 .img(img)
                 .isShow(isShow)
-                .seq(seq)
                 .titleText(titleText)
                 .content(content)
-                .btn1Name(btn1Name)
-                .btn1Link(btn1Link)
-                .btn1Color(btn1Color)
-                .btn1IsShow(btn1IsShow)
-                .btn2Name(btn2Name)
-                .btn2Link(btn2Link)
-                .btn2Color(btn2Color)
-                .btn2IsShow(btn2IsShow)
-                .backColor(backColor)
-                .textColor(textColor)
+                .button1(
+                        (btn1IsShow != null || btn1Name != null || btn1Link != null)
+                            ? new BannerDto.ButtonDto(btn1IsShow, btn1Name, btn1Link)
+                            : null
+                    )
+                    .button2(
+                        (btn2IsShow != null || btn2Name != null || btn2Link != null)
+                            ? new BannerDto.ButtonDto(btn2IsShow, btn2Name, btn2Link)
+                            : null
+                    )
                 .build();
     }
 }
