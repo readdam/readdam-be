@@ -131,7 +131,9 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
         	        p.tag4,
         	        p.tag5,
         	        pl.likeId.count(),
-        	        Expressions.constant("OTHER")
+        	        Expressions.constant("OTHER"),
+        	        p.lat,
+        	        p.lng
         	    ))
         	    .from(p)
         	    .leftJoin(pl).on(pl.otherPlace.eq(p))
