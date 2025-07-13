@@ -1,5 +1,6 @@
 package com.kosta.readdam.controller.home;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,94 +69,29 @@ public class HomeController {
 			@RequestParam(defaultValue = "4") int limit, 
 			@RequestParam(required = false) Double lat,
 			@RequestParam(required = false) Double lng) {
-		try {
+	    try {
+	        List<UnifiedPlaceDto> places;
 
-			List<UnifiedPlaceDto> result = null;
+	        if ("latest".equalsIgnoreCase(sort)) {
+	            places = homePlaceService.getLatestPlaces(limit);
+	        } else if ("distance".equalsIgnoreCase(sort)) {
+	            if (lat == null || lng == null) {
+	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                        .body("위치 기반 정렬에는 lat, lng 파라미터가 필요합니다.");
+	            }
+	            places = homePlaceService.getPlacesByDistance(lat, lng, limit);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body("지원하지 않는 정렬 방식입니다: " + sort);
+	        }
 
-			if ("latest".equalsIgnoreCase(sort)) {
-				// 최신순
-				List<UnifiedPlaceDto> otherPlaces = homePlaceService.getLatestOtherPlaces(limit);
-				List<UnifiedPlaceDto> placeList = homePlaceService.getLatestPlaces(limit);
+	        return ResponseEntity.ok(places);
 
-				result = new java.util.ArrayList<>();
-				result.addAll(otherPlaces);
-				result.addAll(placeList);
-				
-				// 중복제거 추가
-				result = result.stream()
-				        .collect(Collectors.toMap(
-				                dto -> dto.getType() + "-" + dto.getId(), 
-				                dto -> dto,
-				                (dto1, dto2) -> dto1
-				        ))
-				        .values()
-				        .stream()
-				        .collect(Collectors.toList());
-
-				// 정렬: id DESC + 외부 우선
-				result.sort(java.util.Comparator
-						.comparing(UnifiedPlaceDto::getId,
-								java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder()))
-						.thenComparing(dto -> "OTHER".equals(dto.getType()) ? 0 : 1));
-
-				if (result.size() > limit) {
-					result = result.subList(0, limit);
-
-				}
-			} else if ("distance".equalsIgnoreCase(sort)) {
-				if (lat == null || lng == null) {
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("위치 기반 정렬에는 lat, lng 파라미터가 필요합니다.");
-				}
-
-				List<UnifiedPlaceDto> otherPlaces = homePlaceService.getOtherPlacesByDistance(lat, lng, limit);
-
-				int remain = limit - otherPlaces.size();
-				List<UnifiedPlaceDto> placeList = new java.util.ArrayList<>();
-
-				if (remain > 0) {
-					placeList = homePlaceService.getPlacesByDistance(lat, lng, remain);
-
-					for (UnifiedPlaceDto dto : placeList) {
-						if (dto.getLat() != null && dto.getLng() != null) {
-							dto.setDistanceKm(com.kosta.readdam.util.DistanceUtil.calculateDistanceKm(lat, lng,
-									dto.getLat(), dto.getLng()));
-						} else {
-							dto.setDistanceKm(Double.MAX_VALUE);
-						}
-					}
-				}
-
-				result = new java.util.ArrayList<>();
-				result.addAll(otherPlaces);
-				result.addAll(placeList);
-				
-				// 중복제거 추가
-				result = result.stream()
-				        .collect(Collectors.toMap(
-				                dto -> dto.getType() + "-" + dto.getId(), 
-				                dto -> dto,
-				                (dto1, dto2) -> dto1
-				        ))
-				        .values()
-				        .stream()
-				        .collect(Collectors.toList());
-
-				// 정렬: 외부 우선 → 거리순
-				result.sort(
-						java.util.Comparator.comparing((UnifiedPlaceDto dto) -> "OTHER".equals(dto.getType()) ? 0 : 1)
-								.thenComparing(UnifiedPlaceDto::getDistanceKm,
-										java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())));
-
-			} else {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("지원하지 않는 정렬 방식입니다: " + sort);
-			}
-
-			return ResponseEntity.ok(result);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("홈 장소 데이터를 불러오던 중 오류가 발생했습니다.");
-		}
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("홈 장소 데이터를 불러오던 중 오류가 발생했습니다.");
+	    }
 	}
 
 	// 모임 최신순 4개 가져오기
