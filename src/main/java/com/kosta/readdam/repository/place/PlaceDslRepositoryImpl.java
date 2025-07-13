@@ -180,7 +180,9 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 	            p.tag4,
 	            p.tag5,
 	            pl.likeId.count(), // 좋아요 개수
-	            Expressions.constant("PLACE")
+	            Expressions.constant("PLACE"),
+	            p.lat,
+	            p.lng
 	        ))
 	        .from(p)
 	        .leftJoin(pl).on(pl.place.eq(p))

@@ -34,7 +34,7 @@ public class UnifiedPlaceDto {
     private Boolean liked;
     
     public UnifiedPlaceDto(
-    		Integer id,
+    	    Integer id,
     	    String name,
     	    String basicAddress,
     	    String img1,
@@ -44,7 +44,9 @@ public class UnifiedPlaceDto {
     	    String tag4,
     	    String tag5,
     	    Long likeCount,
-    	    String type
+    	    String type,
+    	    Double lat,
+    	    Double lng
     	) {
     	    this.id = id;
     	    this.name = name;
@@ -57,6 +59,8 @@ public class UnifiedPlaceDto {
     	    this.tag5 = tag5;
     	    this.likeCount = likeCount != null ? likeCount.intValue() : 0;
     	    this.type = type;
+    	    this.lat = lat;
+    	    this.lng = lng;
     	}
 
 }

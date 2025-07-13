@@ -81,7 +81,8 @@ public class PlaceController {
 
             // 거리 계산
             for (UnifiedPlaceDto dto : merged) {
-                if (dto.getLat() != null && dto.getLng() != null) {
+//            	System.out.println("Place: " + dto.getName() + " / lat: " + dto.getLat() + " / lng: " + dto.getLng());
+            	if (dto.getLat() != null && dto.getLng() != null) {
                     dto.setDistanceKm(calculateDistanceKm(lat, lng, dto.getLat(), dto.getLng()));
                 } else {
                     dto.setDistanceKm(Double.MAX_VALUE);
