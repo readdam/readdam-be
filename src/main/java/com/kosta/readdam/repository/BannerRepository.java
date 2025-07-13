@@ -10,6 +10,7 @@ import com.kosta.readdam.entity.Banner;
 
 public interface BannerRepository extends JpaRepository<Banner, Integer> {
     Optional<Banner> findByIsShowTrue();
+    Optional<Banner> findFirstByIsShowTrue();
     
     @Modifying
     @Query("UPDATE Banner b SET b.isShow = false")

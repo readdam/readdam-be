@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
+import com.kosta.readdam.dto.BannerDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteShortDto;
 import com.kosta.readdam.dto.place.UnifiedPlaceDto;
+import com.kosta.readdam.service.BannerService;
 import com.kosta.readdam.service.klass.ClassService;
 import com.kosta.readdam.service.place.HomePlaceService;
 import com.kosta.readdam.service.write.WriteService;
@@ -32,6 +34,7 @@ public class HomeController {
 	private final WriteShortService writeShortService;
 	private final HomePlaceService homePlaceService;
 	private final ClassService classService;
+    private final BannerService bannerService;
 
 	// 글쓰기 최신순 4개 가져오기
 	@GetMapping("/writes")
@@ -180,4 +183,9 @@ public class HomeController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("홈 모임 데이터를 불러오던 중 오류가 발생했습니다.");
 		}
 	}
+	@GetMapping("/banner")
+    public ResponseEntity<BannerDto> getHomeBanner() {
+        BannerDto bannerDto = bannerService.getHomeBanner();
+        return ResponseEntity.ok(bannerDto);
+    }
 }
