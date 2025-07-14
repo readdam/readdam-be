@@ -26,4 +26,6 @@ public interface ClassService {
 	List<ClassDto> getLatestClasses() throws Exception; // homeClass 조회용
 	SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
 	List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception;
+	void cancelJoinClass(Integer classId, String username);
+	void joinClass(Integer classId, String username);
 }

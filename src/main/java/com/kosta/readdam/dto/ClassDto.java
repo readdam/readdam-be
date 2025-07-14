@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.kosta.readdam.entity.ClassEntity;
+import com.kosta.readdam.entity.Reservation;
 import com.kosta.readdam.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -96,6 +97,7 @@ public class ClassDto {
     private Integer likeCount;
     private Boolean liked;
     private Integer currentParticipants;
+    private Integer reservationId;
     
     // 통합검색 전용 생성자
     public ClassDto(
@@ -123,7 +125,7 @@ public class ClassDto {
     }
 
     public ClassEntity toEntity(User leader) {
-        return ClassEntity.builder()
+    	ClassEntity entity = ClassEntity.builder()
                 .classId(classId)
                 .leader(leader)
                 .title(title)
@@ -180,6 +182,14 @@ public class ClassDto {
                 .round4Lat(round4Lat)
                 .round4Log(round4Log)
                 .build();
+    	
+    	if (this.reservationId != null) {
+            Reservation r = new Reservation();
+            r.setReservationId(this.reservationId);
+            entity.setReservation(r);
+        }
+
+        return entity;
     }
 
     public static ClassDto fromEntity(ClassEntity entity) {
@@ -241,5 +251,6 @@ public class ClassDto {
                 .round4Log(entity.getRound4Log())
                 .build();
     }
+
 
 }

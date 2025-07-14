@@ -9,14 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kosta.readdam.dto.reservation.ReservationCreateRequest;
 import com.kosta.readdam.dto.reservation.ReservationDetailListDto;
 import com.kosta.readdam.dto.reservation.ReservationTimeRange;
 import com.kosta.readdam.dto.reservation.ReservationTimeResponse;
+import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.PlaceRoom;
 import com.kosta.readdam.entity.PlaceTime;
 import com.kosta.readdam.entity.Reservation;
@@ -26,6 +31,7 @@ import com.kosta.readdam.entity.enums.ReservationStatus;
 import com.kosta.readdam.repository.ReservationDetailRepository;
 import com.kosta.readdam.repository.ReservationRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassUserRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeRepository;
 import com.kosta.readdam.repository.reservation.ReservationDslRepositoryImpl;
@@ -41,6 +47,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final ReservationDslRepositoryImpl reservationDslRepository;
+    private final ClassUserRepository classUserRepository;
 
     public ReservationTimeResponse getAvailableTimes(Integer placeRoomId, LocalDate date) {
         // 요일 체크
@@ -125,6 +132,37 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Page<ReservationDetailListDto> getReservationPage(Pageable pageable, String date, String status, String keyword) {
         return reservationDslRepository.findReservations(pageable, date, status, keyword);
+    }
+    
+    @Override
+    @Transactional
+    public void cancelReservation(Integer reservationId, String username) {
+        Reservation r = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다. id=" + reservationId));
+
+        // 예약자 본인 확인
+        if (!r.getUser().getUsername().equals(username)) {
+            throw new AccessDeniedException("본인 예약만 취소할 수 있습니다.");
+        }
+
+        // 연결된 강의가 있는지
+        ClassEntity c = r.getClassEntity();
+        if (c == null) {
+            // 강의 미생성 → 바로 취소
+            r.setStatus(ReservationStatus.CANCELLED);
+            reservationRepository.save(r);
+            return;
+        }
+
+        // 활성(퇴장일 없는) 참여자 수 조회
+        long activeCount = classUserRepository.countByClassEntityAndLeftDateIsNull(c);
+        // 나 혼자(=1명이면) 취소 가능
+        if (activeCount > 1) {
+            throw new IllegalStateException("다른 참여자가 있어 예약을 취소할 수 없습니다.");
+        }
+
+        r.setStatus(ReservationStatus.CANCELLED);
+        reservationRepository.save(r);
     }
 
 }

@@ -2,12 +2,14 @@ package com.kosta.readdam.service.klass;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,12 +25,22 @@ import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.dto.SearchResultDto;
 import com.kosta.readdam.entity.ClassEntity;
+import com.kosta.readdam.entity.ClassUser;
+import com.kosta.readdam.entity.Point;
+import com.kosta.readdam.entity.Reservation;
+import com.kosta.readdam.entity.ReservationDetail;
 import com.kosta.readdam.entity.User;
+import com.kosta.readdam.entity.enums.ClassStatus;
+import com.kosta.readdam.repository.PointRepository;
+import com.kosta.readdam.repository.ReservationRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.klass.ClassQnaRepository;
 import com.kosta.readdam.repository.klass.ClassRepository;
 import com.kosta.readdam.repository.klass.ClassRepositoryCustom;
+import com.kosta.readdam.repository.klass.ClassUserRepository;
 import com.kosta.readdam.repository.reservation.ReservationDslRepositoryCustom;
+
+
 
 @Service
 public class ClassServiceImpl implements ClassService {
@@ -50,6 +62,15 @@ public class ClassServiceImpl implements ClassService {
 	
 	@Autowired
 	ReservationDslRepositoryCustom rdRepositoryCustom;
+	
+	@Autowired
+	ReservationRepository reservationRepository;
+	
+	@Autowired
+	ClassUserRepository classUserRepository;
+	
+	@Autowired
+	PointRepository pointRepository;
 	
 	@Value("${iupload.path}")
 	private String iuploadPath;
@@ -96,10 +117,16 @@ public class ClassServiceImpl implements ClassService {
 		}
 		
 		ClassEntity cEntity = classDto.toEntity(leader);
-		classRepository.save(cEntity);
-		Integer classId = cEntity.getClassId();
-		entityManager.clear();
-		return classId;
+
+	    // 2) reservationId가 DTO에 있으면 예약 연결
+	    if (classDto.getReservationId() != null) {
+	        Reservation r = reservationRepository.findById(classDto.getReservationId())
+	            .orElseThrow(() -> new EntityNotFoundException("예약을 찾을 수 없습니다: " + classDto.getReservationId()));
+	        cEntity.setReservation(r);
+	    }
+	    classRepository.save(cEntity);
+	    entityManager.clear();
+	    return cEntity.getClassId();
 	}
 
 	@Override
@@ -131,6 +158,96 @@ public class ClassServiceImpl implements ClassService {
 	public List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception {
 		return rdRepositoryCustom.findAllPlaceReservations(username);
 	}
+	
+	@Override
+    @Transactional
+    public void cancelJoinClass(Integer classId, String username) {
+        ClassEntity c = classRepository.findById(classId)
+            .orElseThrow(() -> new EntityNotFoundException("강의를 찾을 수 없습니다. id=" + classId));
+
+        // 확정된 강의는 취소 불가
+        if (c.getStatus() == ClassStatus.CONFIRMED) {
+            throw new IllegalStateException("확정된 강의는 취소할 수 없습니다.");
+        }
+
+        ClassUser cu = classUserRepository
+            .findByClassEntityAndUserUsername(c, username)
+            .orElseThrow(() -> new EntityNotFoundException("참여 기록이 없습니다."));
+
+        // 포인트 환불
+        User u = cu.getUser();
+        int refund = 500 * c.getTotalTime() / c.getMinPerson();
+        u.setTotalPoint(u.getTotalPoint() + refund);
+        userRepository.save(u);
+        
+        Point refundLog = Point.builder()
+                .user(u)
+                .point(refund)  // 환불이니까 양수
+                .reason("강의 참여 취소 환불 (강의ID: " + classId + ")")
+                .build();
+            pointRepository.save(refundLog);
+
+        classUserRepository.delete(cu);
+    }
+	
+	@Override
+	@Transactional
+	public void joinClass(Integer classId, String username) {
+	    ClassEntity c = classRepository.findById(classId)
+	        .orElseThrow(() -> new EntityNotFoundException("강의를 찾을 수 없습니다. id=" + classId));
+
+	    // 1) 상태 검사
+	    if (c.getStatus() == ClassStatus.CANCELLED) {
+	        throw new IllegalStateException("취소된 강의는 신청할 수 없습니다.");
+	    }
+	    // 2) 중복 신청 방지
+	    if (classUserRepository.existsByClassEntityAndUserUsername(c, username)) {
+	        throw new IllegalStateException("이미 신청한 강의입니다.");
+	    }
+
+	    User u = userRepository.findByUsername(username)
+	        .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. username=" + username));
+
+	    // 3) 최소 인원 체크
+	    Integer minPerson = c.getMinPerson();
+	    if (minPerson == null || minPerson <= 0) {
+	        throw new IllegalStateException("최소 인원이 설정되지 않았습니다.");
+	    }
+
+	 // 4) 총 세션(시간) 계산
+	    int totalTime = c.getTotalTime();
+	    if (totalTime <= 0) {
+	        throw new IllegalStateException("예약된 시간이 없습니다.");
+	    }
+
+	    // 5) 포인트 차감 계산
+	    int deduction = 500 * totalTime / minPerson;  // <-- 여기서 deduction을 선언하고
+	    int currentPoint = (u.getTotalPoint() != null) ? u.getTotalPoint() : 0;
+	    
+	    
+	    
+	    int newPoint     = currentPoint - deduction; // <-- 그 다음에 사용합니다
+
+	    // 6) 포인트 차감 & 기록
+	    u.setTotalPoint(newPoint);
+	    userRepository.save(u);
+	    pointRepository.save(Point.builder()
+	        .user(u)
+	        .point(-deduction)
+	        .reason("강의 참여 결제 (강의ID: " + classId + ")")
+	        .build()
+	    );
+
+
+	    // 6) 참여 정보 저장
+	    ClassUser cu = ClassUser.builder()
+	        .classEntity(c)
+	        .user(u)
+	        .joinDate(LocalDateTime.now())
+	        .build();
+	    classUserRepository.save(cu);
+	}
+
 
 	
 }

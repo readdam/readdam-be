@@ -16,8 +16,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.kosta.readdam.dto.ReservationDto;
@@ -63,13 +65,22 @@ public class Reservation {
     @Column(name = "request_message", columnDefinition = "TEXT")
     private String requestMessage;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReservationStatus status;
+    @ColumnDefault("'PENDING'")
+    private ReservationStatus status = ReservationStatus.PENDING; ;
     
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+    
+    @OneToOne(mappedBy = "reservation", 
+            cascade = CascadeType.ALL, 
+            orphanRemoval = true, 
+            fetch = FetchType.LAZY)
+  private ClassEntity classEntity;
+
     
 
     // ↓ ReservationDetail 과의 매핑 추가 ↓
