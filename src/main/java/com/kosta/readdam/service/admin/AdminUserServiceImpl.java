@@ -3,12 +3,16 @@ package com.kosta.readdam.service.admin;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.kosta.readdam.dto.AdminUserDetailDto;
+import com.kosta.readdam.dto.ClassUserDto;
 import com.kosta.readdam.dto.UserDto;
 import com.kosta.readdam.dto.UserSearchResponse;
 import com.kosta.readdam.entity.User;
@@ -55,6 +59,19 @@ public class AdminUserServiceImpl implements AdminUserService {
 			);
 		
 		return new UserSearchResponse(dtos, pageInfo);
+	}
+
+	@Override
+	public AdminUserDetailDto getUserInfo(String username) throws Exception {
+		User user = userRepository.findByUsername(username)
+				.orElseThrow(() -> new EntityNotFoundException("회원이 존재하지 않습니다."));
+		return null;
+	}
+
+	@Override
+	public List<ClassUserDto> getUserClassList(String username) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
