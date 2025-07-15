@@ -89,8 +89,15 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 c.mainImg,
                 c.round1Date,
                 c.round1PlaceName,
-                cl.count().intValue().as("likeCnt"),	// likeCnt
-                cu.count().intValue().as("currentParticipants")	// currentParticipants
+                JPAExpressions
+                .select(cl.count().intValue())
+                .from(cl)
+                .where(cl.classId.eq(c)),
+                JPAExpressions
+                .select(cu.count().intValue())
+                .from(cu)
+                .where(cu.classEntity.eq(c)),
+                Expressions.constant(0.0) // distance 기본값 추가
             ))
             .from(c)
             .leftJoin(cl).on(cl.classId.eq(c))
@@ -180,8 +187,16 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 		                    c.mainImg,
 		                    c.round1Date,
 		                    c.round1PlaceName,
-		                    cl.count().intValue().as("likeCnt"),
-		                    cu.count().intValue().as("currentParticipants")
+		                    JPAExpressions
+		                    .select(cl.count().intValue())
+		                    .from(cl)
+		                    .where(cl.classId.eq(c)),
+		                    JPAExpressions
+		                    .select(cu.count().intValue())
+		                    .from(cu)
+		                    .where(cu.classEntity.eq(c)),
+		                    Expressions.constant(0.0) // distance 기본값 추가
+		                    
 		            ))
 		            .from(c)
 		            .leftJoin(cl).on(cl.classId.eq(c))
