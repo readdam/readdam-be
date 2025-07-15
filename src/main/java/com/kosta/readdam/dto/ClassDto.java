@@ -108,7 +108,10 @@ public class ClassDto {
             String tag3,
             String shortIntro,
             LocalDate round1Date,
-            String round1PlaceName
+            String round1PlaceName,
+            Integer maxPerson,
+            Integer likeCount,
+            Integer currentParticipants
     ) {
         this.classId = classId;
         this.title = title;
@@ -120,6 +123,9 @@ public class ClassDto {
         this.shortIntro = shortIntro;
         this.round1Date = round1Date;
         this.round1PlaceName = round1PlaceName;
+        this.maxPerson = maxPerson;
+        this.likeCount = likeCount;
+        this.currentParticipants = currentParticipants;
     }
 
     public ClassEntity toEntity(User leader) {
