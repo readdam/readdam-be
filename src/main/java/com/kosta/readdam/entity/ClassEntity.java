@@ -126,28 +126,23 @@ public class ClassEntity {
     private Double round4Lat;
     private Double round4Log;
     
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reservation_id", unique = true)
-    private Reservation reservation;
+    @OneToMany(mappedBy="classEntity", cascade = CascadeType.ALL)
+    private List<Reservation> reservations;
     
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @ColumnDefault("'PENDING'")
     private ClassStatus status = ClassStatus.PENDING;
-    	
-    
-    @OneToMany(mappedBy = "classEntity",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
- private List<ClassUser> classUsers = new ArrayList<>();
     
     @Transient
     public int getTotalTime() {
-        if (reservation == null || reservation.getDetails() == null) {
-            return 0;
-        }
-        return reservation.getDetails().size();
+        int cnt = 0;
+        if (round1Date != null) cnt++;
+        if (round2Date != null) cnt++;
+        if (round3Date != null) cnt++;
+        if (round4Date != null) cnt++;
+        return cnt;
     }
     
 	public ClassDto toDto() {

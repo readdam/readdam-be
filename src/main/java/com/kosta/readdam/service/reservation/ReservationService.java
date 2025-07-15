@@ -15,4 +15,5 @@ public interface ReservationService {
 	void createReservations(String username, List<ReservationCreateRequest> requests);
 	Page<ReservationDetailListDto> getReservationPage(Pageable pageable, String date, String status, String keyword);
 	void cancelReservation(Integer reservationId, String username);
+	void linkClass(Integer reservationId, Integer classId);
 }

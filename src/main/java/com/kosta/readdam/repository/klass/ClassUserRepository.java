@@ -33,4 +33,8 @@ public interface ClassUserRepository extends JpaRepository<ClassUser, Long> {
 	boolean existsByClassEntityAndUser_Username(ClassEntity c, String username);
 	
 	long countByClassEntity_ClassIdAndLeftDateIsNull(Integer classId);
+
+	Optional<ClassUser> findByClassEntityAndUser_Username(ClassEntity c, String username);
+
+	Optional<ClassUser> findByClassEntity_ClassIdAndUser_Username(Integer classId, String username);
 }

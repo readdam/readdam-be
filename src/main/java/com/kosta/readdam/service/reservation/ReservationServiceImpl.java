@@ -31,6 +31,7 @@ import com.kosta.readdam.entity.enums.ReservationStatus;
 import com.kosta.readdam.repository.ReservationDetailRepository;
 import com.kosta.readdam.repository.ReservationRepository;
 import com.kosta.readdam.repository.UserRepository;
+import com.kosta.readdam.repository.klass.ClassRepository;
 import com.kosta.readdam.repository.klass.ClassUserRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeRepository;
@@ -48,6 +49,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final UserRepository userRepository;
     private final ReservationDslRepositoryImpl reservationDslRepository;
     private final ClassUserRepository classUserRepository;
+    private final ClassRepository classRepository;
 
     public ReservationTimeResponse getAvailableTimes(Integer placeRoomId, LocalDate date) {
         // 요일 체크
@@ -163,6 +165,17 @@ public class ReservationServiceImpl implements ReservationService {
 
         r.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(r);
+    }
+    
+    @Override
+    @Transactional
+    public void linkClass(Integer reservationId, Integer classId) {
+        Reservation r = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new EntityNotFoundException("예약이 존재하지 않습니다. id=" + reservationId));
+        ClassEntity c = classRepository.findById(classId)
+            .orElseThrow(() -> new EntityNotFoundException("모임이 존재하지 않습니다. id=" + classId));
+        r.setClassEntity(c);
+        // save() 호출 불필요: 트랜잭션 커밋 시 자동 반영됩니다.
     }
 
 }

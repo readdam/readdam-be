@@ -108,6 +108,10 @@ public class PlaceRoom {
     @Column(length = 255)
     private String img10;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")          
+    private ClassEntity classEntity;
+    
     public PlaceRoom toEntity(Place place) {
         return PlaceRoom.builder()
                 .place(place)

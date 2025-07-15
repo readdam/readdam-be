@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class PlaceReservInfoDto {
+    private Integer reservationId;   // ← 추가
     private String placeName;
     private String placeAddress;
     private String roomName;
@@ -21,21 +22,24 @@ public class PlaceReservInfoDto {
     private double lat;
     private double log;
     
-    
     @QueryProjection
     @Builder
-	public PlaceReservInfoDto(String placeName, String placeAddress, String roomName, List<String> dates, double lat,
-			double log) {
-		super();
-		this.placeName = placeName;
-		this.placeAddress = placeAddress;
-		this.roomName = roomName;
-		this.dates = dates;
-		this.lat = lat;
-		this.log = log;
-	}
-    
-    
-    
-    
+    public PlaceReservInfoDto(
+            Integer reservationId,       // ← 추가
+            String placeName,
+            String placeAddress,
+            String roomName,
+            List<String> dates,
+            double lat,
+            double log
+    ) {
+        super();
+        this.reservationId = reservationId;
+        this.placeName     = placeName;
+        this.placeAddress  = placeAddress;
+        this.roomName      = roomName;
+        this.dates         = dates;
+        this.lat           = lat;
+        this.log           = log;
+    }
 }

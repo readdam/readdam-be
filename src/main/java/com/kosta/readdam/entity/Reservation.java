@@ -16,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
@@ -74,15 +73,15 @@ public class Reservation {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-    
-    @OneToOne(mappedBy = "reservation", 
-            cascade = CascadeType.ALL, 
-            orphanRemoval = true, 
-            fetch = FetchType.LAZY)
-  private ClassEntity classEntity;
 
+    public void setClassEntity(ClassEntity c) {
+        this.classEntity = c;
+    }
     
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private ClassEntity classEntity;
+   
     // ↓ ReservationDetail 과의 매핑 추가 ↓
     @OneToMany(
         mappedBy = "reservation",
@@ -103,6 +102,7 @@ public class Reservation {
                 .requestMessage(requestMessage)
                 .status(status)
                 .createdAt(getCreatedAt())
+                .classId(classEntity != null ? classEntity.getClassId() : null)
                 .build();
     }
 }

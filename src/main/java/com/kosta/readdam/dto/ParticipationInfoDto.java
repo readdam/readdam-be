@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter @Setter @AllArgsConstructor
 public class ParticipationInfoDto {
 
+	private int totalPoint;
 	private int usedPoints;
     private LocalDate cancelableUntil;
     private boolean joined;             // 이미 참여했는지

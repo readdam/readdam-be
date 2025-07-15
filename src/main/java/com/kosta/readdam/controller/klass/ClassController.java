@@ -27,6 +27,7 @@ import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.service.klass.ClassService;
+import com.kosta.readdam.service.reservation.ReservationService;
 
 @RestController
 public class ClassController {
@@ -34,9 +35,13 @@ public class ClassController {
 	@Autowired
 	private ClassService classService;
 	
+	@Autowired
+	private ReservationService reservationService;
+	 
 	@CrossOrigin(origins = "http://localhost:5173") 
 	@PostMapping("/my/createClass")
-	public ResponseEntity<ClassDto> createClass(@ModelAttribute ClassDto classDto, 
+	public ResponseEntity<ClassDto> createClass(@ModelAttribute ClassDto classDto,
+			@RequestParam(name = "reservationId", required = false) List<Integer> reservationIds,
 			@RequestParam(name = "mainImgF", required = false) MultipartFile mainImgF,
 			@RequestParam(name = "leaderImgF", required = false) MultipartFile leaderImgF,
 			@RequestParam(name = "round1ImgF", required = false) MultipartFile round1ImgF,
@@ -62,10 +67,10 @@ public class ClassController {
 		imageMap.put("round4BookimgF", round4BookimgF);
 		
 		try {
-			User leader = principalDetails.getUser(); //jwt 인증 사용자
-			Integer classId = classService.createClass(classDto, imageMap, leader);
-			ClassDto nClassDto = classService.detailClass(classId);
-			return new ResponseEntity<>(nClassDto, HttpStatus.OK);
+			 classDto.setReservationIds(reservationIds);
+			    Integer classId = classService.createClass(classDto, imageMap, principalDetails.getUser());
+			    ClassDto nClassDto = classService.detailClass(classId);
+			    return ResponseEntity.ok(nClassDto);
 		}catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -16,11 +16,18 @@ public interface ReservationDetailRepository extends JpaRepository<ReservationDe
     
     List<ReservationDetail> findByDate(LocalDate date);
     
-    @Query("SELECT rd.time FROM ReservationDetail rd JOIN rd.reservation r WHERE r.placeRoom.placeRoomId = :placeRoomId AND rd.date = :date")
-        List<LocalTime> findReservedTimesByPlaceRoomIdAndDate(
-                @Param("placeRoomId") Integer placeRoomId,
-                @Param("date") LocalDate date
-        );
+    @Query("SELECT rd.time "
+    	     + "FROM ReservationDetail rd "
+    	     + "JOIN rd.reservation r "
+    	     + "WHERE r.placeRoom.placeRoomId = :placeRoomId "
+    	     + "  AND rd.date = :date")
+    	List<LocalTime> findReservedTimesByPlaceRoomIdAndDate(
+    	    @Param("placeRoomId") Integer placeRoomId,
+    	    @Param("date") LocalDate date
+    	);
     
     void deleteAllByReservation_ReservationId(Integer reservationId);
+
+	List<ReservationDetail> findByReservation_ClassEntity_ClassId(Integer classId);
 }
+

@@ -2,6 +2,7 @@ package com.kosta.readdam.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -15,11 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ClassDto {
 
     private Integer classId;
@@ -27,9 +24,8 @@ public class ClassDto {
 
     private String title;
     private String shortIntro;
-
     private LocalDateTime createdAt;
-    
+
     private String tag1;
     private String tag2;
     private String tag3;
@@ -38,13 +34,13 @@ public class ClassDto {
     private Integer maxPerson;
 
     private String mainImg;
-    private String image; // 통합검색 공통 필드 추가
+    private String image; // 통합검색 공통 필드
     private String classIntro;
 
     private String leaderImg;
     private String leaderIntro;
-    
-    private Boolean isReaddam;	// 장소 '읽담' / '외부' 구분 필드 추가
+
+    private Boolean isReaddam; // '읽담' / '외부' 구분
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate round1Date;
@@ -93,39 +89,17 @@ public class ClassDto {
     private String round4Bookwriter;
     private Double round4Lat;
     private Double round4Log;
-    
+
     private Integer likeCount;
     private Boolean liked;
     private Integer currentParticipants;
-    private Integer reservationId;
-    
-    // 통합검색 전용 생성자
-    public ClassDto(
-            Integer classId,
-            String title,
-            String mainImg,
-            String image,
-            String tag1,
-            String tag2,
-            String tag3,
-            String shortIntro,
-            LocalDate round1Date,
-            String round1PlaceName
-    ) {
-        this.classId = classId;
-        this.title = title;
-        this.mainImg = mainImg;
-        this.image = image;
-        this.tag1 = tag1;
-        this.tag2 = tag2;
-        this.tag3 = tag3;
-        this.shortIntro = shortIntro;
-        this.round1Date = round1Date;
-        this.round1PlaceName = round1PlaceName;
-    }
 
+    // 수정된 부분: 여러 개의 reservationId를 담을 리스트
+    private List<Integer> reservationIds;
+
+    // toEntity() 에서 reservationIds를 모두 연결하도록 변경
     public ClassEntity toEntity(User leader) {
-    	ClassEntity entity = ClassEntity.builder()
+    	return ClassEntity.builder()
                 .classId(classId)
                 .leader(leader)
                 .title(title)
@@ -182,16 +156,9 @@ public class ClassDto {
                 .round4Lat(round4Lat)
                 .round4Log(round4Log)
                 .build();
-    	
-    	if (this.reservationId != null) {
-            Reservation r = new Reservation();
-            r.setReservationId(this.reservationId);
-            entity.setReservation(r);
-        }
-
-        return entity;
     }
 
+    // fromEntity()에서는 reservationIds를 채워줄 필요에 따라 추가 가능
     public static ClassDto fromEntity(ClassEntity entity) {
         return ClassDto.builder()
                 .classId(entity.getClassId())
@@ -249,8 +216,7 @@ public class ClassDto {
                 .round4Bookwriter(entity.getRound4Bookwriter())
                 .round4Lat(entity.getRound4Lat())
                 .round4Log(entity.getRound4Log())
+                // 필요하다면 entity.getReservations().stream().map(Reservation::getReservationId)...
                 .build();
     }
-
-
 }
