@@ -37,7 +37,10 @@ public class BookSearchServiceImpl implements BookSearchService {
         }
 
         result.getDocuments().forEach(doc -> {
-            bookRepository.findById(doc.getIsbn())
+            String trimmedIsbn = doc.getIsbn().trim(); // 앞뒤 공백 제거
+            doc.setIsbn(trimmedIsbn); // 프론트로 보낼 값도 정제된 상태로
+
+            bookRepository.findById(trimmedIsbn)
                 .ifPresentOrElse(
                     book -> {
                         doc.setRating(book.getRating() != null ? book.getRating().doubleValue() : 0.0);
@@ -57,6 +60,7 @@ public class BookSearchServiceImpl implements BookSearchService {
             result.getMeta().isEnd()
         );
     }
+
 
 	@Override
 	public SearchResultDto<BookDto> searchForAll(String keyword, String sort, int limit) {
