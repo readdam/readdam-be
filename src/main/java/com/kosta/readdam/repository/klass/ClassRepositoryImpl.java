@@ -19,9 +19,9 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.jpa.JPAExpressions;
 
 import lombok.RequiredArgsConstructor;
-
 @RequiredArgsConstructor
 public class ClassRepositoryImpl implements ClassRepositoryCustom {
 
@@ -114,6 +114,8 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 	@Override
 	public SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) {
 	    QClassEntity c = QClassEntity.classEntity;
+	    QClassLike cl = QClassLike.classLike;
+	    QClassUser cu = QClassUser.classUser;
 
 	    BooleanBuilder builder = new BooleanBuilder();
 	    builder.and(
@@ -139,7 +141,16 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                         c.tag3,
                         c.shortIntro,
                         c.round1Date,
-                        c.round1PlaceName
+                        c.round1PlaceName,
+                        c.maxPerson,
+                        JPAExpressions
+                        .select(cl.count().intValue())
+                        .from(cl)
+                        .where(cl.classId.eq(c)),
+                        JPAExpressions
+                        .select(cu.count().intValue())
+                        .from(cu)
+                        .where(cu.classEntity.eq(c))
                 ))
                 .from(c)
                 .where(builder)
