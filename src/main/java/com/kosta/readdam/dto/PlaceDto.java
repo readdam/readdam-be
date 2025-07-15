@@ -60,6 +60,7 @@ public class PlaceDto {
             String tag3,
             String tag4,
             String tag5,
+            Long likeCount,
             String type
     ) {
     	this.id = id;
@@ -73,6 +74,7 @@ public class PlaceDto {
         this.tag3 = tag3;
         this.tag4 = tag4;
         this.tag5 = tag5;
+        this.likeCount = likeCount;
         this.type = type;
     }
 

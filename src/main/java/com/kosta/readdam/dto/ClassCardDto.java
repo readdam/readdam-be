@@ -35,10 +35,11 @@ public class ClassCardDto {
     private Integer likeCnt;
     private Integer currentParticipants;
     
+    private Double distance;
     
 	public ClassCardDto(Integer classId, String title, String shortIntro, String tag1,
 			String tag2, String tag3, Integer minPerson, Integer maxPerson, String mainImg, LocalDate round1Date,
-			String round1PlaceName, Integer likeCnt, Integer currentParticipants) {
+			String round1PlaceName, Integer likeCnt, Integer currentParticipants, Double distance) {
 		super();
 		this.classId = classId;
 		this.title = title;
@@ -53,6 +54,7 @@ public class ClassCardDto {
 		this.round1PlaceName = round1PlaceName;
 		this.likeCnt = likeCnt;
 		this.currentParticipants = currentParticipants;
+	    this.distance = distance;
 	}
 
     

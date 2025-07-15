@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -114,12 +115,10 @@ public class ClassServiceImpl implements ClassService {
 		
 		return classRepository.searchClasses(condition,pageable);
 	}
-
-	public List<ClassDto> getLatestClasses() throws Exception {
-	    List<ClassEntity> classes = classRepository.findTop4ByOrderByClassIdDesc();
-	    return classes.stream()
-	            .map(ClassEntity::toDto)
-	            .collect(Collectors.toList());
+	
+    @Override
+	public List<ClassCardDto> getLatestClasses(int limit) throws Exception {
+    	return classRepositoryCustom.findTopNClasses(limit);
 	}
 
 	@Override
@@ -131,6 +130,11 @@ public class ClassServiceImpl implements ClassService {
 	public List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception {
 		return rdRepositoryCustom.findAllPlaceReservations(username);
 	}
+
+	@Override
+	public List<ClassCardDto> getClassesByDistance(double lat, double lng, int limit) throws Exception {
+        return classRepositoryCustom.findTopNClassesByDistance(lat, lng, limit);
+    }
 
 	
 }

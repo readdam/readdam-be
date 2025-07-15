@@ -82,6 +82,13 @@ public class MyPointServiceImpl implements MyPointService {
                 return new RuntimeException(msg);
             });
 
+        // 중복 적립 방지
+        boolean exists = pointRepository.existsByOrder(order);
+        if (exists) {
+            System.out.println("이미 적립 완료된 주문입니다. 중복 적립 방지");
+            return;
+        }
+        
         // 주문 업데이트
         order.setPaymentKey(paymentKey);
         order.setPaymentStatus(PaymentStatus.APPROVED);
@@ -135,6 +142,13 @@ public class MyPointServiceImpl implements MyPointService {
             .order(order)
             .build();
         pointRepository.save(refundPoint);
+        
+        // ④ 유저 totalPoint 차감
+        User user = order.getUser();
+        Integer currentPoint = user.getTotalPoint();
+        int newTotal = (currentPoint == null ? 0 : currentPoint) - chargedPoints;
+        user.setTotalPoint(newTotal);
+        userRepository.save(user);
     }
 
 }

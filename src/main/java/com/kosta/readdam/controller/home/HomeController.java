@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kosta.readdam.config.auth.PrincipalDetails;
 import com.kosta.readdam.dto.BannerDto;
+import com.kosta.readdam.dto.ClassCardDto;
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.WriteDto;
 import com.kosta.readdam.dto.WriteShortDto;
@@ -94,31 +95,34 @@ public class HomeController {
 	    }
 	}
 
-	// 모임 최신순 4개 가져오기
+	// 모임 4개 가져오기 (최신순/거리순)
 	@GetMapping("/classes")
-	public ResponseEntity<?> getHomeClasses(@RequestParam(defaultValue = "latest") String sort,
-			@RequestParam(defaultValue = "4") int limit, @RequestParam(required = false) Double lat,
+	public ResponseEntity<?> getHomeClasses(
+			@RequestParam(defaultValue = "latest") String sort,
+			@RequestParam(defaultValue = "4") int limit, 
+			@RequestParam(required = false) Double lat,
 			@RequestParam(required = false) Double lng) {
 		try {
-			if ("latest".equalsIgnoreCase(sort)) {
-				List<ClassDto> latestClasses = classService.getLatestClasses();
-				return ResponseEntity.ok(latestClasses);
-			}
-
-			/*
-			 * // 위치 기반 정렬 (추후 사용 예정) else if ("location".equalsIgnoreCase(sort)) { if (lat
-			 * == null || lng == null) { return ResponseEntity
-			 * .status(HttpStatus.BAD_REQUEST) .body("위치 기반 정렬은 lat, lng 파라미터가 필요합니다."); }
-			 * List<ClassDto> result = classService.getClassesByDistance(lat, lng, limit);
-			 * return ResponseEntity.ok(result); }
-			 */
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("지원하지 않는 정렬 방식입니다: " + sort);
+	        List<ClassCardDto> classes;
+	        if ("latest".equalsIgnoreCase(sort)) {
+	            classes = classService.getLatestClasses(limit);
+	        } else if ("distance".equalsIgnoreCase(sort)) {
+	            if (lat == null || lng == null) {
+	                return ResponseEntity.badRequest()
+	                        .body("위치 기반 정렬에는 lat, lng 파라미터가 필요합니다.");
+	            }
+	            classes = classService.getClassesByDistance(lat, lng, limit);
+	        } else {
+	            return ResponseEntity.badRequest().body("지원하지 않는 정렬 방식입니다: " + sort);
+	        }
+	        return ResponseEntity.ok(classes);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("홈 모임 데이터를 불러오던 중 오류가 발생했습니다.");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("홈 모임 데이터를 불러오던 중 오류가 발생했습니다.");
 		}
 	}
+	
 	@GetMapping("/banner")
     public ResponseEntity<BannerDto> getHomeBanner() {
         BannerDto bannerDto = bannerService.getHomeBanner();
