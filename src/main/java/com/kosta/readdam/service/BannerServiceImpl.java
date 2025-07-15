@@ -24,7 +24,7 @@ public class BannerServiceImpl implements BannerService {
             return BannerDto.from(banner);
         } else {
             return BannerDto.builder()
-                    .title("읽고, 담고, 나누는 이야기")
+                    .titleText("읽고, 담고, 나누는 이야기")
                     .content("당신의 기록이 누군가의 공감이 됩니다.")
                     .img("homeDefaultBanner.png")
                     .isShow(true)
