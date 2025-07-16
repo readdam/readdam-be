@@ -70,7 +70,7 @@ public class Reservation {
     @ColumnDefault("'PENDING'")
     private ReservationStatus status = ReservationStatus.PENDING; ;
     
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     @CreationTimestamp
     private LocalDateTime createdAt;
 

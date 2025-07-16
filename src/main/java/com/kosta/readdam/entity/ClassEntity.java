@@ -2,7 +2,6 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -17,16 +16,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.Transient;
 
 import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.entity.enums.ClassStatus;
-import com.kosta.readdam.entity.enums.ReservationStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,8 +52,9 @@ public class ClassEntity {
     private String title;
     private String shortIntro;
 
-    @CreatedDate
+
     @Column(updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     private String tag1;
