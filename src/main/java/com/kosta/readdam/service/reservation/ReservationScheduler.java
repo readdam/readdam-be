@@ -29,7 +29,7 @@ public class ReservationScheduler {
     private final ClassRepository       classRepository;
     private final ClassUserRepository   classUserRepository;  // 추가
 
-    @Scheduled(cron = "* 1 * * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void checkPendingReservations() {
         LocalDateTime now = LocalDateTime.now();

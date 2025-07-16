@@ -4,12 +4,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,15 +27,15 @@ import com.kosta.readdam.dto.ClassDto;
 import com.kosta.readdam.dto.ClassSearchConditionDto;
 import com.kosta.readdam.dto.PlaceReservInfoDto;
 import com.kosta.readdam.dto.SearchResultDto;
+import com.kosta.readdam.entity.Alert;
 import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.ClassUser;
-import com.kosta.readdam.entity.PlaceRoom;
-import com.kosta.readdam.entity.PlaceTime;
 import com.kosta.readdam.entity.Point;
 import com.kosta.readdam.entity.Reservation;
 import com.kosta.readdam.entity.ReservationDetail;
 import com.kosta.readdam.entity.User;
 import com.kosta.readdam.entity.enums.ClassStatus;
+import com.kosta.readdam.repository.AlertRepository;
 import com.kosta.readdam.repository.PointRepository;
 import com.kosta.readdam.repository.ReservationDetailRepository;
 import com.kosta.readdam.repository.ReservationRepository;
@@ -49,6 +47,7 @@ import com.kosta.readdam.repository.klass.ClassUserRepository;
 import com.kosta.readdam.repository.place.PlaceRoomRepository;
 import com.kosta.readdam.repository.place.PlaceTimeRepository;
 import com.kosta.readdam.repository.reservation.ReservationDslRepositoryCustom;
+import com.kosta.readdam.service.alert.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -68,6 +67,8 @@ public class ClassServiceImpl implements ClassService {
     private final PlaceRoomRepository             placeRoomRepository;
     private final ReservationDetailRepository reservationDetailRepository;
     private final PlaceTimeRepository placeTimeRepository;
+	private final AlertRepository alertRepository;
+	private final NotificationService notificationService;
 
 
 
@@ -278,6 +279,44 @@ public class ClassServiceImpl implements ClassService {
             .joinDate(LocalDateTime.now())
             .build()
         );
+        
+     // 10) 모임장에게 알림 저장 & FCM 푸시
+        User leader = c.getLeader();                     // 모임장 User 객체
+        String leaderUsername = leader.getUsername();    // 모임장 아이디
+
+        String alertType = "CLASS_JOIN";
+        String title     = "모임 참여 알림";
+        String content   = u.getUsername() + "님이 모임( " + c.getTitle() + ")에 참여했습니다.";
+        String link      = "/myAlert";
+
+        // 중복 방지
+        if (!alertRepository.existsByReceiverUsernameAndTypeAndTitle(
+                leaderUsername, alertType, title)) {
+
+            Alert alert = Alert.builder()
+                .sender(u)               // 참여자를 발신자로
+                .receiver(leader)        // 모임장
+                .type(alertType)
+                .title(title)
+                .content(content)
+                .linkUrl(link)
+                .build();
+            alertRepository.save(alert);
+
+            Map<String,String> data = new HashMap<>();
+            data.put("type",    alertType);
+            data.put("classId", classId.toString());
+            data.put("linkUrl", link);
+
+            notificationService.sendPush(
+                leaderUsername,
+                title,
+                content,
+                data
+            );
+        }
+
+
     }
 
 
