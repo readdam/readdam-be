@@ -4,7 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,4 +28,8 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
 
     // 완료된 이벤트 (endTime < now)
     List<Event> findByEndTimeBefore(LocalDateTime now);
+    
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT e FROM Event e WHERE e.eventId = :id")
+    Optional<Event> findByIdWithLock(@Param("id") Integer eventId);
 }

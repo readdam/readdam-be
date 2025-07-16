@@ -30,7 +30,6 @@ import com.kosta.readdam.repository.EventRepository;
 import com.kosta.readdam.repository.PointRepository;
 import com.kosta.readdam.repository.UserRepository;
 import com.kosta.readdam.repository.WriteShortRepository;
-import com.kosta.readdam.service.NoticeService;
 import com.kosta.readdam.service.alert.NotificationService;
 import com.kosta.readdam.util.PageInfo2;
 
@@ -121,9 +120,11 @@ public class AdminEventServiceImpl implements AdminEventService {
 	@Override
 	@Transactional
 	public void distributePoints(Integer eventId) {
-	    Event event = eventRepository.findById(eventId)
-	        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트 ID: " + eventId));
+	    Event event = eventRepository
+	            .findByIdWithLock(eventId)
+	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이벤트 ID: " + eventId));
 
+	    
 	    if (Boolean.TRUE.equals(event.getPointsDistributed())) {
 	        throw new IllegalStateException("이미 포인트를 지급한 이벤트입니다: " + eventId);
 	    }
