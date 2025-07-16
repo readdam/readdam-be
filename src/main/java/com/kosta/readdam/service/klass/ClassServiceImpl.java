@@ -96,7 +96,17 @@ public class ClassServiceImpl implements ClassService {
             Map<String, MultipartFile> imageMap,
             User leader
     ) throws Exception {
-        // … (이미지 업로드 및 DTO 매핑)
+    	for (Map.Entry<String, MultipartFile> entry : imageMap.entrySet()) {
+    	    MultipartFile file = entry.getValue();
+    	    if (file != null && !file.isEmpty()) {
+    	        String originalName = file.getOriginalFilename();
+    	        String savedName = UUID.randomUUID() + "_" + originalName;
+    	        File dest = new File(iuploadPath, savedName);
+    	        file.transferTo(dest); // 로컬 저장
+    	        String dtoFieldName = entry.getKey().replace("F", ""); // "mainImgF" → "mainImg"
+    	        mapImageToDto(classDto, dtoFieldName, savedName); // DTO에 파일명 저장
+    	    }
+    	}
 
         ClassEntity cEntity = classDto.toEntity(leader);
         classRepository.save(cEntity);  // classId 생성
