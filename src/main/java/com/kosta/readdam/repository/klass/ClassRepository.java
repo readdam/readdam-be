@@ -16,7 +16,6 @@ import com.kosta.readdam.entity.ClassEntity;
 public interface ClassRepository extends JpaRepository<ClassEntity, Integer>  {
 
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
-	List<ClassEntity> findTop4ByOrderByClassIdDesc(); // home 최신순 내림차순 + limit 4개 조회용 
 
 	Page<ClassEntity> findByLeader_UsernameOrderByCreatedAtDesc(
 	        String leaderUsername, Pageable pageable

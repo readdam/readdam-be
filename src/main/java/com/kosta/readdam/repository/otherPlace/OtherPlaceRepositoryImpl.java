@@ -19,6 +19,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -165,6 +166,8 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
 	@Override
 	public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
 		QOtherPlace q = QOtherPlace.otherPlace;
+	    QOtherPlaceLike like = QOtherPlaceLike.otherPlaceLike;
+	    
 		BooleanBuilder builder = new BooleanBuilder();
         builder.and(
                 q.name.contains(keyword)
@@ -186,6 +189,10 @@ public class OtherPlaceRepositoryImpl implements OtherPlaceRepositoryCustom {
                         q.tag3,
                         q.tag4,
                         q.tag5,
+                        JPAExpressions
+                        .select(like.count())
+                        .from(like)
+                        .where(like.otherPlace.eq(q)),
                         Expressions.constant("OTHER")  // type 필드 : 통합검색용으로 추가
                 ))
                 .from(q)

@@ -93,6 +93,37 @@ public class ClassDto {
     private Integer likeCount;
     private Boolean liked;
     private Integer currentParticipants;
+  
+    // 통합검색 전용 생성자
+    public ClassDto(
+            Integer classId,
+            String title,
+            String mainImg,
+            String image,
+            String tag1,
+            String tag2,
+            String tag3,
+            String shortIntro,
+            LocalDate round1Date,
+            String round1PlaceName,
+            Integer maxPerson,
+            Integer likeCount,
+            Integer currentParticipants
+    ) {
+        this.classId = classId;
+        this.title = title;
+        this.mainImg = mainImg;
+        this.image = image;
+        this.tag1 = tag1;
+        this.tag2 = tag2;
+        this.tag3 = tag3;
+        this.shortIntro = shortIntro;
+        this.round1Date = round1Date;
+        this.round1PlaceName = round1PlaceName;
+        this.maxPerson = maxPerson;
+        this.likeCount = likeCount;
+        this.currentParticipants = currentParticipants;
+    }
 
     // 수정된 부분: 여러 개의 reservationId를 담을 리스트
     private List<Integer> reservationIds;

@@ -23,9 +23,11 @@ public interface ClassService {
 	Integer createClass(ClassDto classDto, Map<String, MultipartFile> imageMap, User leader) throws Exception;
 	ClassDto detailClass(Integer classId) throws Exception;
 	Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable);
-	List<ClassDto> getLatestClasses() throws Exception; // homeClass 조회용
+	List<ClassCardDto> getLatestClasses(int limit) throws Exception; // homeClass 최신 조회용
 	SearchResultDto<ClassDto> searchForAll(String keyword, String sort, int limit) throws Exception; //통합검색용
 	List<PlaceReservInfoDto> getPlaceReservInfo(String username) throws Exception;
 	void cancelJoinClass(Integer classId, String username);
 	void joinClass(Integer classId, String username);
+	List<ClassCardDto> getClassesByDistance(double lat, double lng, int limit) throws Exception; //홈 거리 조회용
+
 }

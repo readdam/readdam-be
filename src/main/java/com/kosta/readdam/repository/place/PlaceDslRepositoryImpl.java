@@ -25,6 +25,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -213,6 +214,7 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		@Override
 		public SearchResultDto<PlaceDto> searchForAll(String keyword, String sort, int limit) {
 			QPlace p = QPlace.place;
+			QPlaceLike pl = QPlaceLike.placeLike;
 		        BooleanBuilder builder = new BooleanBuilder();
 		        builder.and(
 		                p.name.contains(keyword)
@@ -241,6 +243,10 @@ public class PlaceDslRepositoryImpl implements PlaceDslRepository {
 		                        p.tag3,
 		                        p.tag4,
 		                        p.tag5,
+		                        JPAExpressions
+		                        .select(pl.count())
+		                        .from(pl)
+		                        .where(pl.place.eq(p)),
 		                        Expressions.constant("PLACE")
 		                ))
 		                .from(p)

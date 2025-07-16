@@ -49,7 +49,9 @@ public class AllSearchController {
                 List<PlaceDto> combinedPlaces = Stream.concat(
                         placeResult.getContent().stream(),
                         otherPlaceResult.getContent().stream()
-                ).collect(Collectors.toList());
+                )
+                .limit(4)
+                .collect(Collectors.toList());
 
                 int totalCount = placeResult.getTotalCount() + otherPlaceResult.getTotalCount();
 

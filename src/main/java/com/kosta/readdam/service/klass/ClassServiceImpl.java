@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -141,21 +142,21 @@ public class ClassServiceImpl implements ClassService {
         return cEntity.toDto();
     }
 
-    @Override
-    public Slice<ClassCardDto> searchClasses(
-            ClassSearchConditionDto condition,
-            Pageable pageable
-    ) {
-        return classRepository.searchClasses(condition, pageable);
-    }
+//    @Override
+//    public Slice<ClassCardDto> searchClasses(
+//            ClassSearchConditionDto condition,
+//            Pageable pageable
+//    ) {
+//        return classRepository.searchClasses(condition, pageable);
+//    }
 
-    @Override
-    public List<ClassDto> getLatestClasses() throws Exception {
-        return classRepository.findTop4ByOrderByClassIdDesc()
-            .stream()
-            .map(ClassEntity::toDto)
-            .collect(Collectors.toList());
-    }
+//    @Override
+//    public List<ClassDto> getLatestClasses() throws Exception {
+//        return classRepository.findTop4ByOrderByClassIdDesc()
+//            .stream()
+//            .map(ClassEntity::toDto)
+//            .collect(Collectors.toList());
+//    }
 
     @Override
     public SearchResultDto<ClassDto> searchForAll(
@@ -319,6 +320,20 @@ public class ClassServiceImpl implements ClassService {
 
     }
 
+	@Override
+	public Slice<ClassCardDto> searchClasses(ClassSearchConditionDto condition, Pageable pageable) {
+		
+		return classRepository.searchClasses(condition,pageable);
+	}
+	
+    @Override
+	public List<ClassCardDto> getLatestClasses(int limit) throws Exception {
+    	return classRepositoryCustom.findTopNClasses(limit);
+	}
 
+	@Override
+	public List<ClassCardDto> getClassesByDistance(double lat, double lng, int limit) throws Exception {
+        return classRepositoryCustom.findTopNClassesByDistance(lat, lng, limit);
+    }
 
 }
