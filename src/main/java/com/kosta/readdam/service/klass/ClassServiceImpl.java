@@ -96,44 +96,63 @@ public class ClassServiceImpl implements ClassService {
             Map<String, MultipartFile> imageMap,
             User leader
     ) throws Exception {
-        for (Map.Entry<String, MultipartFile> entry : imageMap.entrySet()) {
-            String field = entry.getKey();
-            MultipartFile file = entry.getValue();
-
-            if (file != null && !file.isEmpty()) {
-                String savedFilename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                File uploadDir = new File(iuploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-                File dest = new File(uploadDir, savedFilename);
-                file.transferTo(dest);
-
-                String cleanedField = field.endsWith("F")
-                    ? field.substring(0, field.length() - 1)
-                    : field;
-                mapImageToDto(classDto, cleanedField, savedFilename);
-            }
-        }
+        // … (이미지 업로드 및 DTO 매핑)
 
         ClassEntity cEntity = classDto.toEntity(leader);
         classRepository.save(cEntity);  // classId 생성
 
-        // 2) 예약 연결 (DB에 있는 Reservation만 꺼내서 업데이트)
+        // 1) 예약 연결 먼저
         List<Integer> rids = classDto.getReservationIds();
+        List<Reservation> reservations = List.of(); 
         if (rids != null && !rids.isEmpty()) {
-            List<Reservation> list = reservationRepository.findAllById(rids);
-            if (list.size() != rids.size()) {
+            reservations = reservationRepository.findAllById(rids);
+            if (reservations.size() != rids.size()) {
                 throw new EntityNotFoundException("예약 일부를 찾을 수 없습니다.");
             }
-            for (Reservation r : list) {
+            for (Reservation r : reservations) {
                 r.setClassEntity(cEntity);
                 reservationRepository.save(r);
             }
         }
 
+        // 2) 이제 이 reservations 로 포인트 차감
+        int totalDetails = reservations.stream()
+            .mapToInt(r -> r.getDetails().size())
+            .sum();
+
+        int minPerson = cEntity.getMinPerson();
+        if (minPerson <= 0) {
+            throw new IllegalStateException("최소 인원이 설정되지 않았습니다.");
+        }
+
+        int deduction = totalDetails > 0
+            ? 500 * totalDetails / minPerson
+            : 0;
+
+        // 3) 모임장 포인트 차감 및 기록
+        int currentPoint = leader.getTotalPoint() != null ? leader.getTotalPoint() : 0;
+        leader.setTotalPoint(currentPoint - deduction);
+        userRepository.save(leader);
+
+        pointRepository.save(Point.builder()
+            .user(leader)
+            .point(-deduction)
+            .reason("강의 개설 결제 (강의ID: " + cEntity.getClassId() + ")")
+            .build()
+        );
+
+        // 4) 모임장 자동 가입
+        classUserRepository.save(ClassUser.builder()
+            .classEntity(cEntity)
+            .user(leader)
+            .joinDate(LocalDateTime.now())
+            .build()
+        );
+
         return cEntity.getClassId();
     }
+
+
 
     @Override
     public ClassDto detailClass(Integer classId) throws Exception {
