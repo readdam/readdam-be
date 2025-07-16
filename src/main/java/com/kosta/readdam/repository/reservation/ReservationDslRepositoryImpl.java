@@ -187,6 +187,7 @@ public class ReservationDslRepositoryImpl implements ReservationDslRepository, R
 
 	            dtos.add(
 	                    PlaceReservInfoDto.builder()
+	                    .reservationId(r.getReservationId()) 
 	                            .placeName(p.getName())
 	                            .placeAddress(fullAddress)
 	                            .lat(p.getLat())

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.Place;
 import com.kosta.readdam.entity.PlaceRoom;
 
@@ -17,4 +18,5 @@ public interface PlaceRoomRepository extends JpaRepository<PlaceRoom, Integer> {
     
     @Query("SELECT r FROM PlaceRoom r WHERE r.place.placeId = :placeId")
     List<PlaceRoom> findByPlaceId(@Param("placeId") Integer placeId);
+	List<PlaceRoom> findByClassEntity(ClassEntity c);
 }

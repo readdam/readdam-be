@@ -36,4 +36,6 @@ public interface PlaceTimeRepository extends JpaRepository<PlaceTime, Integer> {
     
     // 방 ID로 시간대 전부 조회
     List<PlaceTime> findByPlaceRoom_PlaceRoomId(Integer placeRoomId);
+    
+    List<PlaceTime> findByPlaceRoomAndActiveTrue(PlaceRoom placeRoom);
 }

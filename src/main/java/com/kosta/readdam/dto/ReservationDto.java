@@ -2,6 +2,7 @@ package com.kosta.readdam.dto;
 
 import java.time.LocalDateTime;
 
+import com.kosta.readdam.entity.ClassEntity;
 import com.kosta.readdam.entity.PlaceRoom;
 import com.kosta.readdam.entity.Reservation;
 import com.kosta.readdam.entity.User;
@@ -29,8 +30,9 @@ public class ReservationDto {
     private String requestMessage;
     private ReservationStatus status;
     private LocalDateTime createdAt;
+    private Integer classId;
 
-    public Reservation toEntity(User user, PlaceRoom placeRoom) {
+    public Reservation toEntity(User user, PlaceRoom placeRoom, ClassEntity classEntity) {
         return Reservation.builder()
                 .reservationId(reservationId)
                 .user(user)
@@ -41,6 +43,7 @@ public class ReservationDto {
                 .requestMessage(requestMessage)
                 .status(status != null ? status : ReservationStatus.PENDING)
                 .createdAt(createdAt)
+                .classEntity(classEntity)
                 .build();
     }
 }

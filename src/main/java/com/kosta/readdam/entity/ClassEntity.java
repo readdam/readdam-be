@@ -2,21 +2,31 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Transient;
 
 import com.kosta.readdam.dto.ClassDto;
+import com.kosta.readdam.entity.enums.ClassStatus;
+import com.kosta.readdam.entity.enums.ReservationStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -115,6 +125,25 @@ public class ClassEntity {
     private String round4Bookwriter;
     private Double round4Lat;
     private Double round4Log;
+    
+    @OneToMany(mappedBy="classEntity", cascade = CascadeType.ALL)
+    private List<Reservation> reservations;
+    
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'PENDING'")
+    private ClassStatus status = ClassStatus.PENDING;
+    
+    @Transient
+    public int getTotalTime() {
+        int cnt = 0;
+        if (round1Date != null) cnt++;
+        if (round2Date != null) cnt++;
+        if (round3Date != null) cnt++;
+        if (round4Date != null) cnt++;
+        return cnt;
+    }
     
 	public ClassDto toDto() {
 		return ClassDto.builder()

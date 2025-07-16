@@ -89,8 +89,15 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
                 c.mainImg,
                 c.round1Date,
                 c.round1PlaceName,
-                cl.count().intValue().as("likeCnt"),	// likeCnt
-                cu.count().intValue().as("currentParticipants")	// currentParticipants
+                JPAExpressions
+                .select(cl.count().intValue())
+                .from(cl)
+                .where(cl.classId.eq(c)),
+                JPAExpressions
+                .select(cu.count().intValue())
+                .from(cu)
+                .where(cu.classEntity.eq(c)),
+                Expressions.constant(0.0) // distance 기본값 추가
             ))
             .from(c)
             .leftJoin(cl).on(cl.classId.eq(c))
@@ -160,4 +167,79 @@ public class ClassRepositoryImpl implements ClassRepositoryCustom {
 	    
 	    return new SearchResultDto<>(result, (int) count);
     }
+
+	@Override
+	public List<ClassCardDto> findTopNClasses(int limit) {
+		   QClassEntity c = QClassEntity.classEntity;
+		    QClassLike cl = QClassLike.classLike;
+		    QClassUser cu = QClassUser.classUser;
+
+		    return queryFactory
+		            .select(Projections.constructor(ClassCardDto.class,
+		                    c.classId,
+		                    c.title,
+		                    c.shortIntro,
+		                    c.tag1,
+		                    c.tag2,
+		                    c.tag3,
+		                    c.minPerson,
+		                    c.maxPerson,
+		                    c.mainImg,
+		                    c.round1Date,
+		                    c.round1PlaceName,
+		                    JPAExpressions
+		                    .select(cl.count().intValue())
+		                    .from(cl)
+		                    .where(cl.classId.eq(c)),
+		                    JPAExpressions
+		                    .select(cu.count().intValue())
+		                    .from(cu)
+		                    .where(cu.classEntity.eq(c)),
+		                    Expressions.constant(0.0) // distance 기본값 추가
+		                    
+		            ))
+		            .from(c)
+		            .leftJoin(cl).on(cl.classId.eq(c))
+		            .leftJoin(cu).on(cu.classEntity.eq(c))
+		            .groupBy(c.classId)
+		            .orderBy(c.classId.desc())    // 최신순
+		            .limit(limit)
+		            .fetch();
+	}
+
+	@Override
+	public List<ClassCardDto> findTopNClassesByDistance(double lat, double lng, int limit) {
+		QClassEntity c = QClassEntity.classEntity;
+	    QClassLike cl = QClassLike.classLike;
+	    QClassUser cu = QClassUser.classUser;
+
+	    var distance = Expressions.numberTemplate(Double.class,
+	            "6371 * acos(cos(radians({0})) * cos(radians({1})) * cos(radians({2}) - radians({3})) + sin(radians({0})) * sin(radians({1})))",
+	            lat, c.round1Lat, c.round1Log, lng);
+
+	    return queryFactory
+	            .select(Projections.constructor(ClassCardDto.class,
+	                    c.classId,
+	                    c.title,
+	                    c.shortIntro,
+	                    c.tag1,
+	                    c.tag2,
+	                    c.tag3,
+	                    c.minPerson,
+	                    c.maxPerson,
+	                    c.mainImg,
+	                    c.round1Date,
+	                    c.round1PlaceName,
+	                    cl.count().intValue().as("likeCnt"),
+	                    cu.count().intValue().as("currentParticipants"),
+	                    distance
+	            ))
+	            .from(c)
+	            .leftJoin(cl).on(cl.classId.eq(c))
+	            .leftJoin(cu).on(cu.classEntity.eq(c))
+	            .groupBy(c.classId)
+	            .orderBy(distance.asc(), c.classId.desc())
+	            .limit(limit)
+	            .fetch();
+	}
 }
