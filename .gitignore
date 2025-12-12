@@ -35,3 +35,16 @@ out/
 
 ### VS Code ###
 .vscode/
+
+.env
+src/main/resources/application-secret.properties
+
+# gradle build 결과물 무시
+/build/
+/build/generated/
+
+# QueryDSL Q타입 무시
+**/generated/querydsl/
+
+# 절대 올리면 안됨
+src/main/resources/firebase/

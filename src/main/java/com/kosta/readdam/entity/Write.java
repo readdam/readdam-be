@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import javax.persistence.*;
 
+import com.kosta.readdam.dto.WriteDto;
+
 import lombok.*;
 
 @Entity
@@ -22,6 +24,9 @@ public class Write {
 
     @Column(nullable = false, length = 255)
     private String title;
+    
+    @Column(nullable = false, length = 50)
+    private String type;
 
     @Column(length = 50)
     private String tag1;
@@ -58,4 +63,39 @@ public class Write {
 
     @Column(name = "is_hide", nullable = false)
     private boolean isHide;
+    
+    @Column(name = "like_cnt", nullable = false)
+    @Builder.Default
+    private Integer likeCnt = 0;  // 좋아요 수 기본값 0으로 설정
+    
+    @Column(name = "comment_cnt", nullable = false)
+    @Builder.Default
+    private Integer commentCnt = 0;
+   
+    
+    public WriteDto toDto() {
+        return WriteDto.builder()
+                .writeId(writeId)
+                .title(title)
+                .writeType(type)
+                .tag1(tag1)
+                .tag2(tag2)
+                .tag3(tag3)
+                .tag4(tag4)
+                .tag5(tag5)
+                .regDate(regDate)
+                .endDate(endDate)
+                .content(content)
+                .img(img)
+                .username(user != null ? user.getUsername() : null)
+                .nickname(user != null ? user.getNickname() : null)          
+                .profileImg(user != null ? user.getProfileImg() : null)      
+                .introduce(user != null ? user.getIntroduce() : null)       
+                .viewCnt(viewCnt)
+                .isHide(isHide)
+                .likeCnt(likeCnt)
+                .commentCnt(commentCnt)
+                .build();
+    }
+    
 }

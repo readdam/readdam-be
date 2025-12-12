@@ -1,4 +1,3 @@
-
 package com.kosta.readdam.entity;
 
 import java.time.LocalDateTime;
@@ -15,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.kosta.readdam.dto.OrderDto;
 import com.kosta.readdam.entity.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "`order`") // order는 MySQL 예약어이므로 반드시 백틱으로 감쌈
+@Table(name = "`order`")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,7 +37,12 @@ public class Order {
     @Column(name = "order_id", updatable = false, nullable = false)
     private Long orderId;
 
-    // 주문한 사용자
+    @Column(name = "order_uuid", unique = true, nullable = false, length = 100)
+    private String orderUuid;
+
+    @Column(name = "order_name", nullable = false)
+    private String orderName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", nullable = false)
     private User user;
@@ -49,13 +54,38 @@ public class Order {
     @Column(name = "payment_key", length = 255)
     private String paymentKey;
 
-    @Column(name = "approved_at")
-    private LocalDateTime approvedAt;
-
-    
-    @Column(name = "payment_method", nullable = false)
+    @Column(name = "payment_method")
     private String paymentMethod;
 
     @Column(name = "price", nullable = false)
     private int price;
+
+    @Column(name = "requested_at", nullable = false)
+    private LocalDateTime requestedAt;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "cancel_reason", length = 255)
+    private String cancelReason;
+    
+    @Column(name = "cancel_at")
+    private LocalDateTime cancelAt;
+
+    public OrderDto toDto() {
+        return OrderDto.builder()
+            .orderId(orderId)
+            .orderUuid(orderUuid)
+            .orderName(orderName)
+            .username(user.getUsername())
+            .paymentStatus(paymentStatus)
+            .paymentKey(paymentKey)
+            .paymentMethod(paymentMethod)
+            .price(price)
+            .requestedAt(requestedAt)
+            .approvedAt(approvedAt)
+            .cancelReason(cancelReason)
+            .cancelAt(cancelAt)
+            .build();
+    }
 }

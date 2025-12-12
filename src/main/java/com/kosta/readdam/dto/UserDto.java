@@ -8,9 +8,13 @@ import com.kosta.readdam.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,6 +42,7 @@ public class UserDto {
         return User.builder()
             .username(username)
             .password(password)
+            .name(name)
             .nickname(nickname)
             .phone(phone)
             .email(email)
@@ -55,5 +60,17 @@ public class UserDto {
             .introduce(introduce)
             .build();
     }
+    
+    public static UserDto fromEntity(User user) {
+    	return UserDto.builder()
+    			.username(user.getUsername())
+    			.name(user.getName())
+    			.nickname(user.getNickname())
+    			.email(user.getEmail())
+    			.build();
+    }
+    
+    
+    
 
 }

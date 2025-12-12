@@ -2,14 +2,12 @@ package com.kosta.readdam.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.ColumnDefault;
 
 import com.kosta.readdam.dto.UserDto;
 
@@ -67,6 +65,7 @@ public class User {
 	private LocalDateTime withdrawalDate;
 
 	@Column(name = "is_admin")
+	@ColumnDefault("0") // 기본값설정 추가
 	private Boolean isAdmin;
 
 	@Column(name = "lat")
@@ -93,6 +92,7 @@ public class User {
 		return UserDto.builder()
 				.username(username)
 				.password(null)
+				.name(name)
 				.nickname(nickname).phone(phone).email(email)
 				.birth(birth).joinDate(joinDate).profileImg(profileImg).fcmToken(fcmToken).deleted(deleted)
 				.withdrawalReason(withdrawalReason)
@@ -100,7 +100,7 @@ public class User {
 				.isAdmin(isAdmin)
 				.lat(lat)
 				.lng(lng)
-				.totalPoint(totalPoint)
+				.totalPoint(totalPoint != null ? totalPoint : 0)
 				.introduce(introduce)
 				.build();
 	}
